@@ -44,7 +44,7 @@ class hotposting (commands.Cog):
             embed.set_image(url=post.url)
             await ctx.send(embed=embed)
 
-        @commands.command(help='Displays a random hot post from one of various thigh subreddits, any suggestions please let me know, usage='!bois')
+        @commands.command(help='Displays a random hot post from one of a thigh subreddit, usage='!bois')
         async def thigh(self, ctx: Context[BotT]):
             if isinstance(ctx.channel, discord.DMChannel):
                 await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
