@@ -25,7 +25,7 @@ class hotposting (commands.Cog):
             self.bot: commands.AutoShardedBot = bot
             self.config = default.load_json()
 
-        @commands.command(help='Displays a random hot post from the "bois" subreddit.', usage='<@1097951798540652564> femboy')
+        @commands.command(help='Displays a random hot post from the "bois" subreddit.', usage='!bois')
         async def bois(self, ctx: Context[BotT]):
             if isinstance(ctx.channel, discord.DMChannel):
                 await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
@@ -35,16 +35,58 @@ class hotposting (commands.Cog):
                 return            
 
             hot_posts = list(reddit.subreddit('bois').hot(limit=100))
-            image_posts = [post for post in hot_posts if post.is_self == False and post.url.endswith(('.jpg', '.jpeg', '.png'))]
+            image_posts = [post for post in hot_posts if post.is_self == False and post.url.endswith(('.jpg', '.jpeg', '.png', '.webm', '.gif', '.mp4'))]
             post = random.choice(image_posts)
             while post in sent_posts:
                 post = random.choice(image_posts)
             sent_posts.append(post)
-            embed = discord.Embed(title=post.title, url=post.url)
+            embed = discord.Embed(title=post.title, url=post.shortlink, color=0xff4500)
             embed.set_image(url=post.url)
             await ctx.send(embed=embed)
 
-        @commands.command(help='Displays a random hot post from the specified subreddit.', usage='<@1097951798540652564> hot [subreddit]')
+        @commands.command(help='Displays a random hot post from one of the subreddits: thickthighs, thighs, thighdeology, thighzone.', usage='!bois')
+        async def thigh(self, ctx: Context[BotT]):
+            if isinstance(ctx.channel, discord.DMChannel):
+                await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
+                return
+            if not ctx.channel.is_nsfw():
+                await ctx.send("Please run this command in a channel marked as NSFW.")
+                return
+
+            subreddits = ['thickthighs', 'thighs', 'thighdeology', 'thighzone']
+            subreddit = random.choice(subreddits)
+            hot_posts = list(reddit.subreddit(subreddit).hot(limit=100))
+            image_posts = [post for post in hot_posts if post.is_self == False and post.url.endswith(('.jpg', '.jpeg', '.png', '.webm', '.gif', '.mp4'))]
+            post = random.choice(image_posts)
+            while post in sent_posts:
+                post = random.choice(image_posts)
+            sent_posts.append(post)
+            embed = discord.Embed(title=post.title, url=post.shortlink, color=0xff4500)
+            embed.set_image(url=post.url)
+            await ctx.send(embed=embed)
+
+
+
+        @commands.command(help='Displays a random hot post from the "femboys" subreddit.', usage='!femboy')
+        async def femboys(self, ctx: Context[BotT]):
+            if isinstance(ctx.channel, discord.DMChannel):
+                await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
+                return
+            if not ctx.channel.is_nsfw():
+                await ctx.send("Please run this command in a channel marked as NSFW.")
+                return            
+
+            hot_posts = list(reddit.subreddit('femboys').hot(limit=100))
+            image_posts = [post for post in hot_posts if post.is_self == False and post.url.endswith(('.jpg', '.jpeg', '.png', '.webm', '.gif', '.mp4'))]
+            post = random.choice(image_posts)
+            while post in sent_posts:
+                post = random.choice(image_posts)
+            sent_posts.append(post)
+            embed = discord.Embed(title=post.title, url=post.shortlink, color=0xff4500)
+            embed.set_image(url=post.url)
+            await ctx.send(embed=embed)
+
+        @commands.command(help='Displays a random hot post from the specified subreddit.', usage='!hot [subreddit]')
         async def hot(self, ctx: Context[BotT], subreddit: str):
             if isinstance(ctx.channel, discord.DMChannel):
                 await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
@@ -53,13 +95,16 @@ class hotposting (commands.Cog):
                 await ctx.send("Please run this command in a channel marked as NSFW.")
                 return
             hot_posts = list(reddit.subreddit(subreddit).hot(limit=100))
-            image_posts = [post for post in hot_posts if post.is_self == False and post.url.endswith(('.jpg', '.jpeg', '.png'))]
+            image_posts = [post for post in hot_posts if post.is_self == False and post.url.endswith(('.jpg', '.jpeg', '.png', '.webm', '.gif', '.mp4'))]
             post = random.choice(image_posts)
             while post in sent_posts:
                 post = random.choice(image_posts)
             sent_posts.append(post)
-            embed = discord.Embed(title=post.title, url=post.url)
+            embed = discord.Embed(title=post.title, url=post.shortlink, color=0xff4500)
             embed.set_image(url=post.url)
+            await ctx.send(embed=embed)
 
+
+            
 async def setup(bot):
     await bot.add_cog(hotposting(bot))
