@@ -3,6 +3,8 @@ import discord
 from utils import default
 from utils.data import Bot, HelpFormat
 
+allowed_guilds = [1034456646614786139, 914431811461984266, 1099621557128671303]
+
 config = default.load_json()
 print("Logging in...")
 
@@ -12,6 +14,13 @@ bot = Bot(
     allowed_mentions=discord.AllowedMentions(roles=False, users=True, everyone=False),
     intents=discord.Intents.all()
 )
+
+@bot.check
+async def check_guild(ctx):
+    if ctx.guild.id not in allowed_guilds:
+        await ctx.send("This part of the bot is disabled outside select servers")
+        return False
+    return True
 
 try:
     bot.run(config["token"])
