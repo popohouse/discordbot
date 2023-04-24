@@ -9,7 +9,7 @@ from discord.ext import commands
 from utils import permissions, http, default
 
 
-with open('../secrets.txt', 'r') as f:
+with open('secrets.txt', 'r') as f:
     secrets = f.read().splitlines()
     client_id = secrets[0]
     client_secret = secrets[1]

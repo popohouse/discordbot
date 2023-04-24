@@ -6,3 +6,4 @@ services:
     build: .
     volumes:
       - ./config.json:/discord_bot/config.json
+      - ./secrets.txt:/discord_bot/secrets.txt
