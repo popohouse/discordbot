@@ -44,7 +44,7 @@ class hotposting (commands.Cog):
             embed.set_image(url=post.url)
             await ctx.send(embed=embed)
 
-        @commands.command(help='Displays a random hot post from one of the subreddits: thickthighs, thighs, thighdeology, thighzone.', usage='!bois')
+        @commands.command(help='Displays a random hot post from one of various thigh subreddits, any suggestions please let me know, usage='!bois')
         async def thigh(self, ctx: Context[BotT]):
             if isinstance(ctx.channel, discord.DMChannel):
                 await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
@@ -53,7 +53,7 @@ class hotposting (commands.Cog):
                 await ctx.send("Please run this command in a channel marked as NSFW.")
                 return
 
-            subreddits = ['thickthighs', 'thighs', 'thighdeology', 'thighzone']
+            subreddits = ['ThighCrushing', 'ThickThighs', 'thighdeology', 'Thigh_Brows', 'thighhighs', 'Thighs' ]
             subreddit = random.choice(subreddits)
             hot_posts = list(reddit.subreddit(subreddit).hot(limit=100))
             image_posts = [post for post in hot_posts if post.is_self == False and post.url.endswith(('.jpg', '.jpeg', '.png', '.webm', '.gif', '.mp4'))]
