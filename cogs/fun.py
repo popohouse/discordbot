@@ -112,7 +112,7 @@ class Fun_Commands(commands.Cog):
 
         try:
             await msg.add_reaction("🍻")
-            await self.bot.wait_for("raw_reaction_add", timeout=30.0, check=reaction_check)
+            await self.bot.wait_for("raw_reaction_add", timeout=300.0, check=reaction_check)
             await msg.edit(content=f"**{user.name}** and **{ctx.author.name}** are enjoying a lovely beer together 🍻")
         except asyncio.TimeoutError:
             await msg.delete()
