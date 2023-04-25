@@ -3,6 +3,7 @@ config.json
 cogs/eval.py
 .vscode/
 secrets.txt
+GuildLogs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
