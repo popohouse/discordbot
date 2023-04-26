@@ -7,25 +7,17 @@ class LoggingCog(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_raw_message_delete(self, payload):
-        guild = self.bot.get_guild( payload.guild_id)
-        if not guild:
-            return
-        if not self.is_logging_enabled(guild.id, "message_delete"):
-            return
-        log_channel = self.get_log_channel(guild.id)
-        if not log_channel:
-            return
-        channel = guild.get_channel(payload.channel_id)
-        if not channel:
-            return
-        try:
-            message = payload.cached_message
-        except discord.NotFound:
-            return
-        embed = discord.Embed(title="Message Deleted", description=f"Message sent by {message.author.mention} in {channel.mention} was deleted.", color=discord.Color.red())
-        embed.add_field(name="Content", value=message.content)
-        await log_channel.send(embed=embed)
+    async def on_message_delete(self, message):
+            if not message.guild:
+                return
+            if not self.is_logging_enabled(message.guild.id, "message_delete"):
+                return
+            log_channel = self.get_log_channel(message.guild.id)
+            if not log_channel:
+                return
+            embed = discord.Embed(title="Message Deleted", description=f"Message sent by {message.author.mention} in {message.channel.mention} was deleted.", color=discord.Color.red())
+            embed.add_field(name="Content", value=message.content)
+            await log_channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):

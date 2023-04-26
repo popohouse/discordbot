@@ -4,7 +4,7 @@ from utils import default
 from utils.data import Bot, HelpFormat
 
 allowed_guilds = [1034456646614786139, 914431811461984266, 1099621557128671303]
-
+#kitty kat, popo house, popo support server
 config = default.load_json()
 print("Logging in...")
 
