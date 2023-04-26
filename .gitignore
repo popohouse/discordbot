@@ -4,6 +4,7 @@ cogs/eval.py
 .vscode/
 secrets.txt
 GuildLogs/
+cat_data.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
