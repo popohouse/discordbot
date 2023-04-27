@@ -18,6 +18,7 @@ class CatCog(commands.Cog):
 
     @commands.group(invoke_without_command=True)
     async def cat(self, ctx, *, subcommand=None):
+        """ Posts a random cat, or from specific tag"""
         if subcommand is None:
             url = 'https://cataas.com/cat'
         else:
@@ -35,8 +36,9 @@ class CatCog(commands.Cog):
         await ctx.send(file=discord.File(filename))
         os.remove(filename)
 
-    @commands.group(invoke_without_command=True)
-    async def kitten(self, ctx, *, subcommand=None):
+    @commands.command()
+    async def kitten(self, ctx, ):
+        """ Posts a kitten"""
         url = 'https://cataas.com/cat/kitten'
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
@@ -59,6 +61,7 @@ class CatCog(commands.Cog):
 
     @tasks.loop(hours=24)
     async def daily_cat(self):
+        """ Set where to post daily cat, posts daily at 12 utc"""
         if self.channel_id is not None:
             channel = self.bot.get_channel(self.channel_id)
             if channel is not None:
