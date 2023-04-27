@@ -1,8 +1,10 @@
 import discord
-from discord.ext import commands, tasks
 import aiohttp
 import os
 import json
+
+from discord.ext import commands, tasks
+from datetime import datetime, timedelta
 
 class CatCog(commands.Cog):
     def __init__(self, bot):
@@ -20,6 +22,22 @@ class CatCog(commands.Cog):
             url = 'https://cataas.com/cat'
         else:
             url = f'https://cataas.com/cat/{subcommand}'
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                if resp.status != 200:
+                    return await ctx.send('Could not get cat image :(')
+                data = await resp.read()
+                content_type = resp.headers['Content-Type']
+                extension = content_type.split('/')[-1]
+                filename = f'cat.{extension}'
+                with open(filename,'wb') as f:
+                    f.write(data)
+        await ctx.send(file=discord.File(filename))
+        os.remove(filename)
+
+    @commands.group(invoke_without_command=True)
+    async def kitten(self, ctx, *, subcommand=None):
+        url = 'https://cataas.com/cat/kitten'
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 if resp.status != 200:
@@ -57,6 +75,14 @@ class CatCog(commands.Cog):
                             f.write(data)
                 await channel.send("Daily cat posting", file=discord.File(filename))
                 os.remove(filename)
+
+    @daily_cat.before_loop
+    async def before_daily_cat(self):
+        now = datetime.utcnow()
+        next_run_time = now.replace(hour=12, minute=0, second=0)
+        if now > next_run_time:
+            next_run_time += timedelta(days=1)
+        await discord.utils.sleep_until(next_run_time)
 
     def save_data(self):
         with open("cat_data.json", "w") as f:
