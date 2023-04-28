@@ -59,33 +59,27 @@ class CatCog(commands.Cog):
         self.save_data()
         await ctx.send(f"Daily cat posting enabled in channel {channel_id}")
 
-    @tasks.loop(hours=24)
+    @tasks.loop(minutes=1)
     async def daily_cat(self):
         """ Set where to post daily cat, posts daily at 12 utc"""
-        if self.channel_id is not None:
-            channel = self.bot.get_channel(self.channel_id)
-            if channel is not None:
-                url = 'https://cataas.com/cat'
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url) as resp:
-                        if resp.status != 200:
-                            return await channel.send('Could not get cat image :(')
-                        data = await resp.read()
-                        content_type = resp.headers['Content-Type']
-                        extension = content_type.split('/')[-1]
-                        filename = f'cat.{extension}'
-                        with open(filename,'wb') as f:
-                            f.write(data)
-                await channel.send("Daily cat posting", file=discord.File(filename))
-                os.remove(filename)
-
-    @daily_cat.before_loop
-    async def before_daily_cat(self):
         now = datetime.utcnow()
-        next_run_time = now.replace(hour=12, minute=0, second=0)
-        if now > next_run_time:
-            next_run_time += timedelta(days=1)
-        await discord.utils.sleep_until(next_run_time)
+        if now.hour == 17 and now.minute == 0:
+            if self.channel_id is not None:
+                channel = self.bot.get_channel(self.channel_id)
+                if channel is not None:
+                    url = 'https://cataas.com/cat'
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(url) as resp:
+                            if resp.status != 200:
+                                return await channel.send('Could not get cat image :(')
+                            data = await resp.read()
+                            content_type = resp.headers['Content-Type']
+                            extension = content_type.split('/')[-1]
+                            filename = f'cat.{extension}'
+                            with open(filename,'wb') as f:
+                                f.write(data)
+                    await channel.send("Daily cat posting", file=discord.File(filename))
+                    os.remove(filename)
 
     def save_data(self):
         with open("cat_data.json", "w") as f:
