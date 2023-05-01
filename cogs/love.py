@@ -38,5 +38,20 @@ class Love(commands.Cog):
         else:
             await ctx.send(f'{ctx.author.mention} hugs {target.mention}!', file=image_file)
 
+    @commands.command()
+    async def cuddle(self, ctx, *, target: discord.Member=None):
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://api.waifu.pics/sfw/cuddle') as response:
+                data = await response.json()
+                image_url = data['url']
+                file_ext = os.path.splitext(image_url)[1]
+                async with session.get(image_url) as resp:
+                    image_data = await resp.read()
+                    image_file = discord.File(BytesIO(image_data), filename=f'kiss{file_ext}')
+        if target is None:
+            await ctx.send(f'{ctx.author.mention} cuddles themself!', file=image_file)
+        else:
+            await ctx.send(f'{ctx.author.mention} cuddles {target.mention}!', file=image_file)
+
 async def setup(bot):
     await bot.add_cog(Love(bot))
