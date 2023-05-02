@@ -19,6 +19,7 @@ class CatCog(commands.Cog):
 
     @commands.command()
     async def cat(self, ctx):
+        """ Post random cat image"""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.thecatapi.com/v1/images/search') as response:
                 cat = await response.json()
@@ -26,6 +27,7 @@ class CatCog(commands.Cog):
 
     @commands.command()
     async def dailycat(self, ctx, channel_id: int):
+        """ Post cat daily at 5 utc in a specific channel, usage: !dailycat channelid"""
         self.channel_id = channel_id
         await ctx.send(f"Daily cat posting enabled in channel {channel_id}")
 

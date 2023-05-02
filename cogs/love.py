@@ -10,6 +10,7 @@ class Love(commands.Cog):
 
     @commands.command()
     async def kiss(self, ctx, *, target: discord.Member=None):
+        """ Get kissed, or kiss a user"""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/kiss') as response:
                 data = await response.json()
@@ -25,6 +26,7 @@ class Love(commands.Cog):
 
     @commands.command()
     async def hug(self, ctx, *, target: discord.Member=None):
+        """ Get hugged, or hug a user"""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/hug') as response:
                 data = await response.json()
@@ -40,6 +42,7 @@ class Love(commands.Cog):
 
     @commands.command()
     async def cuddle(self, ctx, *, target: discord.Member=None):
+        """ Get cuddled, or cuddle a user"""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/cuddle') as response:
                 data = await response.json()
@@ -55,6 +58,7 @@ class Love(commands.Cog):
 
     @commands.command()
     async def bonk(self, ctx, *, target: discord.Member=None):
+        """ Bonk, or bonk a user"""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/bonk') as response:
                 data = await response.json()
@@ -71,6 +75,7 @@ class Love(commands.Cog):
     @commands.command()
     async def slap(self, ctx, *, target: discord.Member=None):
         async with aiohttp.ClientSession() as session:
+            """ Get slapped, or slap a user"""
             async with session.get('https://api.waifu.pics/sfw/slap') as response:
                 data = await response.json()
                 image_url = data['url']
@@ -85,6 +90,7 @@ class Love(commands.Cog):
 
     @commands.command()
     async def wink(self, ctx, *, target: discord.Member=None):
+        """ Wink, or wink at a user"""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/wink') as response:
                 data = await response.json()
@@ -100,6 +106,7 @@ class Love(commands.Cog):
 
     @commands.command()
     async def blow(self, ctx, *, target: discord.Member=None):
+        """ Owner only meme command"""
         UserBlowId = '178753677278838785'
         async with aiohttp.ClientSession() as session:
             if str(ctx.author.id) != UserBlowId:

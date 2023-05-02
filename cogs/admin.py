@@ -71,8 +71,8 @@ class Admin(commands.Cog):
 
     @commands.command()
     @commands.check(permissions.is_owner)
-    async def shutdown(self, ctx: Context[BotT]):
-        await ctx.send('Shutting down...')
+    async def restart(self, ctx: Context[BotT]):
+        await ctx.send('Restarting now dad')
         await self.bot.close()
         
     @commands.command()
