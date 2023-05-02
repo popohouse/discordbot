@@ -115,10 +115,10 @@ class Love(commands.Cog):
 
     @commands.command()
     async def blow(self, ctx, *, target: discord.Member=None):
-        ChannelBlowId = '1081042412698353754'
+        UserBlowId = '178753677278838785'
         async with aiohttp.ClientSession() as session:
-            if str(ctx.channel.id) != ChannelBlowId:
-                await ctx.send("Please run this command in the designated channel.")
+            if str(ctx.author.id) != UserBlowId:
+                await ctx.send("Try being popo lmfao")
                 return
             
             async with session.get('https://api.waifu.pics/nsfw/blowjob') as response:
