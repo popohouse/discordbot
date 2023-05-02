@@ -54,21 +54,6 @@ class Love(commands.Cog):
             await ctx.send(f'{ctx.author.mention} cuddles {target.mention}!', file=image_file)
 
     @commands.command()
-    async def lick(self, ctx, *, target: discord.Member=None):
-        async with aiohttp.ClientSession() as session:
-            async with session.get('https://api.waifu.pics/sfw/lick') as response:
-                data = await response.json()
-                image_url = data['url']
-                file_ext = os.path.splitext(image_url)[1]
-                async with session.get(image_url) as resp:
-                    image_data = await resp.read()
-                    image_file = discord.File(BytesIO(image_data), filename=f'lick{file_ext}')
-        if target is None:
-            await ctx.send(f'{ctx.author.mention} gets licked!', file=image_file)
-        else:
-            await ctx.send(f'{ctx.author.mention} licks {target.mention}!', file=image_file)
-
-    @commands.command()
     async def bonk(self, ctx, *, target: discord.Member=None):
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/bonk') as response:
