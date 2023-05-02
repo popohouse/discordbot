@@ -114,19 +114,24 @@ class Love(commands.Cog):
             await ctx.send(f'{ctx.author.mention} winks at {target.mention}!', file=image_file)
 
     @commands.command()
-    async def pat(self, ctx, *, target: discord.Member=None):
+    async def blow(self, ctx, *, target: discord.Member=None):
+        ChannelBlowId = '1081042412698353754'
         async with aiohttp.ClientSession() as session:
-            async with session.get('https://api.waifu.pics/sfw/pat') as response:
+            if str(ctx.channel.id) != ChannelBlowId:
+                await ctx.send("Please run this command in the designated channel.")
+                return
+            
+            async with session.get('https://api.waifu.pics/nsfw/blowjob') as response:
                 data = await response.json()
                 image_url = data['url']
                 file_ext = os.path.splitext(image_url)[1]
                 async with session.get(image_url) as resp:
                     image_data = await resp.read()
-                    image_file = discord.File(BytesIO(image_data), filename=f'pat{file_ext}')
+                    image_file = discord.File(BytesIO(image_data), filename=f'blowjob{file_ext}')
         if target is None:
-            await ctx.send(f'{ctx.author.mention} gets headpats!', file=image_file)
+            await ctx.send(f'{ctx.author.mention} gets blowjob!', file=image_file)
         else:
-            await ctx.send(f'{ctx.author.mention} gives headpats to {target.mention}!', file=image_file)
+            await ctx.send(f'{ctx.author.mention} gives blowjob to {target.mention}!', file=image_file)
 
 async def setup(bot):
     await bot.add_cog(Love(bot))
