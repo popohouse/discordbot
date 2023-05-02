@@ -48,7 +48,7 @@ class CatCog(commands.Cog):
     @tasks.loop(minutes=1)
     async def daily_cat(self):
         now = datetime.utcnow()
-        if now.hour == 20 and now.minute == 56:
+        if now.hour == 17 and now.minute == 00:
             if self.channel_id is not None:
                 channel = self.bot.get_channel(self.channel_id)
                 if channel is not None:
