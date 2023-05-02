@@ -74,8 +74,8 @@ class Love(commands.Cog):
             
     @commands.command()
     async def slap(self, ctx, *, target: discord.Member=None):
+        """ Get slapped, or slap a user"""
         async with aiohttp.ClientSession() as session:
-            """ Get slapped, or slap a user"""
             async with session.get('https://api.waifu.pics/sfw/slap') as response:
                 data = await response.json()
                 image_url = data['url']

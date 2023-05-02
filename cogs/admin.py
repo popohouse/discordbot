@@ -72,6 +72,7 @@ class Admin(commands.Cog):
     @commands.command()
     @commands.check(permissions.is_owner)
     async def restart(self, ctx: Context[BotT]):
+        """ Shutdown the bot, in current setup this means will restart unless command is done twice in a row quickly"""
         await ctx.send('Restarting now dad')
         await self.bot.close()
         
