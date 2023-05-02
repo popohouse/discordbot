@@ -71,6 +71,12 @@ class Admin(commands.Cog):
 
     @commands.command()
     @commands.check(permissions.is_owner)
+    async def shutdown(self, ctx: Context[BotT]):
+        await ctx.send('Shutting down...')
+        await self.bot.close()
+        
+    @commands.command()
+    @commands.check(permissions.is_owner)
     async def reloadall(self, ctx: Context[BotT]):
         """ Reloads all extensions. """
         error_collection = []
