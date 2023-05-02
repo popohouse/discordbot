@@ -42,12 +42,12 @@ class CatCog(commands.Cog):
                             await channel.send(f"Daily cat posting\n{cat[0]['url']}")
 
     def save_data(self):
-        with open("cat_data.json", "w") as f:
+        with open("data/cat_data.json", "w") as f:
             json.dump({"channel_id": self.channel_id}, f)
 
     def load_data(self):
         try:
-            with open("cat_data.json", "r") as f:
+            with open("data/cat_data.json", "r") as f:
                 data = json.load(f)
                 self.channel_id = data["channel_id"]
         except FileNotFoundError:

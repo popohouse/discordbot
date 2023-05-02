@@ -3,6 +3,7 @@ import discord
 from utils import default
 from utils.data import Bot, HelpFormat
 
+#Hardcoded values for which guilds bot is allowed in, simply remove this and @bot.check function in order to allow in all, done for while testing/deploying
 allowed_guilds = [1034456646614786139, 914431811461984266, 1099621557128671303]
 #kitty kat, popo house, popo support server
 config = default.load_json()

@@ -21,6 +21,10 @@ class LoggingCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
+        # Check if the only change was the addition of an embed
+        if before.content == after.content and len(before.embeds) == 0 and len(after.embeds) > 0:
+            return
+
         if not before.guild:
             return
         if not self.is_logging_enabled(before.guild.id, "message_edit"):
@@ -156,32 +160,34 @@ class LoggingCog(commands.Cog):
         return log_type in ["message_delete", "message_edit", "nick_change", "member_join", "member_remove", "guild_join", "member_ban", "member_unban"]
 
     def is_logging_enabled(self, guild_id, log_type):
-        if not os.path.exists(f"GuildLogs/{guild_id}"):
-            os.makedirs(f"GuildLogs/{guild_id}")
-        if not os.path.exists(f"GuildLogs/{guild_id}/{log_type}.txt"):
-            with open(f"GuildLogs/{guild_id}/{log_type}.txt", "w") as f:
-                f.write("False")
+        if not os.path.exists(f"data/GuildLogs/{guild_id}"):
+            os.makedirs(f"data/GuildLogs/{guild_id}")
+        if not os.path.exists(f"data/GuildLogs/{guild_id}/{log_type}.txt"):
             return False
-        with open(f"GuildLogs/{guild_id}/{log_type}.txt", "r") as f:
+        with open(f"data/GuildLogs/{guild_id}/{log_type}.txt", "r") as f:
             return f.read().strip() == "True"
 
     def set_logging(self, guild_id, log_type, enabled):
-        if not os.path.exists(f"GuildLogs/{guild_id}"):
-            os.makedirs(f"GuildLogs/{guild_id}")
-        with open(f"GuildLogs/{guild_id}/{log_type}.txt", "w") as f:
-            f.write(str(enabled))
+        if not os.path.exists(f"data/GuildLogs/{guild_id}"):
+            os.makedirs(f"data/GuildLogs/{guild_id}")
+        if enabled:
+            with open(f"data/GuildLogs/{guild_id}/{log_type}.txt", "w") as f:
+                f.write(str(enabled))
+        else:
+            if os.path.exists(f"data/GuildLogs/{guild_id}/{log_type}.txt"):
+                os.remove(f"data/GuildLogs/{guild_id}/{log_type}.txt")
 
     def get_log_channel(self, guild_id):
-        if not os.path.exists(f"GuildLogs/{guild_id}/channel.txt"):
+        if not os.path.exists(f"data/GuildLogs/{guild_id}/channel.txt"):
             return None
-        with open(f"GuildLogs/{guild_id}/channel.txt", "r") as f:
+        with open(f"data/GuildLogs/{guild_id}/channel.txt", "r") as f:
             channel_id = int(f.read().strip())
             return self.bot.get_channel(channel_id)
 
     def set_log_channel(self, guild_id, channel_id):
-        if not os.path.exists(f"GuildLogs/{guild_id}"):
-            os.makedirs(f"GuildLogs/{guild_id}")
-        with open(f"GuildLogs/{guild_id}/channel.txt", "w") as f:
+        if not os.path.exists(f"data/GuildLogs/{guild_id}"):
+            os.makedirs(f"data/GuildLogs/{guild_id}")
+        with open(f"data/GuildLogs/{guild_id}/channel.txt", "w") as f:
             f.write(str(channel_id))
 
 async def setup(bot):

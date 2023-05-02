@@ -9,7 +9,7 @@ from datetime import datetime
 from io import BytesIO
 
 
-def load_json(filename: str = "config.json") -> dict:
+def load_json(filename: str = "data/config.json") -> dict:
     """ Fetch default config file """
     try:
         with open(filename, encoding='utf8') as data:
