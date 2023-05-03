@@ -28,5 +28,13 @@ class AnimalCog(commands.Cog):
                 fox = await response.json()
                 await ctx.send(fox['image'])
 
+    @commands.command()
+    async def duck(self, ctx):
+        """ Post random duck image"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://random-d.uk/api/random') as response:
+                duck = await response.json()
+                await ctx.send(duck['url'])
+
 async def setup(bot):
     await bot.add_cog(AnimalCog(bot))

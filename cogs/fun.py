@@ -16,42 +16,6 @@ class Fun_Commands(commands.Cog):
         self.bot: commands.AutoShardedBot = bot
         self.config = default.load_json()
 
-    async def randomimageapi(
-        self, ctx: Context[BotT], url: str,
-        endpoint: str, token: str = None
-    ) -> discord.Message:
-        try:
-            r = await http.get(
-                url, res_method="json", no_cache=True,
-                headers={"Authorization": token} if token else None
-            )
-        except aiohttp.ClientConnectorError:
-            return await ctx.send("The API seems to be down...")
-        except aiohttp.ContentTypeError:
-            return await ctx.send("The API returned an error or didn't return JSON...")
-
-        return await ctx.send(r[endpoint])
-
-    async def api_img_creator(
-        self, ctx: Context[BotT], url: str,
-        filename: str, content: str = None
-    ) -> discord.Message:
-        async with ctx.channel.typing():
-            req = await http.get(url, res_method="read")
-
-            if not req:
-                return await ctx.send("I couldn't create the image ;-;")
-
-            bio = BytesIO(req)
-            bio.seek(0)
-            return await ctx.send(content=content, file=discord.File(bio, filename=filename))
-
-    @commands.command()
-    @commands.cooldown(rate=1, per=1.5, type=commands.BucketType.user)
-    async def duck(self, ctx: Context[BotT]):
-        """ Posts a random duck """
-        await self.randomimageapi(ctx, "https://random-d.uk/api/v1/random", "url")
-
     @commands.command(aliases=["flip", "coin"])
     async def coinflip(self, ctx: Context[BotT]):
         """ Coinflip! """
