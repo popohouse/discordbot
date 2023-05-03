@@ -18,7 +18,7 @@ bot = Bot(
 
 @bot.check
 async def check_guild(ctx):
-    if ctx.guild is None or ctx.guild is allowed_guilds:
+    if ctx.guild is None or ctx.guild in allowed_guilds:
         return True
     if ctx.author.id in config["owners"]:
         return True
