@@ -4,7 +4,7 @@ import os
 import json
 from io import BytesIO
 from discord.ext import commands, tasks
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 class CatCog(commands.Cog):

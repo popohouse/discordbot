@@ -1,10 +1,6 @@
-import discord
 import aiohttp
-import os
-import json
-from io import BytesIO
+
 from discord.ext import commands, tasks
-from datetime import datetime, timedelta
 
 
 class AnimalCog(commands.Cog):

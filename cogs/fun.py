@@ -1,8 +1,7 @@
 import random
 import discord
-import secrets
 import asyncio
-import aiohttp
+
 
 from io import BytesIO
 from discord.ext.commands.context import Context
