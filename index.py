@@ -22,7 +22,7 @@ async def check_guild(ctx):
         return True
     if ctx.author.id in config["owners"]:
         return True
-    if ctx.guild in allowed_guilds:
+    if ctx.guild.id in allowed_guilds:
         return True
     await ctx.send("This part of the bot is disabled outside select servers")
     return False
