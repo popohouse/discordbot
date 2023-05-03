@@ -3,9 +3,9 @@ import discord
 from utils import default
 from utils.data import Bot, HelpFormat
 
-#Hardcoded values for which guilds bot is allowed in, simply remove this and @bot.check function in order to allow in all, done for while testing/deploying
-allowed_guilds = [1034456646614786139, 914431811461984266, 1099621557128671303]
-#kitty kat, popo house, popo support server
+#Hardcoded values for which guilds bot is allowed in, simply change this and @bot.check function in order to allow in all, done for while testing/deploying
+allowed_guilds = [1034456646614786139]
+#kitty kat server only
 config = default.load_json()
 print("Logging in...")
 
@@ -18,10 +18,12 @@ bot = Bot(
 
 @bot.check
 async def check_guild(ctx):
-    if ctx.guild.id not in allowed_guilds:
-        await ctx.send("This part of the bot is disabled outside select servers")
-        return False
-    return True
+    if ctx.guild is None:
+        return True
+    if ctx.author.id in config["owners"]:
+        return True
+    await ctx.send("This part of the bot is disabled outside select servers")
+    return False
 
 try:
     bot.run(config["token"])
