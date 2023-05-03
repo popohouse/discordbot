@@ -31,8 +31,8 @@ class Events(commands.Cog):
                     "Both error and command will be ignored."
                 ]))
 
-            await ctx.send(f"There was an error processing the command ;-;\n{error}")
-
+            await ctx.send(f"There was an error processing the command ;-;\n")
+                            # {error} This is method used to display error either in chat, or maybe dm to owners set in config? Will decide later. CHECKMELATER
         elif isinstance(err, errors.CheckFailure):
             pass
 
