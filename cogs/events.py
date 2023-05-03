@@ -30,9 +30,13 @@ class Events(commands.Cog):
                     "You attempted to make the command display more than 2,000 characters...",
                     "Both error and command will be ignored."
                 ]))
-            error_channel = 1103199670437683210
-            await error_channel.send(f"Get fucked cunt random error in random discord \n{error}")
-            await ctx.send(f"There was an error processing the command ;-;")
+            error_channel_id = 1103199670437683210
+            error_channel = self.bot.get_channel(error_channel_id)
+            if error_channel is None:
+                print(f"Could not find channel with ID {error_channel_id}")
+            else:    
+                await error_channel.send(f"Get fucked cunt random error in random discord \n{error}")
+                await ctx.send(f"There was an error processing the command ;-;")
 
         elif isinstance(err, errors.CheckFailure):
             pass
