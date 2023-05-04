@@ -67,7 +67,14 @@ class AniList(commands.Cog):
             json_data = await response.json()
             data = json_data['data']['Media']
             
-            title = data['title']['romaji']
+            if not data:
+                return await message.channel.send("This title doesn't exist.")
+            
+            romaji_title = data['title'].get('romaji', '')
+            english_title = data['title'].get('english', '')
+            native_title = data['title'].get('native', '')
+            title = english_title or romaji_title or native_title
+
             url = data['siteUrl']
             
             description = re.sub('<[^<]+?>', '', data['description'])
