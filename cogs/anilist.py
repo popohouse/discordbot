@@ -25,6 +25,10 @@ class AniList(commands.Cog):
         else:
             return
 
+        # Check if the search query is the only content in the message
+        if not content[:start_index-1].isspace() and not content[end_index+1:].isspace():
+            return
+        
         query = '''
         query ($search: String, $type: MediaType) {
           Media (search: $search, type: $type) {
