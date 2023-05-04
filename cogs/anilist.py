@@ -12,6 +12,11 @@ class AniList(commands.Cog):
     async def on_message(self, message):
         if message.author == self.bot.user:
             return
+        if self.bot.user.mentioned_in(message):
+            return
+        if any(re.match(r'<.*:[^:]+:\d+>', e) for e in message.content.split()):
+            return
+        
 
         content = message.content
         if '{' in content and '}' in content:
@@ -21,14 +26,10 @@ class AniList(commands.Cog):
         elif '<' in content and '>' in content:
             media_type = 'MANGA'
             start_index = content.index('<') + 1
-            end_index = content.index('>')
+            end_index = content.index('>')     
         else:
             return
 
-        # Check if the search query is the only content in the message
-        if not content[:start_index-1].isspace() and not content[end_index+1:].isspace():
-            return
-        
         query = '''
         query ($search: String, $type: MediaType) {
           Media (search: $search, type: $type) {
