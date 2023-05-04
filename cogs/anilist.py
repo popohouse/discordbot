@@ -89,6 +89,12 @@ class AniList(commands.Cog):
             
             genres = ', '.join(data['genres'])
             
+            #Don't allow hentai in sfw channels
+            if 'Hentai' in data['genres'] and not message.channel.is_nsfw():
+                await message.channel.send('Please check this series in a NSFW channel.')
+                return
+                    
+
             image_url = 'https://img.anili.st/media/' + str(data['id'])
             status = data['status']
             
