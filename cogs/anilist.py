@@ -19,17 +19,13 @@ class AniList(commands.Cog):
 
         
 
-        content = message.content
-        if '{' in content and '}' in content:
-            media_type = 'ANIME'
-            start_index = content.index('{') + 1
-            end_index = content.index('}')
-        elif '<' in content and '>' in content:
-            media_type = 'MANGA'
-            start_index = content.index('<') + 1
-            end_index = content.index('>')     
-        else:
+        content = message.content.strip()
+        if not (content.startswith('{') and content.endswith('}')) and not (content.startswith('<') and content.endswith('>')):
             return
+
+        media_type = 'ANIME' if content.startswith('{') else 'MANGA'
+        start_index = 1
+        end_index = len(content) - 1
 
         query = '''
         query ($search: String, $type: MediaType) {
@@ -83,8 +79,11 @@ class AniList(commands.Cog):
 
             url = data['siteUrl']
             
-            description = re.sub('<[^<]+?>', '', data['description'])
-            
+            if data['description'] is not None:
+                description = re.sub('<[^<]+?>', '', data['description'])
+            else:
+                description = ""
+                
             if len(description) >= 400:
                 description = description[:350] + f'... [(more)]({url})'
             
