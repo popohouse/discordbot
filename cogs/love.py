@@ -4,13 +4,19 @@ import aiohttp
 import os
 from io import BytesIO
 
+import logging
+from datetime import datetime
+
 class Love(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    logging.basicConfig(filename='debug.log', level=logging.DEBUG)
+
     @commands.command()
     async def kiss(self, ctx, *, target: discord.Member=None):
         """ Get kissed, or kiss a user"""
+        start_time = datetime.now()
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/kiss') as response:
                 data = await response.json()
@@ -19,6 +25,7 @@ class Love(commands.Cog):
                 async with session.get(image_url) as resp:
                     image_data = await resp.read()
                     image_file = discord.File(BytesIO(image_data), filename=f'kiss{file_ext}')
+        logging.debug(f'Time taken to get image: {datetime.now() - start_time}')
         if target is None:
             await ctx.send(f'{ctx.author.mention} gets kissed!', file=image_file)
         else:
