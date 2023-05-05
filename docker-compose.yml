@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  bot:
+    container_name: "discord_bot.py"
+    build: https://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@github.com/unknownpopo/discordbot.git
+    volumes:
+      - ./data:/discord_bot/data
+    restart: always
