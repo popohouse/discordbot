@@ -105,6 +105,21 @@ class Love(commands.Cog):
             await ctx.send(f'{ctx.author.mention} winks at {target.mention}!', file=image_file)
 
     @commands.command()
+    async def pat(self, ctx, *, target: discord.Member=None):
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://api.waifu.pics/sfw/pat') as response:
+                data = await response.json()
+                image_url = data['url']
+                file_ext = os.path.splitext(image_url)[1]
+                async with session.get(image_url) as resp:
+                    image_data = await resp.read()
+                    image_file = discord.File(BytesIO(image_data), filename=f'pat{file_ext}')
+        if target is None:
+            await ctx.send(f'{ctx.author.mention} gets headpats!', file=image_file)
+        else:
+            await ctx.send(f'{ctx.author.mention} gives headpats to {target.mention}!', file=image_file)
+
+    @commands.command()
     async def blow(self, ctx, *, target: discord.Member=None):
         """ Owner only meme command"""
         UserBlowId = '178753677278838785'
