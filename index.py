@@ -2,6 +2,7 @@ import discord
 
 from utils import default
 from utils.data import Bot, HelpFormat
+from utils.database import init_db
 
 #Hardcoded values for which guilds bot is allowed in, simply change this and @bot.check function in order to allow in all, done for while testing/deploying
 allowed_guilds = [1034456646614786139]
@@ -26,6 +27,11 @@ async def check_guild(ctx):
         return True
     await ctx.send("This part of the bot is disabled outside select servers")
     return False
+
+@bot.event 
+async def on_ready():
+    init_db()
+    print(f'{bot.user} is ready!')
 
 try:
     bot.run(config["token"])
