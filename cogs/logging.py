@@ -1,6 +1,7 @@
 from discord.ext import commands
 import sqlite3
 import discord
+from datetime import datetime
 
 class LoggingCog(commands.Cog):
     def __init__(self, bot):
@@ -42,6 +43,37 @@ class LoggingCog(commands.Cog):
 
         conn.close()
 
+
+        #Manages of setting log channel
+    @commands.command()
+    async def set_logging_channel(self, ctx, channel: discord.TextChannel):
+        conn = sqlite3.connect('data/MeowMix.db')
+        c = conn.cursor()
+
+        c.execute('SELECT * FROM logging WHERE guild_id = ?', (ctx.guild.id,))
+        row = c.fetchone()
+
+        if row:
+            c.execute('UPDATE logging SET channel_id = ? WHERE guild_id = ?', (channel.id, ctx.guild.id))
+        else:
+            c.execute('INSERT INTO logging (guild_id, channel_id) VALUES (?, ?)', (ctx.guild.id, channel.id))
+
+        conn.commit()
+        conn.close()
+
+        if ctx.guild.id in self.logging_settings:
+            self.logging_settings[ctx.guild.id]['channel_id'] = channel.id
+        else:
+            self.logging_settings[ctx.guild.id] = {
+                'channel_id': channel.id,
+                'log_deleted_messages': 0,
+                'log_edited_messages': 0,
+                'log_nickname_changes': 0,
+                'log_member_join_leave': 0,
+                'log_member_kick': 0,
+                'log_member_ban_unban': 0
+        }
+        await ctx.send(f'Set logging channel to {channel.mention}')
 
 
             #Enable logs type
@@ -127,73 +159,65 @@ class LoggingCog(commands.Cog):
         await ctx.send(f'Disabled logging for {log_type}')
 
 
-        #Manages of setting log channel
-    @commands.command()
-    async def set_logging_channel(self, ctx, channel: discord.TextChannel):
-        conn = sqlite3.connect('data/MeowMix.db')
-        c = conn.cursor()
-
-        c.execute('SELECT * FROM logging WHERE guild_id = ?', (ctx.guild.id,))
-        row = c.fetchone()
-
-        if row:
-            c.execute('UPDATE logging SET channel_id = ? WHERE guild_id = ?', (channel.id, ctx.guild.id))
-        else:
-            c.execute('INSERT INTO logging (guild_id, channel_id) VALUES (?, ?)', (ctx.guild.id, channel.id))
-
-        conn.commit()
-        conn.close()
-
-        await ctx.send(f'Set logging channel to {channel.mention}')
-
-
             #Message delete listener
     @commands.Cog.listener()
     async def on_message_delete(self, message):
         guild_id = message.guild.id
-
         if guild_id in self.logging_settings and self.logging_settings[guild_id]['log_deleted_messages']:
             channel_id = self.logging_settings[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
-            embed = discord.Embed(title="Message Deleted", description=f"Message sent by {message.author.mention} in {message.channel.mention} was deleted.", color=discord.Color.red())
-            embed.add_field(name="Content", value=message.content)
+            
+            # Check audit log for moderator action
+            async for entry in message.guild.audit_logs(action=discord.AuditLogAction.message_delete):
+                if entry.target.id == message.author.id and entry.extra.channel.id == message.channel.id:
+                    moderator = entry.user
+                    break
+            else:
+                moderator = None
+            
+            # Update embed description based on whether a moderator deleted the message
+            if moderator:
+                description = f"Message sent by {message.author.mention} in {message.channel.mention} was deleted by {moderator.mention}."
+            else:
+                description = f"Message sent by {message.author.mention} in {message.channel.mention} was deleted."
+            
+            embed = discord.Embed(title="Message Deleted", description=description + f"\n\n**Content**\n{message.content}\n\n**Date**\n<t:{int(message.created_at.timestamp())}>", color=discord.Color.red())
+            embed.set_author(name=message.author.display_name, icon_url=message.author.avatar.url)
             await channel.send(embed=embed)
-
 
         #Message edit logging
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
-        guild_id = self.guild.id
+        guild_id = before.guild.id
 
         if guild_id in self.logging_settings and self.logging_settings[guild_id]['log_edited_messages']:
             channel_id = self.logging_settings[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
             
-            embed = discord.Embed(title="Message Edited", description=f"Message sent by {before.author.mention} in {before.channel.mention} was edited.", color=discord.Color.orange())
-            embed.add_field(name="Before", value=before.content)
-            embed.add_field(name="After", value=after.content)
+            embed = discord.Embed(title="Message Edited", description=f"Message sent by {before.author.mention} in {before.channel.mention} was edited.\n\n**Before**\n{before.content}\n\n**After**\n[{after.content}]({after.jump_url})\n\n**Date**\n<t:{int(after.edited_at.timestamp())}>", color=discord.Color.orange())
+            embed.set_author(name=before.author.display_name, icon_url=before.author.avatar.url)
             await channel.send(embed=embed)
 
+            #Uhhh all updates??? logging
 
-        #nickname logging
+
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
-        guild_id = self.guild.id
+        guild_id = before.guild.id
         
         if guild_id in self.logging_settings and self.logging_settings[guild_id]['log_nickname_changes']:
-            channel_id = self.logging_settings[guild_id]['channel_id']
-            channel = self.bot.get_channel(channel_id)
+            # Check if the nickname changed
+            if before.nick != after.nick:
+                channel_id = self.logging_settings[guild_id]['channel_id']
+                channel = self.bot.get_channel(channel_id)
 
-            embed = discord.Embed(title="Nickname Changed", description=f"{before.mention} changed their nickname.", color=discord.Color.blue())
-            embed.add_field(name="Before", value=before.nick)
-            embed.add_field(name="After", value=after.nick)
-
-            await channel.send(embed=embed)
-
+                embed = discord.Embed(title="Nickname Changed", description=f"{before.mention} changed their nickname.\n\n**Before**\n{before.nick or before.name}\n\n**After**\n{after.nick or after.name}\n\n**Date**\n<t:{int(datetime.utcnow().timestamp())}>", color=discord.Color.blue())
+                embed.set_author(name=before.display_name, icon_url=before.avatar.url)
+                await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        guild_id = self.guild.id
+        guild_id = member.guild.id
         
         if guild_id in self.logging_settings and self.logging_settings[guild_id]['log_member_join_leave']:
             channel_id = self.logging_settings[guild_id]['channel_id']
@@ -204,7 +228,7 @@ class LoggingCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
-        guild_id = self.guild.id
+        guild_id = member.guild.id
         
         if guild_id in self.logging_settings and self.logging_settings[guild_id]['log_member_join_leave']:
             channel_id = self.logging_settings[guild_id]['channel_id']
@@ -215,7 +239,7 @@ class LoggingCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_ban(self, member):
-        guild_id = self.guild.id
+        guild_id = member.guild.id
         
         if guild_id in self.logging_settings and self.logging_settings[guild_id]['log_member_ban_unban']:
             channel_id = self.logging_settings[guild_id]['channel_id']
@@ -226,7 +250,7 @@ class LoggingCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_unban(self, member):
-        guild_id = self.guild.id
+        guild_id = member.guild.id
         
         if guild_id in self.logging_settings and self.logging_settings[guild_id]['log_member_ban_unban']:
             channel_id = self.logging_settings[guild_id]['channel_id']

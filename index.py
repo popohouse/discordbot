@@ -30,7 +30,7 @@ async def check_guild(ctx):
 
 @bot.event 
 async def on_ready():
-    init_db()
+    init_db(bot)
     print(f'{bot.user} is ready!')
 
 try:

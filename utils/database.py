@@ -1,7 +1,7 @@
 import sqlite3
 
 
-def init_db():
+def init_db(bot):
     conn = sqlite3.connect('data/MeowMix.db')
     c = conn.cursor()
 
@@ -17,6 +17,9 @@ def init_db():
             log_member_ban_unban BOOLEAN
         )
     ''')
+    
+    for guild in bot.guilds:
+        c.execute('INSERT OR IGNORE INTO logging (guild_id) VALUES (?)', (guild.id,))
 
     conn.commit()
     conn.close()
