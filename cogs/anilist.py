@@ -14,18 +14,15 @@ class AniList(commands.Cog):
             return
         if self.bot.user.mentioned_in(message):
             return
-        if any(re.match(r'<.*:[^:]+:\d+>', e) for e in message.content.split()) or '@' in message.content:
-            return
-
         
-
         content = message.content.strip()
+        
         if not (content.startswith('{') and content.endswith('}')) and not (content.startswith('<') and content.endswith('>')):
             return
         
-        if content.startswith('<#'):
+        if content.startswith('<#') or content.startswith('<:') or content.startswith('<@'):
             return
-        
+
         media_type = 'ANIME' if content.startswith('{') else 'MANGA'
         start_index = 1
         end_index = len(content) - 1
