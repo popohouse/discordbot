@@ -19,7 +19,7 @@ class DailyCat(commands.Cog):
         self.daily_cat.cancel()
 
     @commands.command()
-    async def setdailycat(self, ctx, channel: Optional[discord.TextChannel] = None, hour: Optional[int] = None, minute: int = 0):
+    async def dailycat(self, ctx, channel: Optional[discord.TextChannel] = None, hour: Optional[int] = None, minute: int = 0):
         """Set the channel and time for daily cat posting"""
         if channel is None and hour is None:
             await ctx.send('Please set a channel or time.')
