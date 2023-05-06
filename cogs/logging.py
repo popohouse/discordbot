@@ -245,7 +245,7 @@ class LoggingCog(commands.Cog):
             channel_id = self.logging_settings[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
 
-            embed = discord.Embed(title="Member Banned", description=f"{user.mention} was banned from the server.", color=discord.Color.red())
+            embed = discord.Embed(title="Member Banned", description=f"{member.mention} was banned from the server.", color=discord.Color.red())
             await channel.send(embed=embed)
 
     @commands.Cog.listener()
@@ -256,7 +256,7 @@ class LoggingCog(commands.Cog):
             channel_id = self.logging_settings[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
 
-            embed = discord.Embed(title="Member Banned", description=f"{user.mention} was banned from the server.", color=discord.Color.red())
+            embed = discord.Embed(title="Member Banned", description=f"{member.mention} was banned from the server.", color=discord.Color.red())
             await channel.send(embed=embed)
 
 

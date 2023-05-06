@@ -17,6 +17,8 @@ bot = Bot(
     intents=discord.Intents.all()
 )
 
+init_db(bot)
+
 @bot.check
 async def check_guild(ctx):
     if ctx.guild is None:
@@ -30,7 +32,6 @@ async def check_guild(ctx):
 
 @bot.event 
 async def on_ready():
-    init_db(bot)
     print(f'{bot.user} is ready!')
 
 try:

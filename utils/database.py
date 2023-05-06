@@ -18,8 +18,17 @@ def init_db(bot):
         )
     ''')
     
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS dailycat (
+            guild_id INTEGER PRIMARY KEY,
+            channel_id INTEGER,
+            post_time TEXT
+        )
+    ''')
+
     for guild in bot.guilds:
         c.execute('INSERT OR IGNORE INTO logging (guild_id) VALUES (?)', (guild.id,))
+        c.execute('INSERT OR IGNORE INTO dailycat (guild_id) VALUES (?)', (guild.id,))
 
     conn.commit()
     conn.close()
