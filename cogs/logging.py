@@ -54,6 +54,10 @@ class LoggingCog(commands.Cog):
             c.execute('UPDATE logging SET log_deleted_messages = 1, log_edited_messages = 1, log_nickname_changes = 1, log_member_join_leave = 1, log_member_kick = 1, log_member_ban_unban = 1 WHERE guild_id = ?', (ctx.guild.id,))
             self.logging_settings[ctx.guild.id]['log_deleted_messages'] = True
             self.logging_settings[ctx.guild.id]['log_edited_messages'] = True
+            self.logging_settings[ctx.guild.id]['log_nickname_changes'] = True
+            self.logging_settings[ctx.guild.id]['log_member_join_leave'] = True
+            self.logging_settings[ctx.guild.id]['log_member_kick'] = True
+            self.logging_settings[ctx.guild.id]['log_member_ban_unban'] = True
         elif log_type == 'deleted_messages':
             c.execute('UPDATE logging SET log_deleted_messages = 1 WHERE guild_id = ?', (ctx.guild.id,))
             self.logging_settings[ctx.guild.id]['log_deleted_messages'] = True
@@ -91,6 +95,10 @@ class LoggingCog(commands.Cog):
             c.execute('UPDATE logging SET log_deleted_messages = 0, log_edited_messages = 0, log_nickname_changes = 0, log_member_join_leave = 0, log_member_kick = 0, log_member_ban_unban = 0 WHERE guild_id = ?', (ctx.guild.id,))
             self.logging_settings[ctx.guild.id]['log_deleted_messages'] = False
             self.logging_settings[ctx.guild.id]['log_edited_messages'] = False
+            self.logging_settings[ctx.guild.id]['log_nickname_changes'] = False
+            self.logging_settings[ctx.guild.id]['log_member_join_leave'] = False
+            self.logging_settings[ctx.guild.id]['log_member_kick'] = False
+            self.logging_settings[ctx.guild.id]['log_member_ban_unban'] = False
         elif log_type == 'deleted_messages':
             c.execute('UPDATE logging SET log_deleted_messages = 0 WHERE guild_id = ?', (ctx.guild.id,))
             self.logging_settings[ctx.guild.id]['log_deleted_messages'] = False
