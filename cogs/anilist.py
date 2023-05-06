@@ -22,7 +22,10 @@ class AniList(commands.Cog):
         content = message.content.strip()
         if not (content.startswith('{') and content.endswith('}')) and not (content.startswith('<') and content.endswith('>')):
             return
-
+        
+        if content.startswith('<#'):
+            return
+        
         media_type = 'ANIME' if content.startswith('{') else 'MANGA'
         start_index = 1
         end_index = len(content) - 1
