@@ -98,14 +98,18 @@ class AniList(commands.Cog):
             image_url = 'https://img.anili.st/media/' + str(data['id'])
             status = data['status']
             
-            start_date = f"{data['startDate']['month']}/{data['startDate']['day']}/{data['startDate']['year']}"
-            
-            if data['endDate']:
+            start_date = ''
+            if data['startDate']['year'] and data['startDate']['month'] and data['startDate']['day']:
+                start_date = f"{data['startDate']['month']}/{data['startDate']['day']}/{data['startDate']['year']}"
+
+            end_date = ''
+            if data['endDate'] and data['endDate']['year'] and data['endDate']['month'] and data['endDate']['day']:
                 end_date = f"{data['endDate']['month']}/{data['endDate']['day']}/{data['endDate']['year']}"
+
+            if end_date and status not in ['RELEASING', 'NOT_YET_RELEASED']:
                 footer_text = f"{media_type.capitalize()} • {status} • {start_date} - {end_date}"
             else:
                 footer_text = f"{media_type.capitalize()} • {status} • {start_date}"
-                
             
             embed = discord.Embed(description=f"[{title}]({url})", color=5814783)
             
