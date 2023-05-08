@@ -1,18 +1,32 @@
 import discord
 from discord.ext import commands, tasks
-import sqlite3
 import datetime
 import aiohttp
 import os
 from io import BytesIO
 from typing import Optional
+import psycopg2
+
+from utils.config import Config
+
+config = Config.from_env()
+
+db_host = config.db_host
+db_name = config.db_name
+db_user = config.db_user
+db_password = config.db_password
 
 
 
 class CatCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.conn = sqlite3.connect('data/MeowMix.db')
+        self.conn = psycopg2.connect(
+            host=db_host,
+            database=db_name,
+            user=db_user,
+            password=db_password,
+        )
         self.cache = {}
         self.update_cache()
         self.daily_cat.start()
@@ -37,7 +51,7 @@ class CatCog(commands.Cog):
             return
         guild_id = ctx.guild.id
         c = self.conn.cursor()
-        c.execute('SELECT * FROM dailycat WHERE guild_id=?', (guild_id,))
+        c.execute('SELECT * FROM dailycat WHERE guild_id= %s', (guild_id,))
         row = c.fetchone()
         if row:
             channel_id, post_time_str = row[1:]
@@ -55,7 +69,11 @@ class CatCog(commands.Cog):
             await ctx.send('Invalid hour or minute. Please enter a valid time.')
             return
         post_time = datetime.time(hour, minute)
-        c.execute('INSERT OR REPLACE INTO dailycat VALUES (?, ?, ?)', (guild_id, channel_id, post_time.strftime('%H:%M')))
+        c.execute(
+            'INSERT INTO dailycat (guild_id, channel_id, post_time) VALUES (%s, %s, %s) '
+            'ON CONFLICT (guild_id) DO UPDATE SET channel_id = %s, post_time = %s',
+            (guild_id, channel_id, post_time.strftime('%H:%M'), channel_id, post_time.strftime('%H:%M'))
+        )
         self.conn.commit()
         self.update_cache()
         await ctx.send(f"Daily cat posting set to {channel.mention} at {post_time.strftime('%H:%M')} server time.")
@@ -65,7 +83,7 @@ class CatCog(commands.Cog):
         """Stop daily cat posting"""
         guild_id = ctx.guild.id
         c = self.conn.cursor()
-        c.execute('DELETE FROM dailycat WHERE guild_id=?', (guild_id,))
+        c.execute('DELETE FROM dailycat WHERE guild_id=%s', (guild_id,))
         self.conn.commit()
         self.update_cache()
         await ctx.send('Daily cat posting stopped.')

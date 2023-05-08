@@ -1,12 +1,11 @@
 import discord
 import praw
 import random
-import asyncio
+
 
 from discord.ext.commands.context import Context
-from discord.ext.commands._types import BotT
 from discord.ext import commands
-from utils import permissions, http, default
+from utils import default
 
 
 with open('data/secrets.txt', 'r') as f:
@@ -23,10 +22,9 @@ sent_posts = []
 class hotposting (commands.Cog):
         def __init__(self, bot):
             self.bot: commands.AutoShardedBot = bot
-            self.config = default.load_json()
 
         @commands.command(help='Displays a random hot post from the "bois" subreddit.', usage='!bois')
-        async def bois(self, ctx: Context[BotT]):
+        async def bois(self, ctx: Context):
             if isinstance(ctx.channel, discord.DMChannel):
                 await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
                 return
@@ -45,7 +43,7 @@ class hotposting (commands.Cog):
             await ctx.send(embed=embed)
 
         @commands.command(help='Displays a random hot post from one of the subreddits: ThighCrushing, ThickThighs, thighdeology, Thigh_Brows, thighhighs, Thighs.', usage='!bois')
-        async def thigh(self, ctx: Context[BotT]):
+        async def thigh(self, ctx: Context):
             if isinstance(ctx.channel, discord.DMChannel):
                 await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
                 return
@@ -68,7 +66,7 @@ class hotposting (commands.Cog):
 
 
         @commands.command(help='Displays a random hot post from the "femboys" subreddit.', usage='!femboy')
-        async def femboys(self, ctx: Context[BotT]):
+        async def femboys(self, ctx: Context):
             if isinstance(ctx.channel, discord.DMChannel):
                 await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
                 return
@@ -87,7 +85,7 @@ class hotposting (commands.Cog):
             await ctx.send(embed=embed)
 
         @commands.command(help='Displays a random hot post from the specified subreddit.', usage='!hot [subreddit]')
-        async def hot(self, ctx: Context[BotT], subreddit: str):
+        async def hotpost(self, ctx: Context, subreddit: str):
             if isinstance(ctx.channel, discord.DMChannel):
                 await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
                 return

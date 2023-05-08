@@ -2,19 +2,18 @@ import discord
 
 from io import BytesIO
 from utils import default
-from discord.ext.commands.context import Context
-from discord.ext.commands._types import BotT
+from utils.default import CustomContext
 from discord.ext import commands
+from utils.data import DiscordBot
 
 
 class Discord_Info(commands.Cog):
     def __init__(self, bot):
-        self.bot: commands.AutoShardedBot = bot
-        self.config = default.load_json()
+        self.bot: DiscordBot = bot
 
     @commands.command(aliases=["av", "pfp"])
     @commands.guild_only()
-    async def avatar(self, ctx: Context[BotT], *, user: discord.Member = None):
+    async def avatar(self, ctx: CustomContext, *, user: discord.Member = None):
         """ Get the avatar of you or someone else """
         user = user or ctx.author
 
@@ -49,7 +48,29 @@ class Discord_Info(commands.Cog):
 
         await ctx.send(f"🖼 Avatar to **{user}**", embed=embed)
 
+    @commands.command()
+    @commands.guild_only()
+    async def mods(self, ctx: CustomContext):
+        """ Check which mods are online on current guild """
+        message = ""
+        all_status = {
+            "online": {"users": [], "emoji": "🟢"},
+            "idle": {"users": [], "emoji": "🟡"},
+            "dnd": {"users": [], "emoji": "🔴"},
+            "offline": {"users": [], "emoji": "⚫"}
+        }
 
+        for user in ctx.guild.members:
+            user_perm = ctx.channel.permissions_for(user)
+            if user_perm.kick_members or user_perm.ban_members:
+                if not user.bot:
+                    all_status[str(user.status)]["users"].append(f"**{user}**")
+
+        for g in all_status:
+            if all_status[g]["users"]:
+                message += f"{all_status[g]['emoji']} {', '.join(all_status[g]['users'])}\n"
+
+        await ctx.send(f"Mods in **{ctx.guild.name}**\n{message}")
 
 async def setup(bot):
     await bot.add_cog(Discord_Info(bot))

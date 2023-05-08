@@ -3,20 +3,41 @@ import json
 import discord
 import traceback
 
-from discord.ext.commands.context import Context
-from discord.ext.commands._types import BotT
+from discord.ext import commands
+from typing import TYPE_CHECKING
 from datetime import datetime
 from io import BytesIO
 
+if TYPE_CHECKING:
+    from utils.data import DiscordBot
 
-def load_json(filename: str = "data/config.json") -> dict:
+
+class CustomContext(commands.Context):
+    """
+    This class is used to overwrite discord.py's Context class.
+    You can add your own methods here.
+    Any functions you add will automatically become usable in ALL commands.
+
+    Example:
+    --------
+    def ping(self) -> str:
+        return "Hello world!"
+
+    @commands.command()
+    async def ping(self, ctx: CustomContext):
+        await ctx.send(f"Pong! {ctx.ping()}")
+    """
+    def __init__(self, **kwargs):
+        self.bot: "DiscordBot"
+        super().__init__(**kwargs)
+
+def load_json(filename: str = "config.json") -> dict:
     """ Fetch default config file """
     try:
         with open(filename, encoding='utf8') as data:
             return json.load(data)
     except FileNotFoundError:
         raise FileNotFoundError("JSON file wasn't found")
-
 
 def traceback_maker(err, advance: bool = True) -> str:
     """ A way to debug your code anywhere """
@@ -66,7 +87,7 @@ def actionmessage(case: str, mass: bool = False) -> str:
 
 
 async def pretty_results(
-    ctx: Context[BotT], filename: str = "Results",
+    ctx: CustomContext, filename: str = "Results",
     resultmsg: str = "Here's the results:", loop: list = None
 ) -> None:
     """ A prettier way to show loop results """
