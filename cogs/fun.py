@@ -127,7 +127,7 @@ class Fun_Commands(commands.Cog):
             beer_offer = f"{beer_offer}\n\n**Reason:** {reason}" if reason else beer_offer
             await msg.edit(content=beer_offer)
 
-    @commands.command(aliases=["howhot", "hot"])
+    @commands.command()
     async def hotcalc(self, ctx: CustomContext, *, user: discord.Member = None):
         """ Returns a random percent for how hot is a discord user """
         user = user or ctx.author
