@@ -85,7 +85,7 @@ class hotposting (commands.Cog):
             await ctx.send(embed=embed)
 
         @commands.command(help='Displays a random hot post from the specified subreddit.', usage='!hot [subreddit]')
-        async def hotpost(self, ctx: Context, subreddit: str):
+        async def hot(self, ctx: Context, subreddit: str):
             if isinstance(ctx.channel, discord.DMChannel):
                 await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
                 return
