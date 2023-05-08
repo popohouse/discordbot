@@ -3,21 +3,20 @@ import psutil
 import os
 
 from datetime import datetime
-from discord.ext.commands.context import Context
-from discord.ext.commands._types import BotT
+from utils.default import CustomContext
 from discord.ext import commands
 from discord.ext.commands import errors
 from utils import default
+from utils.data import DiscordBot
 
 
 class Events(commands.Cog):
     def __init__(self, bot):
-        self.bot: commands.AutoShardedBot = bot
-        self.config = default.load_json()
+        self.bot: DiscordBot = bot
         self.process = psutil.Process(os.getpid())
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx: Context[BotT], err: Exception):
+    async def on_command_error(self, ctx: CustomContext, err: Exception):
         if isinstance(err, errors.MissingRequiredArgument) or isinstance(err, errors.BadArgument):
             helper = str(ctx.invoked_subcommand) if ctx.invoked_subcommand else str(ctx.command)
             await ctx.send_help(helper)
@@ -30,13 +29,14 @@ class Events(commands.Cog):
                     "You attempted to make the command display more than 2,000 characters...",
                     "Both error and command will be ignored."
                 ]))
+
             error_channel_id = 1103199670437683210
             error_channel = self.bot.get_channel(error_channel_id)
             if error_channel is None:
                 print(f"Could not find channel with ID {error_channel_id}")
             else:    
                 await error_channel.send(f"Get fucked cunt random error in random discord \n{error}")
-                await ctx.send(f"There was an error processing the command ;-;")
+            await ctx.send(f"There was an error processing the command ;-;\n")
 
         elif isinstance(err, errors.CheckFailure):
             pass
@@ -58,10 +58,10 @@ class Events(commands.Cog):
         ), None)
 
         if to_send:
-            await to_send.send(self.config["join_message"])
+            await to_send.send(self.bot.config.discord_join_message)
 
     @commands.Cog.listener()
-    async def on_command(self, ctx: Context[BotT]):
+    async def on_command(self, ctx: CustomContext):
         location_name = ctx.guild.name if ctx.guild else "Private message"
         print(f"{location_name} > {ctx.author} > {ctx.message.clean_content}")
 
@@ -72,17 +72,17 @@ class Events(commands.Cog):
             self.bot.uptime = datetime.now()
 
         # Check if user desires to have something other than online
-        status = self.config["status_type"].lower()
+        status = self.bot.config.discord_status_type.lower()
         status_type = {"idle": discord.Status.idle, "dnd": discord.Status.dnd}
 
         # Check if user desires to have a different type of activity
-        activity = self.config["activity_type"].lower()
+        activity = self.bot.config.discord_activity_type.lower()
         activity_type = {"listening": 2, "watching": 3, "competing": 5}
 
         await self.bot.change_presence(
             activity=discord.Game(
                 type=activity_type.get(activity, 0),
-                name=self.config["activity"]
+                name=self.bot.config.discord_activity_name
             ),
             status=status_type.get(status, discord.Status.online)
         )

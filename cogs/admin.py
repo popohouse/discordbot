@@ -2,33 +2,21 @@ import aiohttp
 import discord
 import importlib
 import os
-import json
 
 from discord.ext import commands
-from discord.ext.commands.context import Context
-from discord.ext.commands._types import BotT
+from utils.default import CustomContext
 from utils import permissions, default, http
+from utils.data import DiscordBot
 
 
 class Admin(commands.Cog):
     def __init__(self, bot):
-        self.bot: commands.AutoShardedBot = bot
-        self.config = default.load_json()
-
-    def change_config_value(self, value: str, changeto: str) -> None:
-        """ Change a value from the configs """
-        config_name = "config.json"
-        with open(config_name, "r") as jsonFile:
-            data = json.load(jsonFile)
-
-        data[value] = changeto
-        with open(config_name, "w") as jsonFile:
-            json.dump(data, jsonFile, indent=2)
+        self.bot: DiscordBot = bot
 
     @commands.command()
-    async def amiadmin(self, ctx: Context[BotT]):
+    async def amiadmin(self, ctx: CustomContext):
         """ Are you an admin? """
-        if ctx.author.id in self.config["owners"]:
+        if ctx.author.id == self.bot.config.discord_owner_id:
             return await ctx.send(f"Yes **{ctx.author.name}** you are an admin! ✅")
 
         # Please do not remove this part.
@@ -41,7 +29,7 @@ class Admin(commands.Cog):
 
     @commands.command()
     @commands.check(permissions.is_owner)
-    async def load(self, ctx: Context[BotT], name: str):
+    async def load(self, ctx: CustomContext, name: str):
         """ Loads an extension. """
         try:
             await self.bot.load_extension(f"cogs.{name}")
@@ -51,7 +39,7 @@ class Admin(commands.Cog):
 
     @commands.command()
     @commands.check(permissions.is_owner)
-    async def unload(self, ctx: Context[BotT], name: str):
+    async def unload(self, ctx: CustomContext, name: str):
         """ Unloads an extension. """
         try:
             await self.bot.unload_extension(f"cogs.{name}")
@@ -61,7 +49,7 @@ class Admin(commands.Cog):
 
     @commands.command()
     @commands.check(permissions.is_owner)
-    async def reload(self, ctx: Context[BotT], name: str):
+    async def reload(self, ctx: CustomContext, name: str):
         """ Reloads an extension. """
         try:
             await self.bot.reload_extension(f"cogs.{name}")
@@ -70,31 +58,28 @@ class Admin(commands.Cog):
         await ctx.send(f"Reloaded extension **{name}.py**")
 
     @commands.command()
-    async def restart(self, ctx: Context[BotT]):
-        """ Shutdown the bot, in current setup this means will restart unless command is done twice in a row quickly"""
-        if ctx.author.id in self.config["owners"]:
-            await ctx.send('Restarting now dad')
-            await self.bot.close()
-
-        await ctx.send(f"You aren't my dad {ctx.author.mention}")
-        
-    @commands.command()
     @commands.check(permissions.is_owner)
-    async def reloadall(self, ctx: Context[BotT]):
+    async def reloadall(self, ctx: CustomContext):
         """ Reloads all extensions. """
         error_collection = []
         for file in os.listdir("cogs"):
-            if file.endswith(".py"):
-                name = file[:-3]
-                try:
-                    await self.bot.reload_extension(f"cogs.{name}")
-                except Exception as e:
-                    error_collection.append(
-                        [file, default.traceback_maker(e, advance=False)]
-                    )
+            if not file.endswith(".py"):
+                continue
+
+            name = file[:-3]
+            try:
+                await self.bot.reload_extension(f"cogs.{name}")
+            except Exception as e:
+                error_collection.append(
+                    [file, default.traceback_maker(e, advance=False)]
+                )
 
         if error_collection:
-            output = "\n".join([f"**{g[0]}** ```diff\n- {g[1]}```" for g in error_collection])
+            output = "\n".join([
+                f"**{g[0]}** ```diff\n- {g[1]}```"
+                for g in error_collection
+            ])
+
             return await ctx.send(
                 f"Attempted to reload all extensions, was able to reload, "
                 f"however the following failed...\n\n{output}"
@@ -104,7 +89,7 @@ class Admin(commands.Cog):
 
     @commands.command()
     @commands.check(permissions.is_owner)
-    async def reloadutils(self, ctx: Context[BotT], name: str):
+    async def reloadutils(self, ctx: CustomContext, name: str):
         """ Reloads a utils module. """
         name_maker = f"utils/{name}.py"
         try:
@@ -119,7 +104,7 @@ class Admin(commands.Cog):
 
     @commands.command()
     @commands.check(permissions.is_owner)
-    async def dm(self, ctx: Context[BotT], user: discord.User, *, message: str):
+    async def dm(self, ctx: CustomContext, user: discord.User, *, message: str):
         """ DM the user of your choice """
         try:
             await user.send(message)
@@ -129,37 +114,13 @@ class Admin(commands.Cog):
 
     @commands.group()
     @commands.check(permissions.is_owner)
-    async def change(self, ctx: Context[BotT]):
+    async def change(self, ctx: CustomContext):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(str(ctx.command))
 
-    @change.command(name="playing")
-    @commands.check(permissions.is_owner)
-    async def change_playing(self, ctx: Context[BotT], *, playing: str):
-        """ Change playing status. """
-        status = self.config["status_type"].lower()
-        status_type = {"idle": discord.Status.idle, "dnd": discord.Status.dnd}
-
-        activity = self.config["activity_type"].lower()
-        activity_type = {"listening": 2, "watching": 3, "competing": 5}
-
-        try:
-            await self.bot.change_presence(
-                activity=discord.Game(
-                    type=activity_type.get(activity, 0), name=playing
-                ),
-                status=status_type.get(status, discord.Status.online)
-            )
-            self.change_config_value("playing", playing)
-            await ctx.send(f"Successfully changed playing status to **{playing}**")
-        except discord.InvalidArgument as err:
-            await ctx.send(err)
-        except Exception as e:
-            await ctx.send(e)
-
     @change.command(name="username")
     @commands.check(permissions.is_owner)
-    async def change_username(self, ctx: Context[BotT], *, name: str):
+    async def change_username(self, ctx: CustomContext, *, name: str):
         """ Change username. """
         try:
             await self.bot.user.edit(username=name)
@@ -169,20 +130,19 @@ class Admin(commands.Cog):
 
     @change.command(name="nickname")
     @commands.check(permissions.is_owner)
-    async def change_nickname(self, ctx: Context[BotT], *, name: str = None):
+    async def change_nickname(self, ctx: CustomContext, *, name: str = None):
         """ Change nickname. """
         try:
             await ctx.guild.me.edit(nick=name)
             if name:
-                await ctx.send(f"Successfully changed nickname to **{name}**")
-            else:
-                await ctx.send("Successfully removed nickname")
+                return await ctx.send(f"Successfully changed nickname to **{name}**")
+            await ctx.send("Successfully removed nickname")
         except Exception as err:
             await ctx.send(err)
 
     @change.command(name="avatar")
     @commands.check(permissions.is_owner)
-    async def change_avatar(self, ctx: Context[BotT], url: str = None):
+    async def change_avatar(self, ctx: CustomContext, url: str = None):
         """ Change avatar. """
         if url is None and len(ctx.message.attachments) == 1:
             url = ctx.message.attachments[0].url
@@ -191,7 +151,7 @@ class Admin(commands.Cog):
 
         try:
             bio = await http.get(url, res_method="read")
-            await self.bot.user.edit(avatar=bio)
+            await self.bot.user.edit(avatar=bio.response)
             await ctx.send(f"Successfully changed the avatar. Currently using:\n{url}")
         except aiohttp.InvalidURL:
             await ctx.send("The URL is invalid...")

@@ -1,22 +1,20 @@
 import discord
 
-from utils import default
-from typing import Union
+from typing import Union, TYPE_CHECKING
 from discord.ext import commands
-from discord.ext.commands.context import Context
-from discord.ext.commands._types import BotT
 
-owners = default.load_json()["owners"]
+if TYPE_CHECKING:
+    from utils.default import CustomContext
 
 
-def is_owner(ctx: Context[BotT]) -> bool:
+def is_owner(ctx: "CustomContext") -> bool:
     """ Checks if the author is one of the owners """
-    return ctx.author.id in owners
+    return ctx.author.id == ctx.bot.config.discord_owner_id
 
 
-async def check_permissions(ctx: Context[BotT], perms, *, check=all) -> bool:
+async def check_permissions(ctx: "CustomContext", perms, *, check=all) -> bool:
     """ Checks if author has permissions to a permission """
-    if ctx.author.id in owners:
+    if ctx.author.id == ctx.bot.config.discord_owner_id:
         return True
 
     resolved = ctx.channel.permissions_for(ctx.author)
@@ -25,12 +23,12 @@ async def check_permissions(ctx: Context[BotT], perms, *, check=all) -> bool:
 
 def has_permissions(*, check=all, **perms) -> bool:
     """ discord.Commands method to check if author has permissions """
-    async def pred(ctx: Context[BotT]):
+    async def pred(ctx: "CustomContext"):
         return await check_permissions(ctx, perms, check=check)
     return commands.check(pred)
 
 
-async def check_priv(ctx: Context[BotT], member: discord.Member) -> Union[discord.Message, bool, None]:
+async def check_priv(ctx: "CustomContext", member: discord.Member) -> Union[discord.Message, bool, None]:
     """ Custom (weird) way to check permissions when handling moderation commands """
     try:
         # Self checks
@@ -44,8 +42,8 @@ async def check_priv(ctx: Context[BotT], member: discord.Member) -> Union[discor
             return False
 
         # Now permission check
-        if member.id in owners:
-            if ctx.author.id not in owners:
+        if member.id == ctx.bot.config.discord_owner_id:
+            if ctx.author.id != ctx.bot.config.discord_owner_id:
                 return await ctx.send(f"I can't {ctx.command.name} my creator ;-;")
             else:
                 pass
@@ -59,7 +57,7 @@ async def check_priv(ctx: Context[BotT], member: discord.Member) -> Union[discor
         pass
 
 
-def can_handle(ctx: Context[BotT], permission: str) -> bool:
+def can_handle(ctx: "CustomContext", permission: str) -> bool:
     """ Checks if bot has permissions or is in DMs right now """
     return isinstance(ctx.channel, discord.DMChannel) or \
         getattr(ctx.channel.permissions_for(ctx.guild.me), permission)

@@ -1,20 +1,27 @@
 import discord
 
-from utils import default
-from utils.data import Bot, HelpFormat
+from utils import config, data
 from utils.database import init_db
+config = config.Config.from_env(".env")
 
 #Hardcoded values for which guilds bot is allowed in, simply change this and @bot.check function in order to allow in all, done for while testing/deploying
 allowed_guilds = [1034456646614786139]
 #kitty kat server only
-config = default.load_json()
+
 print("Logging in...")
 
-bot = Bot(
-    command_prefix=config["prefix"], prefix=config["prefix"],
-    owner_ids=config["owners"], command_attrs=dict(hidden=True), help_command=HelpFormat(),
-    allowed_mentions=discord.AllowedMentions(roles=False, users=True, everyone=False),
-    intents=discord.Intents.all()
+bot = data.DiscordBot(
+    config=config, command_prefix=config.discord_prefix,
+    prefix=config.discord_prefix, command_attrs=dict(hidden=True),
+    help_command=data.HelpFormat(),
+    allowed_mentions=discord.AllowedMentions(
+        everyone=False, roles=False, users=True
+    ),
+    intents=discord.Intents(
+        # kwargs found at https://docs.pycord.dev/en/master/api.html?highlight=discord%20intents#discord.Intents
+        guilds=True, members=True, messages=True, reactions=True,
+        presences=True, message_content=True,
+    )
 )
 
 init_db(bot)
@@ -23,7 +30,7 @@ init_db(bot)
 async def check_guild(ctx):
     if ctx.guild is None:
         return True
-    if ctx.author.id in config["owners"]:
+    if ctx.author.id == config.discord_owner_id:
         return True
     if ctx.guild.id in allowed_guilds:
         return True
@@ -35,6 +42,6 @@ async def on_ready():
     print(f'{bot.user} is ready!')
 
 try:
-    bot.run(config["token"])
+    bot.run(config.discord_token)
 except Exception as e:
     print(f"Error when logging in: {e}")
