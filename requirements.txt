@@ -4,3 +4,4 @@ prawcore
 aiohttp
 psutil
 psycopg2
+python-dotenv

@@ -2,6 +2,8 @@
 cogs/eval.py
 .vscode/
 .env
+db/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -34,6 +36,7 @@ wheels/
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+docker-compose.yml
 
 # Installer logs
 pip-log.txt
