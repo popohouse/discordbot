@@ -116,7 +116,11 @@ class CatCog(commands.Cog):
         c = self.conn.cursor()
         c.execute('SELECT * FROM dailycat')
         rows = c.fetchall()
-        self.cache = {row[0]: row[1:] for row in rows}
+        self.cache = {}
+        for row in rows:
+            guild_id, channel_id, post_time_str = row
+            if channel_id is not None and post_time_str is not None:
+                self.cache[guild_id] = (channel_id, post_time_str)
 
 async def setup(bot):
     await bot.add_cog(CatCog(bot))

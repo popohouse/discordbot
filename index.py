@@ -1,12 +1,14 @@
 import discord
 
 from utils import config, data
-from utils.database import init_db
+from utils.database import create_tables, populate_tables, removed_while_offline, on_guild_remove, on_guild_join
 config = config.Config.from_env(".env")
 
 #Hardcoded values for which guilds bot is allowed in, simply change this and @bot.check function in order to allow in all, done for while testing/deploying
 allowed_guilds = [1034456646614786139]
 #kitty kat server only
+
+create_tables()
 
 print("Logging in...")
 
@@ -17,14 +19,10 @@ bot = data.DiscordBot(
     allowed_mentions=discord.AllowedMentions(
         everyone=False, roles=False, users=True
     ),
-    intents=discord.Intents(
-        # kwargs found at https://docs.pycord.dev/en/master/api.html?highlight=discord%20intents#discord.Intents
-        guilds=True, members=True, messages=True, reactions=True,
-        presences=True, message_content=True,
-    )
+    intents=discord.Intents.all()
 )
 
-init_db(bot)
+
 
 @bot.check
 async def check_guild(ctx):
@@ -40,6 +38,11 @@ async def check_guild(ctx):
 @bot.event 
 async def on_ready():
     print(f'{bot.user} is ready!')
+    populate_tables(bot)
+    removed_while_offline(bot)
+
+bot.add_listener(on_guild_remove)
+bot.add_listener(on_guild_join)
 
 try:
     bot.run(config.discord_token)

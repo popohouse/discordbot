@@ -23,7 +23,10 @@ class Config:
     db_user: str
     db_password: str
 
-
+    reddit_client_id: str
+    reddit_client_secret: str
+    reddit_user_agent: str
+    
     @classmethod
     def from_dict(self, **kwargs) -> "Config":
         """ Create a Config object from a dictionary. """

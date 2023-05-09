@@ -35,7 +35,7 @@ class Events(commands.Cog):
             if error_channel is None:
                 print(f"Could not find channel with ID {error_channel_id}")
             else:    
-                await error_channel.send(f"Get fucked cunt random error in random discord \n{error}")
+                await error_channel.send(f"Here is error sir \n{error}")
             await ctx.send(f"There was an error processing the command ;-;\n")
 
         elif isinstance(err, errors.CheckFailure):
