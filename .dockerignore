@@ -1,0 +1,10 @@
+.github
+.gitignore
+LICENSE
+README.md
+db/
+__pycache__/
+.env*
+debug.log
+docker-compose.yml
+docker-compose.yml.example
