@@ -18,15 +18,16 @@ class Config:
     discord_activity_type: str
     discord_status_type: str
 
-    db_host: str
-    db_name: str
-    db_user: str
-    db_password: str
+    postgres_host: str
+    postgres_name: str
+    postgres_user: str
+    postgres_password: str
 
     reddit_client_id: str
     reddit_client_secret: str
     reddit_user_agent: str
-    
+
+
     @classmethod
     def from_dict(self, **kwargs) -> "Config":
         """ Create a Config object from a dictionary. """

@@ -4,10 +4,10 @@ from utils.config import Config
 
 config = Config.from_env()
 
-db_host = config.db_host
-db_name = config.db_name
-db_user = config.db_user
-db_password = config.db_password
+db_host = config.postgres_host
+db_name = config.postgres_name
+db_user = config.postgres_user
+db_password = config.postgres_password
 
 def create_tables():
     conn = psycopg2.connect(
