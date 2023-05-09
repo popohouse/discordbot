@@ -5,14 +5,15 @@ import random
 
 from discord.ext.commands.context import Context
 from discord.ext import commands
-from utils import default
 
 
-with open('data/secrets.txt', 'r') as f:
-    secrets = f.read().splitlines()
-    client_id = secrets[0]
-    client_secret = secrets[1]
-    user_agent = secrets[2]
+from utils.config import Config
+
+config = Config.from_env()
+
+client_id = config.reddit_client_id
+client_secret = config.reddit_client_secret
+user_agent = config.reddit_user_agent
 
 reddit = praw.Reddit(client_id=client_id,
                      client_secret=client_secret,
