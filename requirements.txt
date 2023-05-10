@@ -3,6 +3,6 @@ praw
 prawcore
 aiohttp
 psutil
-psycopg2
 python-dotenv
 discord-py-interactions
+asyncpg

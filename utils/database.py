@@ -1,4 +1,4 @@
-import psycopg2
+import asyncpg
 
 from utils.config import Config
 
@@ -9,16 +9,15 @@ db_name = config.postgres_name
 db_user = config.postgres_user
 db_password = config.postgres_password
 
-def create_tables():
-    conn = psycopg2.connect(
+async def create_tables():
+    conn = await asyncpg.connect(
         host=db_host,
         database=db_name,
         user=db_user,
         password=db_password
     )
-    c = conn.cursor()
 
-    c.execute('''
+    await conn.execute('''
         CREATE TABLE IF NOT EXISTS logging (
             guild_id BIGINT PRIMARY KEY,
             channel_id BIGINT,
@@ -31,7 +30,7 @@ def create_tables():
         )
     ''')
     
-    c.execute('''
+    await conn.execute('''
         CREATE TABLE IF NOT EXISTS dailycat (
             guild_id BIGINT PRIMARY KEY,
             channel_id BIGINT,
@@ -39,79 +38,73 @@ def create_tables():
         )
     ''')
 
-    conn.commit()
-    conn.close()
+    await conn.close()
 
 
-def populate_tables(bot):
-    conn = psycopg2.connect(
+async def populate_tables(bot):
+    conn = await asyncpg.connect(
         host=db_host,
         database=db_name,
         user=db_user,
         password=db_password
     )
-    c = conn.cursor()
 
     for guild in bot.guilds:
-        c.execute('INSERT INTO logging (guild_id) VALUES (%s) ON CONFLICT DO NOTHING', (guild.id,))
-        c.execute('INSERT INTO dailycat (guild_id) VALUES (%s) ON CONFLICT DO NOTHING', (guild.id,))
+        await conn.execute('INSERT INTO logging (guild_id) VALUES ($1) ON CONFLICT DO NOTHING', guild.id)
+        await conn.execute('INSERT INTO dailycat (guild_id) VALUES ($1) ON CONFLICT DO NOTHING', guild.id)
 
-    conn.commit()
-    conn.close()
+    await conn.close()
 
-def removed_while_offline(bot):
-    conn = psycopg2.connect(
+async def removed_while_offline(bot):
+    conn = await asyncpg.connect(
         host=db_host,
         database=db_name,
         user=db_user,
         password=db_password
     )
-    c = conn.cursor()
+
     # Get a list of guild IDs from the database
-    c.execute('SELECT guild_id FROM logging')
-    db_guild_ids = [row[0] for row in c.fetchall()]
+    rows = await conn.fetch('SELECT guild_id FROM logging')
+    db_guild_ids = [row['guild_id'] for row in rows]
     # Get a list of guild IDs that the bot is currently a member of
     bot_guild_ids = [guild.id for guild in bot.guilds]
     # Find guild IDs that are in the database but not in the bot's current guilds
     removed_guild_ids = set(db_guild_ids) - set(bot_guild_ids)
     # Delete data for removed guilds
     for guild_id in removed_guild_ids:
-        c.execute('DELETE FROM logging WHERE guild_id = %s', (guild_id,))
-        c.execute('DELETE FROM dailycat WHERE guild_id = %s', (guild_id,))
+        await conn.execute('DELETE FROM logging WHERE guild_id = $1', guild_id)
+        await conn.execute('DELETE FROM dailycat WHERE guild_id = $1', guild_id)
     
-    conn.commit()
-    conn.close()
+
+    await conn.close()
 
 
 
 async def on_guild_remove(guild):
-    conn = psycopg2.connect(
+    conn = await asyncpg.connect(
         host=db_host,
         database=db_name,
         user=db_user,
         password=db_password
     )
-    c = conn.cursor()
 
-    c.execute('DELETE FROM logging WHERE guild_id = %s', (guild.id,))
-    c.execute('DELETE FROM dailycat WHERE guild_id = %s', (guild.id,))
 
-    conn.commit()
-    conn.close()
+    await conn.execute('DELETE FROM logging WHERE guild_id = $1', guild.id)
+    await conn.execute('DELETE FROM dailycat WHERE guild_id = $1', guild.id)
+
+    await conn.close()
 
 async def on_guild_join(guild):
-    conn = psycopg2.connect(
+    conn = await asyncpg.connect(
         host=db_host,
         database=db_name,
         user=db_user,
         password=db_password
     )
-    c = conn.cursor()
 
-    c.execute('INSERT INTO logging (guild_id) VALUES (%s) ON CONFLICT DO NOTHING', (guild.id,))
-    c.execute('INSERT INTO dailycat (guild_id) VALUES (%s) ON CONFLICT DO NOTHING', (guild.id,))
+    await conn.execute('INSERT INTO logging (guild_id) VALUES ($1) ON CONFLICT DO NOTHING', guild.id)
+    await conn.execute('INSERT INTO dailycat (guild_id) VALUES ($1) ON CONFLICT DO NOTHING', guild.id)
 
-    conn.commit()
-    conn.close()
+    await conn.close()
 
     

@@ -26,6 +26,7 @@ class hotposting (commands.Cog):
 
         @app_commands.command()
         async def bois(self, interaction: discord.Interaction):
+            """ Posts a tomboy"""
             if isinstance(interaction.channel, discord.DMChannel):
                 await interaction.response.send_message("This command does not work in DMs. Please use it in an NSFW channel.", ephemeral=True)
                 return
@@ -45,6 +46,7 @@ class hotposting (commands.Cog):
 
         @app_commands.command()
         async def thigh(self, interaction: discord.Interaction):
+            """Based thigh posting"""
             if isinstance(interaction.channel, discord.DMChannel):
                 await interaction.response.send_message("This command does not work in DMs. Please use it in an NSFW channel.", ephemeral=True)
                 return
@@ -68,6 +70,7 @@ class hotposting (commands.Cog):
 
         @app_commands.command()
         async def femboys(self, interaction: discord.Interaction):
+            """Posts a femboy"""
             if isinstance(interaction.channel, discord.DMChannel):
                 await interaction.response.send_message("This command does not work in DMs. Please use it in an NSFW channel.", ephemeral=True)
                 return
@@ -87,6 +90,7 @@ class hotposting (commands.Cog):
 
         @app_commands.command()
         async def hot(self, interaction: discord.Interaction, subreddit: str):
+            """Gets random hot post from specificed subbreddit"""
             if isinstance(interaction.channel, discord.DMChannel):
                 await interaction.response.send_message("This command does not work in DMs. Please use it in an NSFW channel.", ephemeral=True)
                 return

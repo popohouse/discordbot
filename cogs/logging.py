@@ -3,9 +3,8 @@ from discord import app_commands
 from discord.ext import commands
 
 from datetime import datetime
-import psycopg2
+import asyncpg
 
-import psycopg2
 
 from utils.config import Config
 
@@ -29,16 +28,16 @@ class LoggingCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        conn = psycopg2.connect(
+        conn = await asyncpg.connect(
             host=db_host,
             database=db_name,
             user=db_user,
             password=db_password
         )
-        c = conn.cursor()
 
-        c.execute('SELECT guild_id, channel_id, log_deleted_messages, log_edited_messages, log_nickname_changes, log_member_join_leave, log_member_kick, log_member_ban_unban FROM logging')
-        rows = c.fetchall()
+
+        rows = await conn.fetch('SELECT guild_id, channel_id, log_deleted_messages, log_edited_messages, log_nickname_changes, log_member_join_leave, log_member_kick, log_member_ban_unban FROM logging')
+
 
         for row in rows:
             guild_id = row[0]
@@ -60,30 +59,31 @@ class LoggingCog(commands.Cog):
                 'log_member_ban_unban': log_member_ban_unban
             }
 
-        conn.close()
+        await conn.close()
 
 
         #Manages of setting log channel
     @app_commands.command()
     async def logchan(self, interaction: discord.Interaction, channel: discord.TextChannel):
-        conn = psycopg2.connect(
+        """Set the channel you want logs to goto"""
+        conn = await asyncpg.connect(
             host=db_host,
             database=db_name,
             user=db_user,
             password=db_password
         )
-        c = conn.cursor()
 
-        c.execute('SELECT * FROM logging WHERE guild_id = %s', (interaction.guild.id,))
-        row = c.fetchone()
+
+        row = await conn.fetch('SELECT * FROM logging WHERE guild_id = $1', interaction.guild.id)
+
 
         if row:
-            c.execute('UPDATE logging SET channel_id = %s WHERE guild_id = %s', (channel.id, interaction.guild.id))
+            await conn.execute('UPDATE logging SET channel_id = $2 WHERE guild_id = $1', channel.id, interaction.guild.id)
         else:
-            c.execute('INSERT INTO logging (guild_id, channel_id) VALUES (%s, %s)', (interaction.guild.id, channel.id))
+            await conn.execute('INSERT INTO logging (guild_id, channel_id) VALUES ($1, $2)', interaction.guild.id, channel.id)
 
-        conn.commit()
-        conn.close()
+
+        await conn.close()
 
         if interaction.guild.id in self.logging_settings:
             self.logging_settings[interaction.guild.id]['channel_id'] = channel.id
@@ -103,16 +103,16 @@ class LoggingCog(commands.Cog):
             #Enable logs type
     @app_commands.command()
     async def log(self, interaction: discord.Interaction, log_type: str):
-        conn = psycopg2.connect(
+        """Turn on logging for any specific type"""
+        conn = await asyncpg.connect(
             host=db_host,
             database=db_name,
             user=db_user,
             password=db_password
         )
-        c = conn.cursor()
 
         if log_type == 'all':
-            c.execute('UPDATE logging SET log_deleted_messages = true, log_edited_messages = true, log_nickname_changes = true, log_member_join_leave = true, log_member_kick = true, log_member_ban_unban = true WHERE guild_id = %s', (interaction.guild.id,))
+            await conn.execute('UPDATE logging SET log_deleted_messages = true, log_edited_messages = true, log_nickname_changes = true, log_member_join_leave = true, log_member_kick = true, log_member_ban_unban = true WHERE guild_id = $1', interaction.guild.id)
             self.logging_settings[interaction.guild.id]['log_deleted_messages'] = True
             self.logging_settings[interaction.guild.id]['log_edited_messages'] = True
             self.logging_settings[interaction.guild.id]['log_nickname_changes'] = True
@@ -120,45 +120,45 @@ class LoggingCog(commands.Cog):
             self.logging_settings[interaction.guild.id]['log_member_kick'] = True
             self.logging_settings[interaction.guild.id]['log_member_ban_unban'] = True
         elif log_type == 'deleted_messages':
-            c.execute('UPDATE logging SET log_deleted_messages = true WHERE guild_id = %s', (interaction.guild.id,))
+            await conn.execute('UPDATE logging SET log_deleted_messages = true WHERE guild_id = $1', interaction.guild.id)
             self.logging_settings[interaction.guild.id]['log_deleted_messages'] = True
         elif log_type == 'edited_messages':
-            c.execute('UPDATE logging SET log_edited_messages = true WHERE guild_id = %s', (interaction.guild.id,))
+            await conn.execute('UPDATE logging SET log_edited_messages = true WHERE guild_id = $1', interaction.guild.id)
             self.logging_settings[interaction.guild.id]['log_edited_messages'] = True
         elif log_type == 'nickname_changes':
-            c.execute('UPDATE logging SET log_nickname_changes = true WHERE guild_id = %s', (interaction.guild.id,))
+            await conn.execute('UPDATE logging SET log_nickname_changes = true WHERE guild_id = $1', interaction.guild.id)
             self.logging_settings[interaction.guild.id]['log_nickname_changes'] = True
         elif log_type == 'member_join_leave':
-            c.execute('UPDATE logging SET log_member_join_leave = true WHERE guild_id = %s', (interaction.guild.id,))
+            await conn.execute('UPDATE logging SET log_member_join_leave = true WHERE guild_id = $1', interaction.guild.id)
             self.logging_settings[interaction.guild.id]['log_member_join_leave'] = True
         elif log_type == 'member_kick':
-            c.execute('UPDATE logging SET log_member_kick = true WHERE guild_id = %s', (interaction.guild.id,))
+            await conn.execute('UPDATE logging SET log_member_kick = true WHERE guild_id = $1', interaction.guild.id)
             self.logging_settings[interaction.guild.id]['log_member_kick'] = True
         elif log_type == 'member_ban_unban':
-            c.execute('UPDATE logging SET log_member_ban_unban = true WHERE guild_id = %s', (interaction.guild.id,))
+            await conn.execute('UPDATE logging SET log_member_ban_unban = true WHERE guild_id = $1', interaction.guild.id)
             self.logging_settings[interaction.guild.id]['log_member_ban_unban'] = True
         else:
             await interaction.response.send_message(f'Invalid log type: {log_type}')
             return
 
-        conn.commit()
-        conn.close()
+        await conn.close()
 
         await interaction.response.send_message(f'Enabled logging for {log_type}')
 
         #Disable log type
     @app_commands.command()
     async def nolog(self, interaction: discord.Interaction, log_type: str):
-        conn = psycopg2.connect(
+        """Turn off logging for any specific type"""
+        conn = await asyncpg.connect(
             host=db_host,
             database=db_name,
             user=db_user,
             password=db_password
         )
-        c = conn.cursor()
+
 
         if log_type == 'all':
-            c.execute('UPDATE logging SET log_deleted_messages = false, log_edited_messages = false, log_nickname_changes = false, log_member_join_leave = false, log_member_kick = false, log_member_ban_unban = false WHERE guild_id = %s', (interaction.guild.id,))
+            await conn.execute('UPDATE logging SET log_deleted_messages = false, log_edited_messages = false, log_nickname_changes = false, log_member_join_leave = false, log_member_kick = false, log_member_ban_unban = false WHERE guild_id = $1', interaction.guild.id)
             self.logging_settings[interaction.guild.id]['log_deleted_messages'] = False
             self.logging_settings[interaction.guild.id]['log_edited_messages'] = False
             self.logging_settings[interaction.guild.id]['log_nickname_changes'] = False
@@ -166,29 +166,28 @@ class LoggingCog(commands.Cog):
             self.logging_settings[interaction.guild.id]['log_member_kick'] = False
             self.logging_settings[interaction.guild.id]['log_member_ban_unban'] = False
         elif log_type == 'deleted_messages':
-            c.execute('UPDATE logging SET log_deleted_messages = false WHERE guild_id = %s', (interaction.guild.id,))
+            await conn.execute('UPDATE logging SET log_deleted_messages = false WHERE guild_id = $1', interaction.guild.id)
             self.logging_settings[interaction.guild.id]['log_deleted_messages'] = False
         elif log_type == 'edited_messages':
-            c.execute('UPDATE logging SET log_edited_messages = false WHERE guild_id = %s', (interaction.guild.id,))
+            await conn.execute('UPDATE logging SET log_edited_messages = false WHERE guild_id = $1', interaction.guild.id)
             self.logging_settings[interaction.guild.id]['log_edited_messages'] = False
         elif log_type == 'nickname_changes':
-            c.execute('UPDATE logging SET log_nickname_changes = false WHERE guild_id = %s', (interaction.guild.id,))
+            conn.execute('UPDATE logging SET log_nickname_changes = false WHERE guild_id = $1', interaction.guild.id)
             self.logging_settings[interaction.guild.id]['log_nickname_changes'] = False
         elif log_type == 'member_join_leave':
-            c.execute('UPDATE logging SET log_member_join_leave = false WHERE guild_id = %s', (interaction.guild.id,))
+            await conn.execute('UPDATE logging SET log_member_join_leave = false WHERE guild_id = $1', interaction.guild.id)
             self.logging_settings[interaction.guild.id]['log_member_join_leave'] = False
         elif log_type == 'member_kick':
-            c.execute('UPDATE logging SET log_member_kick = false WHERE guild_id = %s', (interaction.guild.id,))
+            await conn.execute('UPDATE logging SET log_member_kick = false WHERE guild_id = $1', interaction.guild.id)
             self.logging_settings[interaction.guild.id]['log_member_kick'] = False
         elif log_type == 'member_ban_unban':
-            c.execute('UPDATE logging SET log_member_ban_unban = false WHERE guild_id = %s', (interaction.guild.id,))
+            await conn.execute('UPDATE logging SET log_member_ban_unban = false WHERE guild_id = $1', interaction.guild.id)
             self.logging_settings[interaction.guild.id]['log_member_ban_unban'] = False
         else:
             await interaction.response.send_message(f'Invalid log type: {log_type}')
             return
 
-        conn.commit()
-        conn.close()
+        await conn.close()
 
         await interaction.response.send_message(f'Disabled logging for {log_type}')
 
@@ -227,7 +226,8 @@ class LoggingCog(commands.Cog):
         if guild_id in self.logging_settings and self.logging_settings[guild_id]['log_edited_messages']:
             channel_id = self.logging_settings[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
-            
+            if before.content == after.content:
+                return
             embed = discord.Embed(title="Message Edited", description=f"Message sent by {before.author.mention} in {before.channel.mention} was edited.\n\n**Before**\n{before.content}\n\n**After**\n[{after.content}]({after.jump_url})\n\n**Date**\n<t:{int(after.edited_at.timestamp())}>", color=discord.Color.orange())
             embed.set_author(name=before.author.display_name, icon_url=before.author.avatar.url)
             await channel.send(embed=embed)
