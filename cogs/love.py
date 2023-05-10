@@ -114,6 +114,7 @@ class Love(commands.Cog):
 
     @app_commands.command()
     async def pat(self, interaction: discord.Interaction, *, target: discord.Member=None):
+        """ Get headpats, or give headpats to a user"""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/pat') as response:
                 data = await response.json()

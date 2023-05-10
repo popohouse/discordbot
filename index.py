@@ -12,7 +12,9 @@ from utils.database import create_tables, populate_tables, removed_while_offline
 config = config.Config.from_env(".env")
 
 #create tables, important to init db here thx ily
-create_tables()
+
+asyncio.run(create_tables())
+
 # define bot
 bot = Bot(
     config=config, command_prefix=commands.when_mentioned_or(config.discord_prefix),
@@ -154,8 +156,8 @@ async def sync(
 @bot.event 
 async def on_ready():
     print(f'{bot.user} is ready!')
-    populate_tables(bot)
-    removed_while_offline(bot)
+    await populate_tables(bot)
+    await removed_while_offline(bot)
 
 bot.add_listener(on_guild_remove)
 bot.add_listener(on_guild_join)
