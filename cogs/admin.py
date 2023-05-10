@@ -30,90 +30,92 @@ class Admin(commands.Cog):
         await interaction.response.send_message(f"no, heck off {interaction.user.name}")
 
     @app_commands.command()
-    @commands.is_owner()
     async def load(self, interaction: discord.Interaction, name: str):
         """ Loads an extension. """
-        try:
-            await self.bot.load_extension(f"cogs.{name}")
-        except Exception as e:
-            return await interaction.response.send_message(default.traceback_maker(e))
-        await interaction.response.send_message(f"Loaded extension **{name}.py**")
+        if interaction.user.id == self.bot.config.discord_owner_id:
+            try:
+                await self.bot.load_extension(f"cogs.{name}")
+            except Exception as e:
+                return await interaction.response.send_message(default.traceback_maker(e))
+            await interaction.response.send_message(f"Loaded extension **{name}.py**")
+        await interaction.response.send_message(f"no, heck off {interaction.user.name}")
 
     @app_commands.command()
-    @commands.is_owner()
     async def unload(self, interaction: discord.Interaction, name: str):
         """ Unloads an extension. """
-        try:
-            await self.bot.unload_extension(f"cogs.{name}")
-        except Exception as e:
-            return await interaction.response.send_message(default.traceback_maker(e))
-        await interaction.response.send_message(f"Unloaded extension **{name}.py**")
-
+        if interaction.user.id == self.bot.config.discord_owner_id:
+            try:
+                await self.bot.unload_extension(f"cogs.{name}")
+            except Exception as e:
+                return await interaction.response.send_message(default.traceback_maker(e))
+            await interaction.response.send_message(f"Unloaded extension **{name}.py**")
+        await interaction.response.send_message(f"no, heck off {interaction.user.name}")
+        
     @app_commands.command()
-    @commands.is_owner()
     async def reload(self, interaction: discord.Interaction, name: str):
         """ Reloads an extension. """
-        try:
-            await self.bot.reload_extension(f"cogs.{name}")
-        except Exception as e:
-            return await interaction.response.send_message(default.traceback_maker(e))
-        await interaction.response.send_message(f"Reloaded extension **{name}.py**")
-
-    @app_commands.command()
-    @commands.is_owner()
-    async def reloadall(self, interaction: discord.Interaction):
-        """ Reloads all extensions. """
-        error_collection = []
-        for file in os.listdir("cogs"):
-            if not file.endswith(".py"):
-                continue
-
-            name = file[:-3]
+        if interaction.user.id == self.bot.config.discord_owner_id:
             try:
                 await self.bot.reload_extension(f"cogs.{name}")
             except Exception as e:
-                error_collection.append(
-                    [file, default.traceback_maker(e, advance=False)]
+                return await interaction.response.send_message(default.traceback_maker(e))
+            await interaction.response.send_message(f"Reloaded extension **{name}.py**")
+        await interaction.response.send_message(f"no, heck off {interaction.user.name}")
+    @app_commands.command()
+    async def reloadall(self, interaction: discord.Interaction):
+        """ Reloads all extensions. """
+        if interaction.user.id == self.bot.config.discord_owner_id:
+            error_collection = []
+            for file in os.listdir("cogs"):
+                if not file.endswith(".py"):
+                    continue
+
+                name = file[:-3]
+                try:
+                    await self.bot.reload_extension(f"cogs.{name}")
+                except Exception as e:
+                    error_collection.append(
+                        [file, default.traceback_maker(e, advance=False)]
+                    )
+
+            if error_collection:
+                output = "\n".join([
+                    f"**{g[0]}** ```diff\n- {g[1]}```"
+                    for g in error_collection
+                ])
+
+                return await interaction.response.send_message(
+                    f"Attempted to reload all extensions, was able to reload, "
+                    f"however the following failed...\n\n{output}"
                 )
 
-        if error_collection:
-            output = "\n".join([
-                f"**{g[0]}** ```diff\n- {g[1]}```"
-                for g in error_collection
-            ])
-
-            return await interaction.response.send_message(
-                f"Attempted to reload all extensions, was able to reload, "
-                f"however the following failed...\n\n{output}"
-            )
-
-        await interaction.response.send_message("Successfully reloaded all extensions")
-
+            await interaction.response.send_message("Successfully reloaded all extensions")
+        await interaction.response.send_message(f"no, heck off {interaction.user.name}")
     @app_commands.command()
-    @commands.is_owner()
     async def reloadutils(self, interaction: discord.Interaction, name: str):
         """ Reloads a utils module. """
-        name_maker = f"utils/{name}.py"
-        try:
-            module_name = importlib.import_module(f"utils.{name}")
-            importlib.reload(module_name)
-        except ModuleNotFoundError:
-            return await interaction.response.send_message(f"Couldn't find module named **{name_maker}**")
-        except Exception as e:
-            error = default.traceback_maker(e)
-            return await interaction.response.send_message(f"Module **{name_maker}** returned error and was not reloaded...\n{error}")
-        await interaction.response.send_message(f"Reloaded module **{name_maker}**")
-
+        if interaction.user.id == self.bot.config.discord_owner_id:
+            name_maker = f"utils/{name}.py"
+            try:
+                module_name = importlib.import_module(f"utils.{name}")
+                importlib.reload(module_name)
+            except ModuleNotFoundError:
+                return await interaction.response.send_message(f"Couldn't find module named **{name_maker}**")
+            except Exception as e:
+                error = default.traceback_maker(e)
+                return await interaction.response.send_message(f"Module **{name_maker}** returned error and was not reloaded...\n{error}")
+            await interaction.response.send_message(f"Reloaded module **{name_maker}**")
+        await interaction.response.send_message(f"no, heck off {interaction.user.name}")
     @app_commands.command()
-    @commands.is_owner()
     async def dm(self, interaction: discord.Interaction, user: discord.User, *, message: str):
         """ DM the user of your choice """
-        try:
-            await user.send(message)
-            await interaction.response.send_message(f"✉️ Sent a DM to **{user}**")
-        except discord.Forbidden:
-            await interaction.response.send_message("This user might be having DMs blocked or it's a bot account...")
-
+        if interaction.user.id == self.bot.config.discord_owner_id:
+            try:
+                await user.send(message)
+                await interaction.response.send_message(f"✉️ Sent a DM to **{user}**")
+            except discord.Forbidden:
+                await interaction.response.send_message("This user might be having DMs blocked or it's a bot account...")
+        await interaction.response.send_message(f"no, heck off {interaction.user.name}")
 
 async def setup(bot):
     await bot.add_cog(Admin(bot))
