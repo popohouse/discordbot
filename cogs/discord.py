@@ -1,9 +1,10 @@
 import discord
+from discord import app_commands
+from discord.ext import commands
 
 from io import BytesIO
 from utils import default
 from utils.default import CustomContext
-from discord.ext import commands
 from utils.data import DiscordBot
 
 
@@ -11,11 +12,11 @@ class Discord_Info(commands.Cog):
     def __init__(self, bot):
         self.bot: DiscordBot = bot
 
-    @commands.command(aliases=["av", "pfp"])
+    @app_commands.command()
     @commands.guild_only()
-    async def avatar(self, ctx: CustomContext, *, user: discord.Member = None):
+    async def avatar(self, interaction: discord.Interaction, *, user: discord.Member = None):
         """ Get the avatar of you or someone else """
-        user = user or ctx.author
+        user = user or interaction.user
 
         avatars_list = []
 
@@ -26,7 +27,7 @@ class Discord_Info(commands.Cog):
             return formats
 
         if not user.avatar and not user.guild_avatar:
-            return await ctx.send(f"**{user}** has no avatar set, at all...")
+            return await interaction.response.send_message(f"**{user}** has no avatar set, at all...")
 
         if user.avatar:
             avatars_list.append("**Account avatar:** " + " **-** ".join(
@@ -46,11 +47,11 @@ class Discord_Info(commands.Cog):
         embed.set_image(url=f"{user.display_avatar.with_size(256).with_static_format('png')}")
         embed.description = "\n".join(avatars_list)
 
-        await ctx.send(f"🖼 Avatar to **{user}**", embed=embed)
+        await interaction.response.send_message(f"🖼 Avatar to **{user}**", embed=embed)
 
-    @commands.command()
+    @app_commands.command()
     @commands.guild_only()
-    async def mods(self, ctx: CustomContext):
+    async def mods(self, interaction: discord.Interaction):
         """ Check which mods are online on current guild """
         message = ""
         all_status = {
@@ -60,8 +61,8 @@ class Discord_Info(commands.Cog):
             "offline": {"users": [], "emoji": "⚫"}
         }
 
-        for user in ctx.guild.members:
-            user_perm = ctx.channel.permissions_for(user)
+        for user in interaction.guild.members:
+            user_perm = interaction.channel.permissions_for(user)
             if user_perm.kick_members or user_perm.ban_members:
                 if not user.bot:
                     all_status[str(user.status)]["users"].append(f"**{user}**")
@@ -70,7 +71,7 @@ class Discord_Info(commands.Cog):
             if all_status[g]["users"]:
                 message += f"{all_status[g]['emoji']} {', '.join(all_status[g]['users'])}\n"
 
-        await ctx.send(f"Mods in **{ctx.guild.name}**\n{message}")
+        await interaction.response.send_message(f"Mods in **{interaction.guild.name}**\n{message}")
 
 async def setup(bot):
     await bot.add_cog(Discord_Info(bot))

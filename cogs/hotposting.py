@@ -1,10 +1,10 @@
 import discord
+from discord import app_commands
+from discord.ext import commands
+
 import praw
 import random
 
-
-from discord.ext.commands.context import Context
-from discord.ext import commands
 
 
 from utils.config import Config
@@ -24,13 +24,13 @@ class hotposting (commands.Cog):
         def __init__(self, bot):
             self.bot: commands.AutoShardedBot = bot
 
-        @commands.command(help='Displays a random hot post from the "bois" subreddit.', usage='!bois')
-        async def bois(self, ctx: Context):
-            if isinstance(ctx.channel, discord.DMChannel):
-                await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
+        @app_commands.command()
+        async def bois(self, interaction: discord.Interaction):
+            if isinstance(interaction.channel, discord.DMChannel):
+                await interaction.response.send_message("This command does not work in DMs. Please use it in an NSFW channel.", ephemeral=True)
                 return
-            if not ctx.channel.is_nsfw():
-                await ctx.send("Please run this command in a channel marked as NSFW.")
+            if not interaction.channel.is_nsfw():
+                await interaction.response.send_message("Please run this command in a channel marked as NSFW.", ephemeral=True)
                 return            
 
             hot_posts = list(reddit.subreddit('bois').hot(limit=100))
@@ -41,15 +41,15 @@ class hotposting (commands.Cog):
             sent_posts.append(post)
             embed = discord.Embed(title=post.title, url=post.shortlink, color=0xff4500)
             embed.set_image(url=post.url)
-            await ctx.send(embed=embed)
+            await interaction.response.send_message(embed=embed)
 
-        @commands.command(help='Displays a random hot post from one of the subreddits: ThighCrushing, ThickThighs, thighdeology, Thigh_Brows, thighhighs, Thighs.', usage='!bois')
-        async def thigh(self, ctx: Context):
-            if isinstance(ctx.channel, discord.DMChannel):
-                await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
+        @app_commands.command()
+        async def thigh(self, interaction: discord.Interaction):
+            if isinstance(interaction.channel, discord.DMChannel):
+                await interaction.response.send_message("This command does not work in DMs. Please use it in an NSFW channel.", ephemeral=True)
                 return
-            if not ctx.channel.is_nsfw():
-                await ctx.send("Please run this command in a channel marked as NSFW.")
+            if not interaction.channel.is_nsfw():
+                await interaction.response.send_message("Please run this command in a channel marked as NSFW.", ephemeral=True)
                 return
 
             subreddits = ['ThighCrushing', 'ThickThighs', 'thighdeology', 'Thigh_Brows', 'thighhighs', 'Thighs' ]
@@ -62,17 +62,17 @@ class hotposting (commands.Cog):
             sent_posts.append(post)
             embed = discord.Embed(title=post.title, url=post.shortlink, color=0xff4500)
             embed.set_image(url=post.url)
-            await ctx.send(embed=embed)
+            await interaction.response.send_message(embed=embed)
 
 
 
-        @commands.command(help='Displays a random hot post from the "femboys" subreddit.', usage='!femboy')
-        async def femboys(self, ctx: Context):
-            if isinstance(ctx.channel, discord.DMChannel):
-                await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
+        @app_commands.command()
+        async def femboys(self, interaction: discord.Interaction):
+            if isinstance(interaction.channel, discord.DMChannel):
+                await interaction.response.send_message("This command does not work in DMs. Please use it in an NSFW channel.", ephemeral=True)
                 return
-            if not ctx.channel.is_nsfw():
-                await ctx.send("Please run this command in a channel marked as NSFW.")
+            if not interaction.channel.is_nsfw():
+                await interaction.response.send_message("Please run this command in a channel marked as NSFW.", ephemeral=True)
                 return            
 
             hot_posts = list(reddit.subreddit('femboys').hot(limit=100))
@@ -83,15 +83,15 @@ class hotposting (commands.Cog):
             sent_posts.append(post)
             embed = discord.Embed(title=post.title, url=post.shortlink, color=0xff4500)
             embed.set_image(url=post.url)
-            await ctx.send(embed=embed)
+            await interaction.response.send_message(embed=embed)
 
-        @commands.command(help='Displays a random hot post from the specified subreddit.', usage='!hot [subreddit]')
-        async def hot(self, ctx: Context, subreddit: str):
-            if isinstance(ctx.channel, discord.DMChannel):
-                await ctx.send("This command does not work in DMs. Please use it in an NSFW channel.")
+        @app_commands.command()
+        async def hot(self, interaction: discord.Interaction, subreddit: str):
+            if isinstance(interaction.channel, discord.DMChannel):
+                await interaction.response.send_message("This command does not work in DMs. Please use it in an NSFW channel.", ephemeral=True)
                 return
-            if not ctx.channel.is_nsfw():
-                await ctx.send("Please run this command in a channel marked as NSFW.")
+            if not interaction.channel.is_nsfw():
+                await interaction.response.send_message("Please run this command in a channel marked as NSFW.", ephemeral=True)
                 return
             hot_posts = list(reddit.subreddit(subreddit).hot(limit=100))
             image_posts = [post for post in hot_posts if post.is_self == False and post.url.endswith(('.jpg', '.jpeg', '.png', '.webm', '.gif', '.mp4'))]
@@ -101,7 +101,7 @@ class hotposting (commands.Cog):
             sent_posts.append(post)
             embed = discord.Embed(title=post.title, url=post.shortlink, color=0xff4500)
             embed.set_image(url=post.url)
-            await ctx.send(embed=embed)
+            await interaction.response.send_message(embed=embed)
 
 
             
