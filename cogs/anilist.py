@@ -1,32 +1,18 @@
-import discord
 from discord.ext import commands
+from discord import AppCommandOptionType
 import aiohttp
 import re
+import discord
+from discord import app_commands
 
 class AniList(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot)-> None:
         self.bot = bot
+    def cog_unload(self):
+        self.bot.loop.create_task(self.session.close())    
+
+    async def search(self, interaction, media_type: str, search: str):
         self.session = aiohttp.ClientSession()
-
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author == self.bot.user:
-            return
-        if self.bot.user.mentioned_in(message):
-            return
-        
-        content = message.content.strip()
-        
-        if not (content.startswith('{') and content.endswith('}')) and not (content.startswith('<') and content.endswith('>')):
-            return
-        
-        if content.startswith('<#') or content.startswith('<:') or content.startswith('<@'):
-            return
-
-        media_type = 'ANIME' if content.startswith('{') else 'MANGA'
-        start_index = 1
-        end_index = len(content) - 1
-
         query = '''
         query ($search: String, $type: MediaType) {
           Media (search: $search, type: $type) {
@@ -60,8 +46,8 @@ class AniList(commands.Cog):
         '''
 
         variables = {
-            'search': content[start_index:end_index],
-            'type': media_type
+            'search': search,
+            'type': media_type.upper()
         }
 
         url = 'https://graphql.anilist.co'
@@ -70,7 +56,7 @@ class AniList(commands.Cog):
             data = json_data['data']['Media']
             
             if not data:
-                return await message.channel.send("This title doesn't exist.")
+                return await interaction.response.send_message("This title doesn't exist.")
             
             romaji_title = data['title'].get('romaji', '')
             english_title = data['title'].get('english', '')
@@ -88,13 +74,9 @@ class AniList(commands.Cog):
                 description = description[:350] + f'... [(more)]({url})'
             
             genres = ', '.join(data['genres'])
-            
-            #Don't allow hentai in sfw channels
-            if 'Hentai' in data['genres'] and not message.channel.is_nsfw():
-                await message.channel.send('Please check this series in a NSFW channel.')
-                return
+            if "hentai" in genres.lower():
+                return await interaction.response.send_message("Please run this in the nsfw channel.", ephemeral=True)        
                     
-
             image_url = 'https://img.anili.st/media/' + str(data['id'])
             status = data['status']
             
@@ -121,8 +103,16 @@ class AniList(commands.Cog):
             embed.set_image(url=image_url)
 
 
-            await message.channel.send(embed=embed)
+            await interaction.response.send_message(embed=embed)
+            await self.session.close()
 
+    @app_commands.command(name="anime", description="Search for an anime on AniList")
+    async def anime(self, interaction: discord.Interaction, search: str)-> None:
+        await self.search(interaction, "anime", search)
+
+    @app_commands.command(name="manga", description="Search for a manga on AniList")
+    async def manga(self, interaction: discord.Interaction, search: str)-> None:
+        await self.search(interaction, "manga", search)
 
 async def setup(bot):
     await bot.add_cog(AniList(bot))

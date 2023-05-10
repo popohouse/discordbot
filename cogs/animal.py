@@ -1,36 +1,33 @@
 import aiohttp
+import discord
+from discord import app_commands
+from discord.ext import commands
 
-from discord.ext import commands, tasks
-
-
-class AnimalCog(commands.Cog):
+class Animal(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.channel_id = None
 
-    @commands.command()
-    async def dog(self, ctx):
-        """ Post random dog image"""
+    @app_commands.command(name="dog", description="Post random dog image") 
+    async def dog(self, interaction: discord.Interaction)-> None:
         async with aiohttp.ClientSession() as session:
             async with session.get('https://random.dog/woof.json') as response:
                 dog = await response.json()
-                await ctx.send(dog['url'])
+                await interaction.response.send_message(dog['url'])
 
-    @commands.command()
-    async def fox(self, ctx):
-        """ Post random fox image"""
+    @app_commands.command(name="fox", description="Post random fox image")
+    async def fox(self, interaction: discord.Interaction)-> None:
         async with aiohttp.ClientSession() as session:
             async with session.get('https://randomfox.ca/floof/') as response:
                 fox = await response.json()
-                await ctx.send(fox['image'])
+                await interaction.response.send_message(fox['image'])
 
-    @commands.command()
-    async def duck(self, ctx):
-        """ Post random duck image"""
+    @app_commands.command(name="duck", description="Post random duck image")
+    async def duck(self, interaction: discord.Interaction)-> None:
         async with aiohttp.ClientSession() as session:
             async with session.get('https://random-d.uk/api/random') as response:
                 duck = await response.json()
-                await ctx.send(duck['url'])
-
+                await interaction.response.send_message(duck['url'])
+              
 async def setup(bot):
-    await bot.add_cog(AnimalCog(bot))
+    await bot.add_cog(Animal(bot))
