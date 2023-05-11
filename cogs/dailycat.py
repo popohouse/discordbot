@@ -19,7 +19,7 @@ db_password = config.postgres_password
 
 
 
-class CatCog(commands.Cog):
+class dailycat(commands.Cog):
     def __init__(self, bot)-> None:
         self.bot = bot
         self.conn = None
@@ -39,20 +39,26 @@ class CatCog(commands.Cog):
         self.daily_cat.cancel()
 
     @app_commands.command()
-    async def cat(self, interaction: discord.Interaction)-> None:
-        """ Post random cat image"""
-        async with aiohttp.ClientSession() as session:
-            async with session.get('https://api.thecatapi.com/v1/images/search') as response:
-                cat = await response.json()
-                await interaction.response.send_message(cat[0]['url'])
-
-
-    @app_commands.command()
-    async def dailycat(self, interaction: discord.Interaction, channel: Optional[discord.TextChannel] = None, hour: Optional[int] = None, minute: int = 0)-> None:
-        """Set the channel and time for daily cat posting"""
-        if channel is None and hour is None:
+    async def dailycat(self, interaction: discord.Interaction, channel: Optional[discord.TextChannel] = None, hour: Optional[int] = None, minute: int = 0, stop: Optional[bool] = False)-> None:
+        """Set channel and time or stop cat posting"""
+        if stop == True:
+            guild_id = interaction.guild_id
+            conn = await asyncpg.connect(
+                host=db_host,
+                database=db_name,
+                user=db_user,
+                password=db_password
+            )
+            await conn.execute('DELETE FROM dailycat WHERE guild_id=$1', guild_id)
+            await conn.close()
+            await self.update_cache()
+            await interaction.response.send_message('Daily cat posting stopped.')
+            return
+        
+        if channel is None and hour is None and stop is False:
             await interaction.response.send_message('Please set a channel or time.', ephemeral=True)
             return
+        
         guild_id = interaction.guild_id
         conn = await asyncpg.connect(
             host=db_host,
@@ -86,20 +92,6 @@ class CatCog(commands.Cog):
         await self.update_cache()
         await interaction.response.send_message(f"Daily cat posting set to {channel.mention} at {post_time.strftime('%H:%M')} server time.")
 
-    @app_commands.command()
-    async def stopdailycat(self, interaction: discord.Interaction)-> None:
-        """Stop daily cat posting"""
-        guild_id = interaction.guild_id
-        conn = await asyncpg.connect(
-            host=db_host,
-            database=db_name,
-            user=db_user,
-            password=db_password
-        )
-        await conn.execute('DELETE FROM dailycat WHERE guild_id=$1', guild_id)
-        await conn.close()
-        await self.update_cache()
-        await interaction.response.send_message('Daily cat posting stopped.')
 
     @tasks.loop(minutes=1)
     async def daily_cat(self)-> None:
@@ -139,7 +131,7 @@ class CatCog(commands.Cog):
                 self.cache[guild_id] = (channel_id, post_time_str)
 
 async def setup(bot):
-    cat_cog = CatCog(bot)
+    cat_cog = dailycat(bot)
     await cat_cog.setup()
     await bot.add_cog(cat_cog)
     

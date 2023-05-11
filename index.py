@@ -28,6 +28,7 @@ bot = Bot(
 
 bot.config = config
 
+
 class LoggingFormatter(logging.Formatter):
     # Colors
     black = "\x1b[30m"
@@ -158,6 +159,7 @@ async def on_ready():
     print(f'{bot.user} is ready!')
     await populate_tables(bot)
     await removed_while_offline(bot)
+
 
 bot.add_listener(on_guild_remove)
 bot.add_listener(on_guild_join)
