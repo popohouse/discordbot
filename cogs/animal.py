@@ -3,6 +3,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from typing import List
+import io
+import mimetypes
 
 class Animal(commands.Cog):
     def __init__(self, bot: commands.Bot)-> None:
@@ -15,6 +17,7 @@ class Animal(commands.Cog):
         app_commands.Choice(name="fox", value="fox"),
         app_commands.Choice(name="duck", value="duck"),
         app_commands.Choice(name="cat", value="cat"),
+        app_commands.Choice(name="hamster", value="hamster"),
     ])
 
     async def animal(self, interaction: discord.Interaction, choice: app_commands.Choice[str])-> None:
@@ -39,9 +42,21 @@ class Animal(commands.Cog):
 
         elif choice.value == ("cat"):
             async with aiohttp.ClientSession() as session:
-                async with session.get('https://api.thecatapi.com/v1/images/search') as response:
-                    cat = await response.json()
-                    await interaction.response.send_message(cat[0]['url'])
+                async with session.get('http://127.0.0.1:5888/cat') as response:
+                    image_data = await response.read()
+                    content_type = response.headers['Content-Type']
+                    extension = mimetypes.guess_extension(content_type)
+                    image_file = discord.File(io.BytesIO(image_data), filename=f"cat{extension}")
+                    await interaction.response.send_message(file=image_file)
+
+        elif choice.value == ("hamster"):
+            async with aiohttp.ClientSession() as session:
+                async with session.get('https://api.popo.house/hamster') as response:
+                    image_data = await response.read()
+                    content_type = response.headers['Content-Type']
+                    extension = mimetypes.guess_extension(content_type)
+                    image_file = discord.File(io.BytesIO(image_data), filename=f"hamster{extension}")
+                    await interaction.response.send_message(file=image_file)
 
 async def setup(bot):
     await bot.add_cog(Animal(bot))
