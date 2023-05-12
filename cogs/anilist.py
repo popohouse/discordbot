@@ -74,7 +74,7 @@ class AniList(commands.Cog):
                 description = description[:350] + f'... [(more)]({url})'
             
             genres = ', '.join(data['genres'])
-            if "hentai" in genres.lower():
+            if "hentai" in genres.lower() and interaction.channel.nsfw is False:
                 return await interaction.response.send_message("Please run this in the nsfw channel.", ephemeral=True)        
                     
             image_url = 'https://img.anili.st/media/' + str(data['id'])
