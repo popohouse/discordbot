@@ -83,6 +83,7 @@ class dailycat(commands.Cog):
             await interaction.response.send_message('Invalid hour or minute. Please enter a valid time.')
             return
         post_time = datetime.time(hour, minute)
+        channel_id = channel.id
         await conn.execute(
             'INSERT INTO dailycat (guild_id, channel_id, post_time) VALUES ($1, $2, $3) '
             'ON CONFLICT (guild_id) DO UPDATE SET channel_id = $2, post_time = $3',
