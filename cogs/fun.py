@@ -3,10 +3,11 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import secrets
-import asyncio
+import aiohttp
+import mimetypes
+import io
 
 from io import BytesIO
-from utils.default import CustomContext
 from utils import permissions, http
 from utils.data import DiscordBot
 
@@ -42,6 +43,28 @@ class Fun_Commands(commands.Cog):
 
         answer = random.choice(ballresponse)
         await interaction.response.send_message(f"🎱 **Question:** {question}\n**Answer:** {answer}")
+
+    @app_commands.command()
+    async def catmeme(self, interaction: discord.Interaction) -> None:
+            """Return cat meme"""
+            async with aiohttp.ClientSession() as session:
+                async with session.get('https://api.popo.house/catmeme') as response:
+                    image_data = await response.read()
+                    content_type = response.headers['Content-Type']
+                    extension = mimetypes.guess_extension(content_type)
+                    image_file = discord.File(io.BytesIO(image_data), filename=f"catmeme{extension}")
+                    await interaction.response.send_message(file=image_file)
+
+    @app_commands.command()
+    async def coffee(self, interaction: discord.Interaction) -> None:
+            """Return coffee releated image"""
+            async with aiohttp.ClientSession() as session:
+                async with session.get('https://api.popo.house/coffee') as response:
+                    image_data = await response.read()
+                    content_type = response.headers['Content-Type']
+                    extension = mimetypes.guess_extension(content_type)
+                    image_file = discord.File(io.BytesIO(image_data), filename=f"coffee{extension}")
+                    await interaction.response.send_message(file=image_file)
 
     @app_commands.command()
     async def urban(self, interaction: discord.Interaction, *, search: str):
