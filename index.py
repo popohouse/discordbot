@@ -117,7 +117,7 @@ async def load_cogs() -> None:
                 exception = f"{type(e).__name__}: {e}"
                 bot.logger.error(f"Failed to load extension {extension}\n{exception}")
 
-asyncio.run(load_cogs())
+
 
 @bot.command()
 @commands.guild_only()
@@ -159,7 +159,7 @@ async def on_ready():
     print(f'{bot.user} is ready!')
     await populate_tables(bot)
     await removed_while_offline(bot)
-
+    await load_cogs()
 
 bot.add_listener(on_guild_remove)
 bot.add_listener(on_guild_join)
