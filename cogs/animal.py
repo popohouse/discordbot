@@ -42,7 +42,7 @@ class Animal(commands.Cog):
 
         elif choice.value == ("cat"):
             async with aiohttp.ClientSession() as session:
-                async with session.get('http://127.0.0.1:5888/cat') as response:
+                async with session.get('https://api.popo.house/cat') as response:
                     image_data = await response.read()
                     content_type = response.headers['Content-Type']
                     extension = mimetypes.guess_extension(content_type)
