@@ -76,18 +76,6 @@ logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 bot.logger = logger
 
-@bot.event
-async def on_ready() -> None:
-    """
-    The code in this event is executed when the bot is ready.
-    """
-    bot.logger.info(f"Logged in as {bot.user.name}")
-    bot.logger.info(f"discord.py API version: {discord.__version__}")
-    bot.logger.info("-------------------")
-    if config["sync_commands_globally"]:
-        bot.logger.info("Syncing commands globally...")
-        await bot.tree.sync()
-
 bot.uptime = datetime.utcnow()
 
 #Anytime bot gets message
@@ -116,8 +104,6 @@ async def load_cogs() -> None:
             except Exception as e:
                 exception = f"{type(e).__name__}: {e}"
                 bot.logger.error(f"Failed to load extension {extension}\n{exception}")
-
-
 
 @bot.command()
 @commands.guild_only()
@@ -156,7 +142,7 @@ async def sync(
 #Runs when bot is ready
 @bot.event 
 async def on_ready():
-    print(f'{bot.user} is ready!')
+    await print(f'{bot.user} is ready!')
     await populate_tables(bot)
     await removed_while_offline(bot)
     await load_cogs()
