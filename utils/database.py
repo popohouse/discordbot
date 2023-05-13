@@ -37,6 +37,17 @@ async def create_tables():
             post_time TEXT
         )
     ''')
+    await conn.execute('''
+        CREATE TABLE IF NOT EXISTS reaction_roles (
+            id SERIAL PRIMARY KEY,
+            guild_id BIGINT NOT NULL,
+            message_id BIGINT NOT NULL,
+            emoji TEXT NOT NULL,
+            role_id BIGINT NOT NULL,
+            UNIQUE (guild_id, message_id, emoji)
+    );
+    
+    ''')
 
     await conn.close()
 
