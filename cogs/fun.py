@@ -167,6 +167,15 @@ class Fun_Commands(commands.Cog):
                 final_message = "It's a tie 🎲"
 
         await interaction.response.send_message(f"{results}\n> {final_message}")
+        
+    @app_commands.command()
+    async def inspire(self, interaction: discord.Interaction):
+        """Be inspired"""
+        async with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession() as session:
+                async with session.get('https://inspirobot.me/api?generate=true') as response:
+                    link = await response.text()
+                    await interaction.response.send_message(link)
 
 
 
