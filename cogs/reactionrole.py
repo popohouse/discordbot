@@ -18,7 +18,6 @@ class ReactionRoles(commands.Cog):
         self.bot.loop.create_task(self.cache_reaction_roles())
 
     async def cache_reaction_roles(self):
-        print("Reaction roles cache called")
         conn = await asyncpg.connect(
             host=db_host,
             database=db_name,
@@ -37,7 +36,6 @@ class ReactionRoles(commands.Cog):
                 self.reaction_roles[guild_id][message_id] = {}
             self.reaction_roles[guild_id][message_id][emoji] = role_id
         await conn.close()
-        print(row)
 
     @commands.hybrid_command(name="reactionrole")
     async def reactionrole_command(self, ctx, message_id: str, emoji: str, role: discord.Role):
@@ -71,7 +69,6 @@ class ReactionRoles(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        print("Reaction triggered no if")
         if payload.member.bot:
             return
 
@@ -80,14 +77,17 @@ class ReactionRoles(commands.Cog):
         emoji = str(payload.emoji)
 
         if guild_id in self.reaction_roles and message_id in self.reaction_roles[guild_id] and emoji in self.reaction_roles[guild_id][message_id]:
-            print("Correct reaction trigger")
             channel = self.bot.get_channel(payload.channel_id)
             message = await channel.fetch_message(message_id)
             await message.remove_reaction(emoji, payload.member)
             role_id = self.reaction_roles[guild_id][message_id][emoji]
             role = payload.member.guild.get_role(role_id)
             await payload.member.add_roles(role)
-    
+        elif guild_id in self.reaction_roles and message_id in self.reaction_roles[guild_id] and emoji not in self.reaction_roles[guild_id][message_id]:
+            channel = self.bot.get_channel(payload.channel_id)
+            message = await channel.fetch_message(message_id)
+            await message.remove_reaction(emoji, payload.member)
+
     @commands.Cog.listener()
     async def on_ready(bot):
         await bot.cache_reaction_roles()    
