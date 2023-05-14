@@ -15,8 +15,10 @@ class ReactionRoles(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.reaction_roles = {}
+        self.bot.loop.create_task(self.cache_reaction_roles())
 
     async def cache_reaction_roles(self):
+        print("Reaction roles cache called")
         conn = await asyncpg.connect(
             host=db_host,
             database=db_name,
@@ -35,9 +37,11 @@ class ReactionRoles(commands.Cog):
                 self.reaction_roles[guild_id][message_id] = {}
             self.reaction_roles[guild_id][message_id][emoji] = role_id
         await conn.close()
+        print(row)
 
     @commands.hybrid_command(name="reactionrole")
     async def reactionrole_command(self, ctx, message_id: str, emoji: str, role: discord.Role):
+        """Create reaction role"""
         message_id = int(message_id)
         message = await ctx.channel.fetch_message(message_id)
         await message.add_reaction(emoji)
@@ -67,6 +71,7 @@ class ReactionRoles(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        print("Reaction triggered no if")
         if payload.member.bot:
             return
 
@@ -75,13 +80,18 @@ class ReactionRoles(commands.Cog):
         emoji = str(payload.emoji)
 
         if guild_id in self.reaction_roles and message_id in self.reaction_roles[guild_id] and emoji in self.reaction_roles[guild_id][message_id]:
-            role_id = self.reaction_roles[guild_id][message_id][emoji]
-            role = payload.member.guild.get_role(role_id)
-            await payload.member.add_roles(role)
-
+            print("Correct reaction trigger")
             channel = self.bot.get_channel(payload.channel_id)
             message = await channel.fetch_message(message_id)
             await message.remove_reaction(emoji, payload.member)
+            role_id = self.reaction_roles[guild_id][message_id][emoji]
+            role = payload.member.guild.get_role(role_id)
+            await payload.member.add_roles(role)
+    
+    @commands.Cog.listener()
+    async def on_ready(bot):
+        await bot.cache_reaction_roles()    
+
 
 # Cleanup old reaction role from dB
 async def cleanup_reaction_roles(self):
@@ -114,6 +124,7 @@ async def on_message_delete(self, message):
 
     if message.guild.id in self.reaction_roles and message.id in self.reaction_roles[message.guild.id]:
         del self.reaction_roles[message.guild.id][message.id]    
+
 
 async def setup(bot):
     await bot.add_cog(ReactionRoles(bot))

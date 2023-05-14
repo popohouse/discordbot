@@ -8,7 +8,7 @@ from discord.ext import commands, tasks
 from utils import config, data
 from datetime import datetime
 
-from utils.database import create_tables, populate_tables, removed_while_offline, on_guild_remove, on_guild_join
+from utils.database import create_tables, populate_tables
 config = config.Config.from_env(".env")
 
 #create tables, important to init db here thx ily
@@ -142,13 +142,9 @@ async def sync(
 #Runs when bot is ready
 @bot.event 
 async def on_ready():
-    await print(f'{bot.user} is ready!')
+    print(f'{bot.user} is ready!')
     await populate_tables(bot)
-    await removed_while_offline(bot)
     await load_cogs()
-
-bot.add_listener(on_guild_remove)
-bot.add_listener(on_guild_join)
 
 try:
     bot.run(config.discord_token)
