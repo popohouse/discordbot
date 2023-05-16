@@ -44,7 +44,7 @@ class Animal(commands.Cog):
             async with aiohttp.ClientSession() as session:
                 async with session.get('https://api.popo.house/cat.json') as response:
                     catimg = await response.json()
-                    await interaction.response.send_message(catimg['url']) 
+                    await interaction.response.send_message(catimg['file']) 
 
         elif choice.value == ("hamster"):
             async with aiohttp.ClientSession() as session:
