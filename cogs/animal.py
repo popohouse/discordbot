@@ -42,9 +42,24 @@ class Animal(commands.Cog):
 
         elif choice.value == ("cat"):
             async with aiohttp.ClientSession() as session:
-                async with session.get('https://api.popo.house/cat.json') as response:
-                    catimg = await response.json()
-                    await interaction.response.send_message(catimg['file']) 
+                async with session.get('https://api.popo.house/cat') as response:
+                    image_data = await response.read()
+                    content_type = response.headers['Content-Type']
+            async with session.get('https://api.popo.house/cat') as response:
+                image_data = await response.read()
+                content_type = response.headers.get('Content-Type')
+
+                if content_type is None:
+                    # Handle the case where Content-Type is None
+                    await interaction.response.send_message("Failed to retrieve the image.")
+                else:
+                    extension = mimetypes.guess_extension(content_type)
+                    if extension is None:
+                        extension = '.jpg'  # Default extension if mimetype is not recognized
+                    image_file = discord.File(io.BytesIO(image_data), filename=f"cat{extension}")
+                    await interaction.response.send_message(file=image_file)
+
+
 
         elif choice.value == ("hamster"):
             async with aiohttp.ClientSession() as session:
