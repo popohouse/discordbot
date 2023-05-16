@@ -43,6 +43,7 @@ async def load_cogs() -> None:
                 exception = f"{type(e).__name__}: {e}"
                 logging.error(f"Failed to load extension {extension}\n{exception}")
 
+
 @bot.command()
 @commands.guild_only()
 @commands.is_owner()
