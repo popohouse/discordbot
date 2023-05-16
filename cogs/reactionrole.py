@@ -10,6 +10,7 @@ db_host = config.postgres_host
 db_name = config.postgres_name
 db_user = config.postgres_user
 db_password = config.postgres_password
+owner_id = config.discord_owner_id
 
 class ReactionRoles(commands.Cog):
     def __init__(self, bot):
@@ -40,7 +41,7 @@ class ReactionRoles(commands.Cog):
     @commands.hybrid_command(name="reactionrole")
     async def reactionrole_command(self, ctx, message_id: str, emoji: str, role: discord.Role):
         """Create reaction role"""
-        if interaction.user.id == self.bot.config.discord_owner_id:
+        if ctx.author.id == owner_id:
             message_id = int(message_id)
             message = await ctx.channel.fetch_message(message_id)
             await message.add_reaction(emoji)
@@ -69,7 +70,7 @@ class ReactionRoles(commands.Cog):
             self.reaction_roles[ctx.guild.id][message_id][str(emoji)] = role.id
         else:
             await ctx.send(f"Sir you are not popo")
-            
+
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         if payload.member.bot:
