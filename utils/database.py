@@ -66,5 +66,4 @@ async def populate_tables(bot):
 
     await conn.close()
 
-
     
