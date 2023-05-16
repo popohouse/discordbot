@@ -169,7 +169,7 @@ class Fun_Commands(commands.Cog):
         await interaction.response.send_message(f"{results}\n> {final_message}")
         
     @app_commands.command()
-    async def inspire(self, interaction: discord.Interaction):
+    async def inspired(self, interaction: discord.Interaction):
         """Be inspired"""
         async with aiohttp.ClientSession() as session:
             async with aiohttp.ClientSession() as session:
