@@ -2,7 +2,28 @@ version: "3"
 
 services:
   bot:
-    container_name: "discord_bot.py"
+    container_name: "MeowMix"
+    user: 1000:1000
     build: .
     volumes:
       - ./.env:/discord_bot/.env
+      - ./cogs:/discord_bot/cogs
+      - ./utils:/discord_bot/utils
+    depends_on: 
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres
+    container_name: "MeowMixdb"
+    restart: always
+    environment:
+      POSTGRES_USER: SameValueAsInEnv
+      POSTGRES_PASSWORD: SameValueAsInEnv
+    healthcheck:
+          test: ["CMD-SHELL", "pg_isready -U meowmix"]
+          interval: 10s
+          timeout: 5s
+          retries: 5 
+    volumes:
+      - ./db:/var/lib/postgresql/data/
