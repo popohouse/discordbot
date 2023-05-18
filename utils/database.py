@@ -48,6 +48,12 @@ async def create_tables():
     );
     
     ''')
+    await conn.execute(''' 
+        CREATE TABLE IF NOT EXISTS timezones (
+            user_id BIGINT PRIMARY KEY,
+            timezone TEXT NOT NULL
+        )
+    ''')
 
     await conn.close()
 

@@ -11,9 +11,6 @@ from datetime import datetime
 from utils.database import create_tables, populate_tables
 config = config.Config.from_env(".env")
 
-#create tables, important to init db here thx ily
-
-asyncio.run(create_tables())
 
 # define bot
 bot = Bot(
@@ -39,9 +36,11 @@ async def load_cogs() -> None:
             try:
                 await bot.load_extension(f"cogs.{extension}")
                 logging.info(f"Loaded extension '{extension}'")
+                print(f"Loaded extension '{extension}'")
             except Exception as e:
                 exception = f"{type(e).__name__}: {e}"
                 logging.error(f"Failed to load extension {extension}\n{exception}")
+                print(f"Failed to load extension {extension}\n{exception}")
 
 
 @bot.command()
@@ -82,6 +81,7 @@ async def sync(
 @bot.event 
 async def on_ready():
     print(f'{bot.user} is ready!')
+    await create_tables()
     await populate_tables(bot)
     await load_cogs()
 
