@@ -2,9 +2,11 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 
+
 import pytz
 import asyncpg
 from datetime import datetime
+from typing import Optional
 
 from utils.config import Config
 
@@ -45,17 +47,23 @@ class TimezoneCog(commands.Cog):
         await interaction.response.send_message(f"Timezone set to {timezone}", ephemeral=True)
 
     @app_commands.command()
-    async def gettime(self, interaction: discord.Interaction, member: discord.Member):
+    async def time(self, interaction: discord.Interaction, member: Optional[discord.Member] = None):
         """Get the time of a member"""
+        if member is None:
+            member = interaction.user
+        if member is interaction.user:
+            await interaction.response.send_message(f"Please set your timezone first", ephemeral=True)
         conn = await asyncpg.connect(
             host=db_host,
             database=db_name,
             user=db_user,
             password=db_password
         )
-    
+        
         record = await conn.fetchrow("SELECT timezone FROM timezones WHERE user_id = $1", member.id)
-        if not record:
+        if member is interaction.user and not record: 
+            await interaction.response.send_message(f"Please set your timezone first", ephemeral=True)
+        elif not record:
             await interaction.response.send_message(f"{member.display_name} has not set their timezone", ephemeral=True)
         else:
             timezone_name = record['timezone']
