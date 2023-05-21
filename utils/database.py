@@ -54,7 +54,12 @@ async def create_tables():
             timezone TEXT NOT NULL
         )
     ''')
-
+    await conn.execute(''' 
+        CREATE TABLE IF NOT EXISTS mod_role_id (
+            guild_id BIGINT PRIMARY KEY,
+            role_id BIGINT NOT NULL
+            )
+        ''')
     await conn.close()
 
 

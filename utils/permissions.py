@@ -6,58 +6,101 @@ from discord.ext import commands
 if TYPE_CHECKING:
     from utils.default import CustomContext
 
+from utils.config import Config
+import asyncpg
 
-def is_owner(ctx: "CustomContext") -> bool:
-    """ Checks if the author is one of the owners """
-    return ctx.author.id == ctx.bot.config.discord_owner_id
+config = Config.from_env()
 
+db_host = config.postgres_host
+db_name = config.postgres_name
+db_user = config.postgres_user
+db_password = config.postgres_password
 
-async def check_permissions(ctx: "CustomContext", perms, *, check=all) -> bool:
+async def check_permissions(interaction: discord.Interaction, perms, *, check=all) -> bool:
     """ Checks if author has permissions to a permission """
-    if ctx.author.id == ctx.bot.config.discord_owner_id:
+    if interaction.user.id == config.discord_owner_id:
         return True
 
-    resolved = ctx.channel.permissions_for(ctx.author)
-    return check(getattr(resolved, name, None) == value for name, value in perms.items())
+    # Check if user has required permissions
+    resolved = interaction.channel.permissions_for(interaction.user)
+    print(f"User permissions: {resolved}")
+    if check(getattr(resolved, name, None) == value for name, value in perms.items()):
+        return True
+
+    # Check if user belongs to mod role
+    conn = await asyncpg.connect(
+        host=db_host,
+        database=db_name,
+        user=db_user,
+        password=db_password
+    )
+    mod_role_id = await conn.fetchval('SELECT role_id FROM mod_role_id WHERE guild_id = $1', interaction.guild_id)
+    await conn.close()
+    print(f"Mod role ID: {mod_role_id}")
+    if mod_role_id is not None:
+        member = interaction.guild.get_member(interaction.user.id)
+        print(f"User roles: {[role.id for role in member.roles]}")
+        if any(role.id == mod_role_id for role in member.roles):
+            return True
+
+    return False
 
 
 def has_permissions(*, check=all, **perms) -> bool:
     """ discord.Commands method to check if author has permissions """
-    async def pred(ctx: "CustomContext"):
-        return await check_permissions(ctx, perms, check=check)
+    print(f"Checking permissions: {perms}")
+    async def pred(interaction: discord.Interaction):
+        return await check_permissions(interaction, perms, check=check)
     return commands.check(pred)
 
+async def check_priv(bot, interaction: discord.Interaction, target: discord.Member, perms) -> bool:
+    bot_member = interaction.guild.get_member(bot.user.id)
+    print(f"Bot member: {bot_member}")
+    # Self checks
+    if target.id == interaction.user.id:
+        await interaction.response.send_message(f"You can't {interaction.command.name} yourself")
+        return False
+    elif target.id == bot.user.id:
+        await interaction.response.send_message("So that's what you think of me huh..? sad ;-;")
+        return False
 
-async def check_priv(ctx: "CustomContext", member: discord.Member) -> Union[discord.Message, bool, None]:
-    """ Custom (weird) way to check permissions when handling moderation commands """
-    try:
-        # Self checks
-        if member.id == ctx.author.id:
-            return await ctx.send(f"You can't {ctx.command.name} yourself")
-        if member.id == ctx.bot.user.id:
-            return await ctx.send("So that's what you think of me huh..? sad ;-;")
+    # Check if user has mod role or required permission
+    has_mod_role = False
+    conn = await asyncpg.connect(
+        host=db_host,
+        database=db_name,
+        user=db_user,
+        password=db_password
+    )
+    mod_role_id = await conn.fetchval('SELECT role_id FROM mod_role_id WHERE guild_id = $1', interaction.guild_id)
+    await conn.close()
+    print(f"Mod role ID: {mod_role_id}")
+    if mod_role_id is not None:
+        member = interaction.guild.get_member(interaction.user.id)
+        print(f"User roles: {[role.id for role in member.roles]}")
+        if any(role.id == mod_role_id for role in member.roles):
+            has_mod_role = True
 
-        # Check if user bypasses
-        if ctx.author.id == ctx.guild.owner.id:
+    has_required_permission = all(getattr(interaction.channel.permissions_for(interaction.user), name, None) == value for name, value in perms.items())
+    print(f"User has required permission: {has_required_permission}")
+
+    if has_mod_role or has_required_permission:
+        # Check if target user is above user in role hierarchy
+        print(f"User top role: {interaction.user.top_role}")
+        print(f"Target top role: {target.top_role}")
+        if interaction.user.top_role <= target.top_role:
+            await interaction.response.send_message(f"Nope, you can't {interaction.command.name} someone higher than yourself.")
             return False
-
-        # Now permission check
-        if member.id == ctx.bot.config.discord_owner_id:
-            if ctx.author.id != ctx.bot.config.discord_owner_id:
-                return await ctx.send(f"I can't {ctx.command.name} my creator ;-;")
-            else:
-                pass
-        if member.id == ctx.guild.owner.id:
-            return await ctx.send(f"You can't {ctx.command.name} the owner, lol")
-        if ctx.author.top_role == member.top_role:
-            return await ctx.send(f"You can't {ctx.command.name} someone who has the same permissions as you...")
-        if ctx.author.top_role < member.top_role:
-            return await ctx.send(f"Nope, you can't {ctx.command.name} someone higher than yourself.")
-    except Exception:
-        pass
+        else:
+            return True
+    else:
+        await interaction.response.send_message(f"Not a mod sadchamp")
+        return False
 
 
-def can_handle(ctx: "CustomContext", permission: str) -> bool:
+
+
+def can_handle(interaction: discord.Interaction, permission: str) -> bool:
     """ Checks if bot has permissions or is in DMs right now """
-    return isinstance(ctx.channel, discord.DMChannel) or \
-        getattr(ctx.channel.permissions_for(ctx.guild.me), permission)
+    return isinstance(interaction.channel, discord.DMChannel) or \
+        getattr(interaction.channel.permissions_for(interaction.guild.me), permission)
