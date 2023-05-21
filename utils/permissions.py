@@ -23,7 +23,6 @@ async def check_permissions(interaction: discord.Interaction, perms, *, check=al
 
     # Check if user has required permissions
     resolved = interaction.channel.permissions_for(interaction.user)
-    print(f"User permissions: {resolved}")
     if check(getattr(resolved, name, None) == value for name, value in perms.items()):
         return True
 
@@ -36,10 +35,8 @@ async def check_permissions(interaction: discord.Interaction, perms, *, check=al
     )
     mod_role_id = await conn.fetchval('SELECT role_id FROM mod_role_id WHERE guild_id = $1', interaction.guild_id)
     await conn.close()
-    print(f"Mod role ID: {mod_role_id}")
     if mod_role_id is not None:
         member = interaction.guild.get_member(interaction.user.id)
-        print(f"User roles: {[role.id for role in member.roles]}")
         if any(role.id == mod_role_id for role in member.roles):
             return True
 
@@ -48,14 +45,22 @@ async def check_permissions(interaction: discord.Interaction, perms, *, check=al
 
 def has_permissions(*, check=all, **perms) -> bool:
     """ discord.Commands method to check if author has permissions """
-    print(f"Checking permissions: {perms}")
     async def pred(interaction: discord.Interaction):
         return await check_permissions(interaction, perms, check=check)
     return commands.check(pred)
 
 async def check_priv(bot, interaction: discord.Interaction, target: discord.Member, perms) -> bool:
+    if target is None:
+        member = interaction.guild.get_member(interaction.user.id)
+        has_required_permission = all(getattr(member.guild_permissions, name, None) == value for name, value in perms.items())
+
+        if has_required_permission:
+            return True
+        else:
+            await interaction.response.send_message(f"Not a mod sadchamp")
+            return False
+
     bot_member = interaction.guild.get_member(bot.user.id)
-    print(f"Bot member: {bot_member}")
     # Self checks
     if target.id == interaction.user.id:
         await interaction.response.send_message(f"You can't {interaction.command.name} yourself")
@@ -74,20 +79,15 @@ async def check_priv(bot, interaction: discord.Interaction, target: discord.Memb
     )
     mod_role_id = await conn.fetchval('SELECT role_id FROM mod_role_id WHERE guild_id = $1', interaction.guild_id)
     await conn.close()
-    print(f"Mod role ID: {mod_role_id}")
     if mod_role_id is not None:
         member = interaction.guild.get_member(interaction.user.id)
-        print(f"User roles: {[role.id for role in member.roles]}")
         if any(role.id == mod_role_id for role in member.roles):
             has_mod_role = True
 
     has_required_permission = all(getattr(interaction.channel.permissions_for(interaction.user), name, None) == value for name, value in perms.items())
-    print(f"User has required permission: {has_required_permission}")
 
     if has_mod_role or has_required_permission:
         # Check if target user is above user in role hierarchy
-        print(f"User top role: {interaction.user.top_role}")
-        print(f"Target top role: {target.top_role}")
         if interaction.user.top_role <= target.top_role:
             await interaction.response.send_message(f"Nope, you can't {interaction.command.name} someone higher than yourself.")
             return False
