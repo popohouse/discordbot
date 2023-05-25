@@ -5,7 +5,7 @@ import logging
 from typing import Literal, Optional
 from discord.ext.commands import Bot, Context, Greedy
 from discord.ext import commands, tasks
-from utils import config, data
+from utils import config
 from datetime import datetime
 
 from utils.database import create_tables, populate_tables

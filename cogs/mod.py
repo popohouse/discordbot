@@ -3,7 +3,6 @@ from discord import app_commands
 from typing import Optional
 
 from discord.ext import commands
-from utils.data import DiscordBot
 from utils import permissions, default
 from datetime import timedelta
 import re
@@ -29,8 +28,8 @@ class ActionReason(commands.Converter):
         return ret
     
 class Moderator(commands.Cog):
-    def __init__(self, bot):
-        self.bot: DiscordBot = bot
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
 
     @app_commands.command()
     @commands.guild_only()

@@ -63,6 +63,7 @@ class LoggingCog(commands.Cog):
 
     #Log command
     @app_commands.command()
+    @commands.guild_only()
     @app_commands.choices(log_type=[
         app_commands.Choice(name="all", value="all"),
         app_commands.Choice(name="deleted_message", value="log_deleted_messages"),

@@ -9,12 +9,12 @@ import io
 
 from io import BytesIO
 from utils import permissions, http
-from utils.data import DiscordBot
+
 
 
 class Fun_Commands(commands.Cog):
-    def __init__(self, bot):
-        self.bot: DiscordBot = bot
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
 
     @app_commands.command()
     async def rate(self, interaction: discord.Interaction, *, thing: str):

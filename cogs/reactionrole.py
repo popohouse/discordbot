@@ -39,6 +39,7 @@ class ReactionRoles(commands.Cog):
         await conn.close()
 
     @commands.hybrid_command(name="reactionrole")
+    @commands.guild_only()
     async def reactionrole_command(self, ctx, message_id: str, emoji: str, role: discord.Role):
         """Create reaction role"""
         if ctx.author.id == owner_id:

@@ -25,6 +25,7 @@ class hotposting (commands.Cog):
             self.bot: commands.AutoShardedBot = bot
 
         @app_commands.command()
+        @commands.guild_only()
         async def bois(self, interaction: discord.Interaction):
             """ Posts a tomboy"""
             if isinstance(interaction.channel, discord.DMChannel):
@@ -45,6 +46,7 @@ class hotposting (commands.Cog):
             await interaction.response.send_message(embed=embed)
 
         @app_commands.command()
+        @commands.guild_only()
         async def thigh(self, interaction: discord.Interaction):
             """Based thigh posting"""
             if isinstance(interaction.channel, discord.DMChannel):
@@ -69,6 +71,7 @@ class hotposting (commands.Cog):
 
 
         @app_commands.command()
+        @commands.guild_only()
         async def femboys(self, interaction: discord.Interaction):
             """Posts a femboy"""
             if isinstance(interaction.channel, discord.DMChannel):
@@ -89,6 +92,7 @@ class hotposting (commands.Cog):
             await interaction.response.send_message(embed=embed)
 
         @app_commands.command()
+        @commands.guild_only()
         async def hot(self, interaction: discord.Interaction, subreddit: str):
             """Gets random hot post from specificed subbreddit"""
             if isinstance(interaction.channel, discord.DMChannel):

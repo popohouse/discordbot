@@ -26,6 +26,7 @@ class TimezoneCog(commands.Cog):
 
 
     @app_commands.command()
+    @commands.guild_only()
     async def settime(self, interaction: discord.Interaction, timezone: str):
         """Set your timezone"""
         if timezone not in pytz.all_timezones:
@@ -47,6 +48,7 @@ class TimezoneCog(commands.Cog):
         await interaction.response.send_message(f"Timezone set to {timezone}", ephemeral=True)
 
     @app_commands.command()
+    @commands.guild_only()
     async def time(self, interaction: discord.Interaction, member: Optional[discord.Member] = None):
         """Get the time of a member"""
         if member is None:
@@ -73,6 +75,7 @@ class TimezoneCog(commands.Cog):
             await interaction.response.send_message(f"The current time for {member.display_name} is {time_str}", ephemeral=True)
 
     @app_commands.command()
+    @commands.guild_only()
     async def deltime(self, interaction: discord.Interaction):
         """Remove your timezone from the database"""
         conn = await asyncpg.connect(

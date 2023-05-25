@@ -6,14 +6,13 @@ import importlib
 import os
 
 from discord.ext import commands
-from utils.default import CustomContext
-from utils import permissions, default, http
-from utils.data import DiscordBot
+from utils import default
+
 
 
 class Admin(commands.Cog):
-    def __init__(self, bot):
-        self.bot: DiscordBot = bot
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
 
     @app_commands.command()
     async def amiadmin(self, interaction: discord.Interaction):

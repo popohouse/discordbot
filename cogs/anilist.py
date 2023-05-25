@@ -107,10 +107,12 @@ class AniList(commands.Cog):
             await self.session.close()
 
     @app_commands.command(name="anime", description="Search for an anime on AniList")
+    @commands.guild_only()
     async def anime(self, interaction: discord.Interaction, search: str)-> None:
         await self.search(interaction, "anime", search)
 
     @app_commands.command(name="manga", description="Search for a manga on AniList")
+    @commands.guild_only()
     async def manga(self, interaction: discord.Interaction, search: str)-> None:
         await self.search(interaction, "manga", search)
 

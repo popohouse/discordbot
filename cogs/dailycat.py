@@ -39,6 +39,7 @@ class dailycat(commands.Cog):
         self.daily_cat.cancel()
 
     @app_commands.command()
+    @commands.guild_only()
     async def dailycat(self, interaction: discord.Interaction, channel: Optional[discord.TextChannel] = None, hour: Optional[int] = None, minute: int = 0, stop: Optional[bool] = False)-> None:
         """Set channel and time or stop cat posting"""
         if stop == True:

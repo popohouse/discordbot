@@ -12,6 +12,7 @@ class StoryCog(commands.Cog):
         self.channel_id = None
 
     @app_commands.command()
+    @commands.guild_only()
     async def story(self, interaction: discord.Interaction, channel: discord.TextChannel)-> None:
         """Used with one word story to get a text file of all current messages. Usage: !story channelid"""
         messages = []

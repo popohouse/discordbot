@@ -2,15 +2,12 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from io import BytesIO
-from utils import default
-from utils.default import CustomContext
-from utils.data import DiscordBot
+
 
 
 class Discord_Info(commands.Cog):
-    def __init__(self, bot):
-        self.bot: DiscordBot = bot
+    def __init__(self, bot: commands.Bot)-> None:
+        self.bot = bot
 
     @app_commands.command()
     @commands.guild_only()

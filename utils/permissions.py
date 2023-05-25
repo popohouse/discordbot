@@ -1,10 +1,7 @@
 import discord
 
-from typing import Union, TYPE_CHECKING
 from discord.ext import commands
 
-if TYPE_CHECKING:
-    from utils.default import CustomContext
 
 from utils.config import Config
 import asyncpg
