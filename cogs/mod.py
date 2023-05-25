@@ -40,8 +40,12 @@ class Moderator(commands.Cog):
             return
 
         try:
+            dm_channel = await target.create_dm()
+            await dm_channel.send(f"You have been kicked from {interaction.guild.name}. Reason: {reason}")
+            
             await target.kick(reason=default.responsible(interaction.user, reason))
             await interaction.response.send_message(default.actionmessage("kicked"))
+
         except Exception as e:
             await print(e)
 
@@ -64,6 +68,12 @@ class Moderator(commands.Cog):
         amount = int(amount)
         unit = unit or 'm'
 
+        unit_names = {
+            'm': ('minute', 'minutes'),
+            'h': ('hour', 'hours'),
+            'd': ('day', 'days')
+        }
+
         if unit == 'm':
             timeout_duration = timedelta(minutes=amount)
         elif unit == 'h':
@@ -78,6 +88,11 @@ class Moderator(commands.Cog):
         try:
             await target.timeout(timeout_duration, reason=default.responsible(interaction.user, reason))
             await interaction.response.send_message(default.actionmessage("timed out"))
+
+            unit_name = unit_names[unit][1] if amount > 1 else unit_names[unit][0]
+            dm_channel = await target.create_dm()
+            await dm_channel.send(f"You have been timed out in {interaction.guild.name} for {amount} {unit_name}. Reason: {reason}")
+            
         except Exception as e:
             print(e)
 
