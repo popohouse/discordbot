@@ -22,7 +22,7 @@ bot = Bot(
     ),
     intents=discord.Intents.all()
 )
-
+bot.uptime = datetime.utcnow()
 bot.config = config
 
 #load the commands
