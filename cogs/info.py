@@ -119,7 +119,7 @@ class Information(commands.Cog):
         )
         embed.add_field(name="Library", value="discord.py")
         embed.add_field(name="Servers", value=f"{len(self.bot.guilds)} ( avg: {avgmembers:,.2f} users/server )")
-        embed.add_field(name="Commands loaded", value=len([x.name for x in self.bot.commands]))
+        embed.add_field(name="Commands loaded", value=len(self.bot.tree.get_commands()))
         embed.add_field(name="RAM", value=f"{ramUsage:.2f} MB")
 
         await interaction.response.send_message(content=f"ℹ About **{self.bot.user}**", embed=embed)
