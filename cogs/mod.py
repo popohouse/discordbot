@@ -5,7 +5,8 @@ from typing import Optional
 from discord.ext import commands
 from utils.data import DiscordBot
 from utils import permissions, default
-
+from datetime import timedelta
+import re
 import asyncpg 
 from utils.config import Config
 
@@ -45,10 +46,48 @@ class Moderator(commands.Cog):
         except Exception as e:
             await print(e)
 
+
+
+    @app_commands.command()
+    @commands.guild_only()
+    @permissions.has_permissions(moderate_members=True)
+    async def timeout(self, interaction: discord.Interaction, target: discord.Member, duration: str, *, reason: Optional[str] = None):
+        """ Timeouts a user in the current server. """
+        if not await permissions.check_priv(self.bot, interaction, target, {"moderate_members": True}):
+            return
+
+        match = re.match(r'(\d+)([mhd])?', duration)
+        if not match:
+            await interaction.response.send_message("Invalid duration format. Use a number followed by m (minutes), h (hours), or d (days).")
+            return
+
+        amount, unit = match.groups()
+        amount = int(amount)
+        unit = unit or 'm'
+
+        if unit == 'm':
+            timeout_duration = timedelta(minutes=amount)
+        elif unit == 'h':
+            timeout_duration = timedelta(hours=amount)
+        elif unit == 'd':
+            timeout_duration = timedelta(days=amount)
+
+        if timeout_duration > timedelta(days=27):
+            await interaction.response.send_message("The maximum timeout duration is 27 days.")
+            return
+
+        try:
+            await target.timeout(timeout_duration, reason=default.responsible(interaction.user, reason))
+            await interaction.response.send_message(default.actionmessage("timed out"))
+        except Exception as e:
+            print(e)
+
+
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
     async def modrole(self, interaction: discord.Interaction, role: discord.Role):
+            """ Set the mod role, allows to run all mod commands"""
             if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
                 return
             role_id = role.id
