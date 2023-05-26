@@ -10,7 +10,7 @@ import asyncpg
 config = Config.from_env()
 
 db_host = config.postgres_host
-db_name = config.postgres_name
+db_name = config.postgres_database
 db_user = config.postgres_user
 db_password = config.postgres_password
 
