@@ -13,11 +13,7 @@ class Config:
     discord_prefix: str
     discord_owner_id: int
     discord_join_message: str
-
-    discord_activity_name: str
-    discord_activity_type: str
-    discord_status_type: str
-
+    
     postgres_host: str
     postgres_name: str
     postgres_user: str

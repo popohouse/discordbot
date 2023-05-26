@@ -3,7 +3,6 @@ version: "3"
 services:
   bot:
     container_name: "MeowMix"
-    user: 1000:1000
     build: .
     volumes:
       - ./.env:/discord_bot/.env
@@ -17,9 +16,11 @@ services:
     image: postgres
     container_name: "MeowMixdb"
     restart: always
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: SameValueAsInEnv
-      POSTGRES_PASSWORD: SameValueAsInEnv
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
           test: ["CMD-SHELL", "pg_isready -U meowmix"]
           interval: 10s
