@@ -27,7 +27,7 @@ async def check_permissions(interaction: discord.Interaction, perms, *, check=al
 
     if check(getattr(resolved, name, None) == value for name, value in perms.items()):
         return True
-
+    
     # Check if user belongs to mod role, but only if 'manage_guild' is not being checked
     if 'manage_guild' not in perms:
         conn = await asyncpg.connect(
@@ -55,7 +55,7 @@ def has_permissions(*, check=all, **perms) -> bool:
         return await check_permissions(interaction, perms, check=check)
     return commands.check(pred)
 
-async def check_priv(bot, interaction: discord.Interaction, target: discord.Member, perms) -> bool:
+async def check_priv(bot, interaction: discord.Interaction, target: discord.Member, perms, skip_self_checks=False) -> bool:
     # mod role check :)
     has_mod_role = False
     conn = await asyncpg.connect(
@@ -70,8 +70,7 @@ async def check_priv(bot, interaction: discord.Interaction, target: discord.Memb
         member = interaction.guild.get_member(interaction.user.id)
         if any(role.id == mod_role_id for role in member.roles):
             has_mod_role = True
-    
-    
+
     if 'manage_guild' in perms:
         member = interaction.guild.get_member(interaction.user.id)
         has_required_permission = all(getattr(member.guild_permissions, name, None) == value for name, value in perms.items())
@@ -86,16 +85,19 @@ async def check_priv(bot, interaction: discord.Interaction, target: discord.Memb
             return False
 
     # Self checks
-    if target.id == interaction.user.id:
-        await interaction.response.send_message(f"You can't {interaction.command.name} yourself")
-        return False
-    elif target.id == bot.user.id:
-        await interaction.response.send_message("So that's what you think of me huh..? sad ;-;")
-        return False
-    
+    if not skip_self_checks:
+        if target.id == interaction.user.id:
+            await interaction.response.send_message(f"You can't {interaction.command.name} yourself")
+            return False
+        elif target.id == bot.user.id:
+            await interaction.response.send_message("So that's what you think of me huh..? sad ;-;")
+            return False
+
     # Has Req perm check before following block
     has_required_permission = all(getattr(interaction.channel.permissions_for(interaction.user), name, None) == value for name, value in perms.items())
-
+    if has_mod_role or has_required_permission and skip_self_checks:
+        return True
+    
     if has_mod_role or has_required_permission:
         # Check if target user is above user in role hierarchy
         if interaction.user.top_role <= target.top_role:
@@ -106,6 +108,7 @@ async def check_priv(bot, interaction: discord.Interaction, target: discord.Memb
     else:
         await interaction.response.send_message(f"Not a mod sadchamp")
         return False
+    
 
 
 

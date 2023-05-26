@@ -118,5 +118,79 @@ class Moderator(commands.Cog):
                                 )
             await interaction.response.send_message(f"{role} has been set as mod role")
 
+  
+    @app_commands.command()
+    @commands.guild_only()
+    @permissions.has_permissions(kick_members=True)
+    async def addrole(self, interaction: discord.Interaction, target: discord.Member, role: discord.Role):
+        """Adds user to role"""
+        if not await permissions.check_priv(self.bot, interaction, target, {"manage_roles": True}):
+            return
+        if role >= interaction.user.top_role:
+            await interaction.response.send_message("You can't give a role that is higher or equal to your current highest role.")
+            return
+        try:
+
+            await target.add_roles(role, reason=default.responsible(interaction.user, "Added role"))
+            await interaction.response.send_message(default.actionmessage("added to {role}"))
+
+        except Exception as e:
+            print(e)
+
+    @app_commands.command()
+    @commands.guild_only()
+    @permissions.has_permissions(kick_members=True)
+    async def delrole(self, interaction: discord.Interaction, target: discord.Member, role: discord.Role):
+        """Removes role from user"""
+        if not await permissions.check_priv(self.bot, interaction, target, {"manage_roles": True}):
+            return
+        if role >= interaction.user.top_role:
+            await interaction.response.send_message("You can't remove a role that is higher or equal to your current highest role.")
+            return
+        try:
+
+            await target.remove_roles(role, reason=default.responsible(interaction.user, "Removed role"))
+            await interaction.response.send_message(default.actionmessage("removed from {role}"))
+
+        except Exception as e:
+            print(e)
+
+
+    @app_commands.command()
+    @commands.guild_only()
+    @permissions.has_permissions(manage_roles=True)
+    async def massrole(self, interaction: discord.Interaction, role: discord.Role):
+        """Adds every user in the guild to the specified role"""
+        if not await permissions.check_priv(self.bot, interaction, interaction.user, {"manage_roles": True}, skip_self_checks=True):
+            return
+        if role >= interaction.user.top_role:
+            await interaction.response.send_message("You can't give a role that is higher or equal to your current highest role.")
+            return
+        try:
+            for member in interaction.guild.members:
+                await member.add_roles(role, reason=default.responsible(interaction.user, "Added role"))
+            await interaction.response.send_message(default.actionmessage(f"added every user to {role}"))
+        except Exception as e:
+            print(e)
+
+
+    @app_commands.command()
+    @commands.guild_only()
+    @permissions.has_permissions(manage_roles=True)
+    async def massunrole(self, interaction: discord.Interaction, role: discord.Role):
+        """Removes every user in the guild from the specified role"""
+        if not await permissions.check_priv(self.bot, interaction, interaction.user, {"manage_roles": True}, skip_self_checks=True):
+            return
+        if role >= interaction.user.top_role:
+            await interaction.response.send_message("You can't remove a role that is higher or equal to your current highest role.")
+            return
+        try:
+            for member in interaction.guild.members:
+                await member.remove_roles(role, reason=default.responsible(interaction.user, "Removed role"))
+            await interaction.response.send_message(default.actionmessage(f"removed every user from {role}"))
+        except Exception as e:
+            print(e)
+
+
 async def setup(bot):
     await bot.add_cog(Moderator(bot))
