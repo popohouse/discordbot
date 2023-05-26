@@ -6,7 +6,7 @@ from typing import Literal, Optional
 from discord.ext.commands import Bot, Context, Greedy
 from discord.ext import commands, tasks
 from utils import config
-from datetime import datetime
+import time
 
 from utils.database import create_tables, populate_tables
 config = config.Config.from_env(".env")
@@ -22,7 +22,6 @@ bot = Bot(
     ),
     intents=discord.Intents.all()
 )
-bot.uptime = datetime.utcnow()
 bot.config = config
 
 #load the commands
@@ -84,7 +83,8 @@ async def on_ready():
     await create_tables()
     await populate_tables(bot)
     await load_cogs()
-
+    if not hasattr(bot, "uptime"):
+        bot.uptime = time.time() 
 try:
     bot.run(config.discord_token)
 except Exception as e:

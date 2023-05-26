@@ -72,7 +72,7 @@ async def check_priv(bot, interaction: discord.Interaction, target: discord.Memb
             has_mod_role = True
     
     
-    if interaction.command.name == 'modrole':
+    if 'manage_guild' in perms:
         member = interaction.guild.get_member(interaction.user.id)
         has_required_permission = all(getattr(member.guild_permissions, name, None) == value for name, value in perms.items())
 
@@ -82,7 +82,7 @@ async def check_priv(bot, interaction: discord.Interaction, target: discord.Memb
             await interaction.response.send_message(f"Lack permissions")
             return False
         else:
-            await interaction.response.send_message(f"Not a mod sadchamp first")
+            await interaction.response.send_message(f"Not a mod sadchamp")
             return False
 
     # Self checks
@@ -103,11 +103,8 @@ async def check_priv(bot, interaction: discord.Interaction, target: discord.Memb
             return False
         else:
             return True
-    if 'manage_guild' in perms and has_mod_role and not has_required_permission:
-        await interaction.response.send_message(f"Sorry but you lack permissions")
     else:
         await interaction.response.send_message(f"Not a mod sadchamp")
-        print (perms, has_mod_role, has_required_permission)
         return False
 
 

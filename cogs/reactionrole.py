@@ -1,6 +1,7 @@
 from discord.ext import commands
 import discord
 import asyncpg
+from discord import app_commands
 
 from utils.config import Config
 
@@ -38,13 +39,13 @@ class ReactionRoles(commands.Cog):
             self.reaction_roles[guild_id][message_id][emoji] = role_id
         await conn.close()
 
-    @commands.hybrid_command(name="reactionrole")
+    @app_commands.command()
     @commands.guild_only()
-    async def reactionrole_command(self, ctx, message_id: str, emoji: str, role: discord.Role):
+    async def reactionrole(self, interaction: discord.Interaction, message_id: str, emoji: str, role: discord.Role):
         """Create reaction role"""
-        if ctx.author.id == owner_id:
+        if interaction.user.id == owner_id:
             message_id = int(message_id)
-            message = await ctx.channel.fetch_message(message_id)
+            message = await interaction.channel.fetch_message(message_id)
             await message.add_reaction(emoji)
 
             conn = await asyncpg.connect(
@@ -57,20 +58,20 @@ class ReactionRoles(commands.Cog):
                 await conn.execute('''
                     INSERT INTO reaction_roles (guild_id, message_id, emoji, role_id)
                     VALUES ($1, $2, $3, $4)
-                ''', ctx.guild.id, message_id, str(emoji), role.id)
-                await ctx.send('Successful reaction role added')
+                ''', interaction.guild.id, message_id, str(emoji), role.id)
+                await interaction.response.send_message('Successful reaction role added')
             except asyncpg.UniqueViolationError:
-                await ctx.send('This reaction role already exists!')
+                await interaction.response.send_message('This reaction role already exists!')
             finally:
                 await conn.close()
 
-            if ctx.guild.id not in self.reaction_roles:
-                self.reaction_roles[ctx.guild.id] = {}
-            if message_id not in self.reaction_roles[ctx.guild.id]:
-                self.reaction_roles[ctx.guild.id][message_id] = {}
-            self.reaction_roles[ctx.guild.id][message_id][str(emoji)] = role.id
+            if interaction.guild.id not in self.reaction_roles:
+                self.reaction_roles[interaction.guild.id] = {}
+            if message_id not in self.reaction_roles[interaction.guild.id]:
+                self.reaction_roles[interaction.guild.id][message_id] = {}
+            self.reaction_roles[interaction.guild.id][message_id][str(emoji)] = role.id
         else:
-            await ctx.send(f"Sir you are not popo")
+            await interaction.response.send_message(f"Sir you are not popo")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):

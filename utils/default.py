@@ -35,9 +35,10 @@ def date(
 ) -> str:
     """ Converts a timestamp to a Discord timestamp format """
     if isinstance(target, int) or isinstance(target, float):
-        target = datetime.utcfromtimestamp(target)
+        unix = int(target)
+    else:
+        unix = int(time.mktime(target.timetuple()))
 
-    unix = int(time.mktime(target.timetuple()))
     timestamp = f"<t:{unix}:{'f' if clock else 'D'}>"
     if ago:
         timestamp += f" (<t:{unix}:R>)"
