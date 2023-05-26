@@ -7,3 +7,4 @@ python-dotenv
 discord-py-interactions
 asyncpg
 pytz
+pint
