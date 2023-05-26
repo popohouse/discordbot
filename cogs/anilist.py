@@ -1,5 +1,4 @@
 from discord.ext import commands
-from discord import AppCommandOptionType
 import aiohttp
 import re
 import discord

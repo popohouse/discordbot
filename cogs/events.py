@@ -4,8 +4,6 @@ import os
 
 from datetime import datetime
 from discord.ext import commands
-from discord.ext.commands import errors
-from utils import default
 
 
 class Events(commands.Cog):

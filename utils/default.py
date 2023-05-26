@@ -3,9 +3,7 @@ import json
 import discord
 import traceback
 
-from discord.ext import commands
-from typing import TYPE_CHECKING
-from datetime import datetime
+
 from io import BytesIO
 
 

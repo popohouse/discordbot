@@ -1,10 +1,10 @@
 import discord
 import os
-import asyncio
+
 import logging
 from typing import Literal, Optional
 from discord.ext.commands import Bot, Context, Greedy
-from discord.ext import commands, tasks
+from discord.ext import commands
 from utils import config
 import time
 
