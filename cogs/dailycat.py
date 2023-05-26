@@ -9,6 +9,7 @@ from typing import Optional
 import asyncpg
 
 from utils.config import Config
+from utils import permissions
 
 config = Config.from_env()
 
@@ -40,8 +41,11 @@ class dailycat(commands.Cog):
 
     @app_commands.command()
     @commands.guild_only()
+    @permissions.has_permissions(manage_guild=True)
     async def dailycat(self, interaction: discord.Interaction, channel: Optional[discord.TextChannel] = None, hour: Optional[int] = None, minute: int = 0, stop: Optional[bool] = False)-> None:
         """Set channel and time or stop cat posting"""
+        if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
+            return
         if stop == True:
             guild_id = interaction.guild_id
             conn = await asyncpg.connect(

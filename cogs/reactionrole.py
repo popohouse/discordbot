@@ -4,6 +4,7 @@ import asyncpg
 from discord import app_commands
 
 from utils.config import Config
+from utils import permissions
 
 config = Config.from_env()
 
@@ -41,8 +42,11 @@ class ReactionRoles(commands.Cog):
 
     @app_commands.command()
     @commands.guild_only()
+    @permissions.has_permissions(manage_guild=True)
     async def reactionrole(self, interaction: discord.Interaction, message_id: str, emoji: str, role: discord.Role):
         """Create reaction role"""
+        if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
+            return
         if interaction.user.id == owner_id:
             message_id = int(message_id)
             message = await interaction.channel.fetch_message(message_id)
