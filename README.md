@@ -12,23 +12,18 @@ Keep [this](https://discordpy.readthedocs.io/en/latest/) saved somewhere, as thi
 All you need to know about the library is defined inside here, even code that I don't use in this example is here.
 
 
-### How to setup with Docker
-Docker is an alternative to run the bot 24/7 and always reboot again whenever it crashed. You can find the install manual [here](https://docs.docker.com/install/). This is the suggested method of running the bot.
-```
-# Build and run the Dockerfile
-Rename the file **.env.example** to **.env** filling in required information such as token, reddit information, it's advisded to change default postgres password at least.
-docker-compose up -d --build
+## Steup
+This assumes you have reddit api key already
+### Docker setup
+1. Make a bot [here](https://discordapp.com/developers/applications/me) and grab the token
+![Image_Example1](https://i.ffm.best/koXU1/CaGePINI82.png/raw)
 
-# Tips on common commands
-docker-compose <command>
-  ps      Check if bot is online or not (list)
-  down    Shut down the bot
-  reboot  Reboot the bot without shutting it down or rebuilding
-  logs    Check the logs made by the bot.
-```
+2. Rename the file **.env.example** to **.env** filling in required information such as token, reddit information, it's advisded to change default postgres password at least.
 
-## How to setup without Docker
-Note this assumes you have postgres already setup on system. As well requires reddit api key.
+3. docker-compose up -d --build
+
+### Non docker setup
+Note this assumes you have postgres already setup on system.
 1. Make a bot [here](https://discordapp.com/developers/applications/me) and grab the token
 ![Image_Example1](https://i.ffm.best/koXU1/CaGePINI82.png/raw)
 
