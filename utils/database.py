@@ -60,6 +60,20 @@ async def create_tables():
             role_id BIGINT NOT NULL
             )
         ''')
+    await conn.execute('''
+        CREATE TABLE IF NOT EXISTS birthdays (
+            guild_id BIGINT NOT NULL,
+            user_id BIGINT NOT NULL,
+            date DATE NOT NULL,
+            PRIMARY KEY (guild_id, user_id)
+            )
+        ''')
+    await conn.execute ('''
+    CREATE TABLE IF NOT EXISTS birthday_channels(
+        guild_id BIGINT PRIMARY KEY,
+        channel_id BIGINT NOT NULL 
+            )
+        ''')
     await conn.close()
 
 

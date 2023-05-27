@@ -11,10 +11,8 @@ class ConversionCog(commands.Cog):
         self.ureg = UnitRegistry()
         
     @app_commands.command()
-    async def convert(self, interaction: discord.Interaction, 
-                        value: Optional[float] = None,
-                        from_unit: Optional[str]  = None,
-                        to_unit: Optional[str] = None)-> None:
+    async def convert(self, interaction: discord.Interaction, value: Optional[float] = None, from_unit: Optional[str]  = None, to_unit: Optional[str] = None)-> None:
+        """ Convert between common units"""
         if value and from_unit and to_unit:
             try:
                 quantity = self.ureg.Quantity(value, self.ureg(from_unit))

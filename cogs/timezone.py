@@ -47,6 +47,11 @@ class TimezoneCog(commands.Cog):
 
         await interaction.response.send_message(f"Timezone set to {timezone}", ephemeral=True)
 
+        # Update the timezone cache
+        cog = self.bot.get_cog("BirthdayCog")
+        if cog:
+            await cog.update_timezone_cache(interaction.user.id, timezone)
+
     @app_commands.command()
     @commands.guild_only()
     async def time(self, interaction: discord.Interaction, member: Optional[discord.Member] = None):
