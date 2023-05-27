@@ -64,7 +64,7 @@ class BirthdayCog(commands.Cog):
 
     @app_commands.command()
     @commands.guild_only()
-    async def set_birthday(self, interaction: discord.Interaction, date: str):
+    async def setbirthday(self, interaction: discord.Interaction, date: str):
         """Sets the user's birthday in the guild"""
         # Define the accepted date formats
         date_formats = ["%Y-%m-%d", "%B %d", "%b %d", "%m/%d"]
@@ -107,7 +107,7 @@ class BirthdayCog(commands.Cog):
     @app_commands.command()
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
-    async def set_birthday_channel(self, interaction: discord.Interaction, channel: discord.TextChannel):
+    async def birthday_channel(self, interaction: discord.Interaction, channel: discord.TextChannel):
         """Sets the birthday channel for the guild"""
         conn = await asyncpg.connect(
             host=db_host,
@@ -142,7 +142,7 @@ class BirthdayCog(commands.Cog):
                         if channel:
                             await channel.send(f"Happy Birthday <@{user_id}>!")
             else:
-                if now_utc.hour == 4 and now_utc.minute == 39:
+                if now_utc.hour == 0 and now_utc.minute == 0:
                     channel_id = self.birthday_channel_cache.get(guild_id)
                     if channel_id:
                         channel = self.bot.get_channel(channel_id)
