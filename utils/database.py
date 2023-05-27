@@ -69,9 +69,10 @@ async def create_tables():
             )
         ''')
     await conn.execute ('''
-    CREATE TABLE IF NOT EXISTS birthday_channels(
+    CREATE TABLE IF NOT EXISTS birthday_extras(
         guild_id BIGINT PRIMARY KEY,
-        channel_id BIGINT NOT NULL 
+        channel_id BIGINT,
+        role_id BIGINT
             )
         ''')
     await conn.close()
