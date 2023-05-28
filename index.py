@@ -7,8 +7,14 @@ from discord.ext.commands import Bot, Context, Greedy
 from discord.ext import commands
 from utils import config
 import time
+import asyncpg
+
+import signal
+import sys
+import asyncio
 
 from utils.database import create_tables, populate_tables
+
 config = config.Config.from_env(".env")
 
 
@@ -22,7 +28,6 @@ bot = Bot(
     ),
     intents=discord.Intents.all()
 )
-bot.config = config
 
 #load the commands
 async def load_cogs() -> None:
@@ -80,12 +85,44 @@ async def sync(
 @bot.event 
 async def on_ready():
     print(f'{bot.user} is ready!')
-    await create_tables()
+    bot.pool = await asyncpg.create_pool(
+            user=config.postgres_user, 
+            password=config.postgres_password,
+            database=config.postgres_database,
+            host=config.postgres_host
+        )
+    await create_tables(bot)
     await populate_tables(bot)
     await load_cogs()
     if not hasattr(bot, "uptime"):
         bot.uptime = time.time() 
-try:
-    bot.run(config.discord_token)
-except Exception as e:
-    print(f"Error when logging in: {e}")
+
+@bot.event
+async def on_disconnect():
+    await bot.pool.close()
+
+async def main():
+    # Signal handler
+    def signal_handler(sig, frame):
+        print('Caught signal, shutting down...')
+        asyncio.create_task(shutdown(sig, frame))
+
+    async def shutdown(sig, frame):
+        # Unload all cogs
+        for extension in list(bot.extensions):
+            bot.unload_extension(extension)
+        await bot.pool.close()
+        await bot.close()
+        sys.exit(0)
+
+    # Set up signal handlers
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+
+    try:
+        await bot.start(config.discord_token)
+    except KeyboardInterrupt:
+        await bot.close()
+
+asyncio.run(main())
+

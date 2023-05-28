@@ -13,10 +13,6 @@ from utils import permissions
 
 config = Config.from_env()
 
-db_host = config.postgres_host
-db_name = config.postgres_database
-db_user = config.postgres_user
-db_password = config.postgres_password
 
 
 class BirthdayCog(commands.Cog):
@@ -32,19 +28,16 @@ class BirthdayCog(commands.Cog):
     def cog_unload(self):
         self.check_birthdays.cancel()
         self.cleanup_birthday_roles.cancel()
+
     async def setup(self):
         await self.update_cache()
 
     async def update_cache(self):
-        conn = await asyncpg.connect(
-            host=db_host,
-            database=db_name,
-            user=db_user,
-            password=db_password
-        )
-        birthdays = await conn.fetch("SELECT * FROM birthdays")
-        birthday_extras = await conn.fetch("SELECT * FROM birthday_extras")
-        user_timezones = await conn.fetch("SELECT * FROM timezones")
+        print("yo waddup cache updating")
+        async with self.bot.pool.acquire() as conn:
+            birthdays = await conn.fetch("SELECT * FROM birthdays")
+            birthday_extras = await conn.fetch("SELECT * FROM birthday_extras")
+            user_timezones = await conn.fetch("SELECT * FROM timezones")
 
         # Update the caches
         self.birthday_cache = {(birthday['guild_id'], birthday['user_id']): birthday['date'] for birthday in birthdays}
@@ -55,10 +48,12 @@ class BirthdayCog(commands.Cog):
 
     async def update_timezone_cache(self, user_id: int, timezone: str):
         """Update the timezone cache"""
+        print("Timezone cached")
         self.timezone_cache[user_id] = timezone
 
     @commands.Cog.listener()
     async def on_ready(self):
+        print("Yo waddup its ya boy onready birthday")
         await self.update_cache()
 
     @app_commands.command()
@@ -87,60 +82,46 @@ class BirthdayCog(commands.Cog):
             now = datetime.utcnow()
             date_obj = date_obj.replace(year=now.year)
         
-        conn = await asyncpg.connect(
-            host=db_host,
-            database=db_name,
-            user=db_user,
-            password=db_password
-        )
-        guild_id = interaction.guild.id
-        user_id = interaction.user.id
-        await conn.execute("INSERT INTO birthdays (guild_id, user_id, date) VALUES ($1, $2, $3) ON CONFLICT (guild_id, user_id) DO UPDATE SET date = $3", guild_id, user_id, date_obj)
-        await interaction.response.send_message(f"Birthday set as {date_obj} in this guild!", ephemeral=True)
-    
-        # Update the cache
-        await self.update_cache()
+        async with self.bot.pool.acquire() as conn:
+            guild_id = interaction.guild.id
+            user_id = interaction.user.id
+            await conn.execute("INSERT INTO birthdays (guild_id, user_id, date) VALUES ($1, $2, $3) ON CONFLICT (guild_id, user_id) DO UPDATE SET date = $3", guild_id, user_id, date_obj)
+            await interaction.response.send_message(f"Birthday set as {date_obj} in this guild!", ephemeral=True)
+        
+            # Update the cache
+            await self.update_cache()
 
     @app_commands.command()
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     async def birthday_channel(self, interaction: discord.Interaction, channel: discord.TextChannel):
         """Sets the birthday channel for the guild"""
-        conn = await asyncpg.connect(
-            host=db_host,
-            database=db_name,
-            user=db_user,
-            password=db_password
-        )
-        
-        if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
-            return
-        
-        guild_id = interaction.guild.id
-        await conn.execute("INSERT INTO birthday_extras (guild_id, channel_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET channel_id = $2", guild_id, channel.id)
-        await interaction.response.send_message(f"Birthday channel set")
+        async with self.bot.pool.acquire() as conn:
+            
+            if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
+                return
+            
+            guild_id = interaction.guild.id
+            await conn.execute("INSERT INTO birthday_extras (guild_id, channel_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET channel_id = $2", guild_id, channel.id)
+            await interaction.response.send_message(f"Birthday channel set")
 
     @app_commands.command()
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     async def birthdayrole(self, interaction: discord.Interaction, role: discord.Role):
         """Sets the birthday role for the guild"""
-        conn = await asyncpg.connect(
-            host=db_host,
-            database=db_name,
-            user=db_user,
-            password=db_password
-        )
+        async with self.bot.pool.acquire() as conn:
 
-        if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
-            return
+            if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
+                return
 
-        guild_id = interaction.guild.id
-        await conn.execute("INSERT INTO birthday_extras (guild_id, role_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET role_id = $2", guild_id, role.id)
-        await interaction.response.send_message(f"Birthday role set")
+            guild_id = interaction.guild.id
+            await conn.execute("INSERT INTO birthday_extras (guild_id, role_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET role_id = $2", guild_id, role.id)
+            await interaction.response.send_message(f"Birthday role set")
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(seconds=10)
     async def cleanup_birthday_roles(self):
+        print("Cleaning up birthday roles")
         # Get the current time in UTC
         now_utc = datetime.utcnow().replace(tzinfo=pytz.utc)
 
@@ -171,8 +152,9 @@ class BirthdayCog(commands.Cog):
             
 
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(seconds=10)
     async def check_birthdays(self):
+        print("Checking birthdays")
         # Get the current time in UTC
         now_utc = datetime.utcnow().replace(tzinfo=pytz.utc)
         

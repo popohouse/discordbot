@@ -5,6 +5,8 @@ import os
 from datetime import datetime
 from discord.ext import commands
 
+from utils import config
+config = config.Config.from_env(".env")
 
 class Events(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -19,7 +21,7 @@ class Events(commands.Cog):
         ), None)
 
         if to_send:
-            await to_send.send(self.bot.config.discord_join_message)
+            await to_send.send(config.discord_join_message)
 
   
 async def setup(bot):

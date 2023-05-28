@@ -8,7 +8,8 @@ import os
 from discord.ext import commands
 from utils import default
 
-
+from utils import config
+config = config.Config.from_env(".env")
 
 class Admin(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -17,7 +18,7 @@ class Admin(commands.Cog):
     @app_commands.command()
     async def amiadmin(self, interaction: discord.Interaction):
         """ Are you an admin? """
-        if interaction.user.id == self.bot.config.discord_owner_id:
+        if interaction.user.id == config.discord_owner_id:
             return await interaction.response.send_message(f"Yes **{interaction.user.name}** you are an admin! ✅")
 
         # Please do not remove this part.
@@ -31,7 +32,7 @@ class Admin(commands.Cog):
     @app_commands.command()
     async def load(self, interaction: discord.Interaction, name: str):
         """ Loads an extension. """
-        if interaction.user.id == self.bot.config.discord_owner_id:
+        if interaction.user.id == config.discord_owner_id:
             try:
                 await self.bot.load_extension(f"cogs.{name}")
             except Exception as e:
@@ -42,7 +43,7 @@ class Admin(commands.Cog):
     @app_commands.command()
     async def unload(self, interaction: discord.Interaction, name: str):
         """ Unloads an extension. """
-        if interaction.user.id == self.bot.config.discord_owner_id:
+        if interaction.user.id == config.discord_owner_id:
             try:
                 await self.bot.unload_extension(f"cogs.{name}")
             except Exception as e:
@@ -53,7 +54,7 @@ class Admin(commands.Cog):
     @app_commands.command()
     async def reload(self, interaction: discord.Interaction, name: str):
         """ Reloads an extension. """
-        if interaction.user.id == self.bot.config.discord_owner_id:
+        if interaction.user.id == config.discord_owner_id:
             try:
                 await self.bot.reload_extension(f"cogs.{name}")
             except Exception as e:
@@ -63,7 +64,7 @@ class Admin(commands.Cog):
     @app_commands.command()
     async def reloadall(self, interaction: discord.Interaction):
         """ Reloads all extensions. """
-        if interaction.user.id == self.bot.config.discord_owner_id:
+        if interaction.user.id == config.discord_owner_id:
             error_collection = []
             for file in os.listdir("cogs"):
                 if not file.endswith(".py"):
@@ -93,7 +94,7 @@ class Admin(commands.Cog):
     @app_commands.command()
     async def reloadutils(self, interaction: discord.Interaction, name: str):
         """ Reloads a utils module. """
-        if interaction.user.id == self.bot.config.discord_owner_id:
+        if interaction.user.id == config.discord_owner_id:
             name_maker = f"utils/{name}.py"
             try:
                 module_name = importlib.import_module(f"utils.{name}")
@@ -108,7 +109,7 @@ class Admin(commands.Cog):
     @app_commands.command()
     async def dm(self, interaction: discord.Interaction, user: discord.User, *, message: str):
         """ DM the user of your choice """
-        if interaction.user.id == self.bot.config.discord_owner_id:
+        if interaction.user.id == config.discord_owner_id:
             try:
                 await user.send(message)
                 await interaction.response.send_message(f"✉️ Sent a DM to **{user}**")

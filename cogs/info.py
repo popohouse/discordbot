@@ -8,8 +8,9 @@ from discord import app_commands
 from discord.ext import commands
 
 from discord.ext import commands
-from utils import default, http
+from utils import default, http, config
 
+config = config.Config.from_env(".env")
 
 class Information(commands.Cog):
     def __init__(self, bot: commands.Bot)-> None:
@@ -112,7 +113,7 @@ class Information(commands.Cog):
         embed.add_field(
             name="Developer",
             value=str(self.bot.get_user(
-                self.bot.config.discord_owner_id
+                config.owner_id
             ))
         )
         embed.add_field(name="Library", value="discord.py")
