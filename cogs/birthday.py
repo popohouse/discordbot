@@ -36,7 +36,6 @@ class BirthdayCog(commands.Cog):
         await self.update_cache()
 
     async def update_cache(self):
-        print("yo waddup cache updating")
         conn = await asyncpg.connect(
             host=db_host,
             database=db_name,
@@ -56,12 +55,10 @@ class BirthdayCog(commands.Cog):
 
     async def update_timezone_cache(self, user_id: int, timezone: str):
         """Update the timezone cache"""
-        print("Timezone cached")
         self.timezone_cache[user_id] = timezone
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print("Yo waddup its ya boy onready birthday")
         await self.update_cache()
 
     @app_commands.command()
@@ -144,7 +141,6 @@ class BirthdayCog(commands.Cog):
 
     @tasks.loop(minutes=1)
     async def cleanup_birthday_roles(self):
-        print("Cleaning up birthday roles")
         # Get the current time in UTC
         now_utc = datetime.utcnow().replace(tzinfo=pytz.utc)
 
@@ -177,7 +173,6 @@ class BirthdayCog(commands.Cog):
 
     @tasks.loop(minutes=1)
     async def check_birthdays(self):
-        print("Checking birthdays")
         # Get the current time in UTC
         now_utc = datetime.utcnow().replace(tzinfo=pytz.utc)
         
