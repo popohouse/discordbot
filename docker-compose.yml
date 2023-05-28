@@ -22,9 +22,11 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
+      test: ["CMD-SHELL", "./healthcheck.sh"]
       interval: 10s
       timeout: 5s
       retries: 5
     volumes:
       - ./db:/var/lib/postgresql/data/
+      - ./healthcheck.sh:/healthcheck.sh
+    command: ["sh", "-c", "chmod +x /healthcheck.sh && docker-entrypoint.sh postgres"]
