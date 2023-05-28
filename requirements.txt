@@ -8,4 +8,3 @@ discord-py-interactions
 asyncpg
 pytz
 pint
-gpt4free
