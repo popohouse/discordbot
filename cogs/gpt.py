@@ -26,7 +26,7 @@ class SassyCog(commands.Cog):
         if message.author == self.bot.user:
             return
         # Check if the bot was mentioned in the message
-        if self.bot.user in message.mentions:
+        if self.bot.user in message.mentions or f'@{self.bot.user.name}' in message.content:
             cleaned_message = message.clean_content.replace(f'<@!{self.bot.user.id}>', '').replace(f'<@{self.bot.user.id}>', '').replace(f'@{self.bot.user.name}', '')
             cleaned_message = re.sub(r'@(\w+)', r'\1', cleaned_message)
             # Prepend the desired phrase to the user's message content
@@ -34,7 +34,7 @@ class SassyCog(commands.Cog):
             prompt = dan_prompt + " " + cleaned_message
         # Pass the prompt to POE and get a response
             response = ""
-            for chunk in self.client.send_message("capybara", prompt, with_chat_break=True):
+            for chunk in self.client.send_message("chinchilla", prompt, with_chat_break=True):
                 response += chunk["text_new"]
 
             # Send the GPT-4 response back to the Discord channel
@@ -42,7 +42,7 @@ class SassyCog(commands.Cog):
 
     @tasks.loop(hours=1)
     async def chat_cleanup(self):
-        self.client.purge_conversation("capybara")
+        self.client.purge_conversation("chinchilla")
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
