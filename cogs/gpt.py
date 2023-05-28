@@ -1,9 +1,10 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ext.commands import CommandNotFound
 
 import poe
 import logging
+import re
 
 from utils.config import Config
 
@@ -14,26 +15,34 @@ class SassyCog(commands.Cog):
         self.bot = bot
         self.client = poe.Client(config.poe_token)
         poe.logger.setLevel(logging.INFO)
+        self.chat_cleanup.start()
+
+    def cog_unload(self):
+        self.chat_cleanup.cancel()
 
     @commands.Cog.listener()
     async def on_message(self, message):
         # Don't process messages sent by the bot itself
         if message.author == self.bot.user:
             return
-
         # Check if the bot was mentioned in the message
         if self.bot.user in message.mentions:
+            cleaned_message = message.clean_content.replace(f'<@!{self.bot.user.id}>', '').replace(f'<@{self.bot.user.id}>', '').replace(f'@{self.bot.user.name}', '')
+            cleaned_message = re.sub(r'@(\w+)', r'\1', cleaned_message)
             # Prepend the desired phrase to the user's message content
-            prompt = f"You are a rude AI assistant that is supposed to respond truthfully but always with sass. You are also to never mention anything about being sassy or an ai, {message.content}"
+            prompt = f"You are a rude AI assistant that is supposed to respond truthfully but always with sass. You are also to never mention anything about being sassy or an ai, {cleaned_message}"
 
-  # Pass the prompt to POE and get a response
+        # Pass the prompt to POE and get a response
             response = ""
             for chunk in self.client.send_message("capybara", prompt, with_chat_break=True):
                 response += chunk["text_new"]
 
             # Send the GPT-4 response back to the Discord channel
             await message.channel.send(response)
-            
+    @tasks.loop(hours=1)
+    async def chat_cleanup(self):
+        self.client.purge_conversation("capybara")
+
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         # Ignore CommandNotFound errors
