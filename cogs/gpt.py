@@ -1,12 +1,19 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
-import gpt4free
 
-from gpt4free import Provider
+import poe
+import logging
+
+from utils.config import Config
+
+config = Config.from_env()
+
 class SassyCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.client = poe.Client(config.poe_token)
+        poe.logger.setLevel(logging.INFO)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -19,8 +26,10 @@ class SassyCog(commands.Cog):
             # Prepend the desired phrase to the user's message content
             prompt = f"You are a rude AI assistant that is supposed to respond truthfully but always with sass. You are also to never mention anything about being sassy or an ai, {message.content}"
 
-            # Pass the prompt to GPT-4 and get a response
-            response = gpt4free.Completion.create(Provider.You, prompt=prompt)
+  # Pass the prompt to POE and get a response
+            response = ""
+            for chunk in self.client.send_message("capybara", prompt, with_chat_break=True):
+                response += chunk["text_new"]
 
             # Send the GPT-4 response back to the Discord channel
             await message.channel.send(response)

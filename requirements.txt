@@ -9,3 +9,4 @@ asyncpg
 pytz
 pint
 gpt4free
+poe

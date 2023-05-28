@@ -142,7 +142,7 @@ class BirthdayCog(commands.Cog):
         await conn.execute("INSERT INTO birthday_extras (guild_id, role_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET role_id = $2", guild_id, role.id)
         await interaction.response.send_message(f"Birthday role set")
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(minutes=1)
     async def cleanup_birthday_roles(self):
         print("Cleaning up birthday roles")
         # Get the current time in UTC
@@ -175,7 +175,7 @@ class BirthdayCog(commands.Cog):
             
 
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(minutes=1)
     async def check_birthdays(self):
         print("Checking birthdays")
         # Get the current time in UTC

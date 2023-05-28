@@ -23,6 +23,7 @@ class Config:
     reddit_client_secret: str
     reddit_user_agent: str
 
+    poe_token: str
 
     @classmethod
     def from_dict(self, **kwargs) -> "Config":
