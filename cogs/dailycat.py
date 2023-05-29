@@ -35,7 +35,7 @@ class dailycat(commands.Cog):
         """Set channel and time or stop cat posting"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
-        if stop != None:
+        if stop is not None:
             guild_id = interaction.guild_id
             async with self.bot.pool.acquire() as conn:
                 await conn.execute('DELETE FROM dailycat WHERE guild_id=$1', guild_id)
