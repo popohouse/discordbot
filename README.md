@@ -39,6 +39,7 @@ Note this assumes you have postgres already setup on system.
 
 ## Commands
 Admin cog
+
     amiadmin - Check if you are bot owner.
     load - Load a cog.
     unload - Unload a cog.
@@ -47,9 +48,11 @@ Admin cog
     reloadutils - Reloads a utils module.
     dm - Direct message a user.
 Anilist cog
+
     anime - Check info on anime.
     manga - Check info on manga.
 Animal cog
+
     Animal - Post animal type of subcommand choice
         dog
         cat
@@ -57,17 +60,22 @@ Animal cog
         hamster
         fox
 Birthday cog
+
     setbirthday - Set your birthday
     birthdayrole - Set role user should get midnight on their birthday
     birthdaychannel - Set channel where bot should wish users happy birthday at midnight on their birthday
 Conversion cog
+
     Convert - Converts between two values
 Dailycat cog
+
     dailycat - Set where dailycat pic should be posted
 Discord cog
+
     avatar - get avatar of user
     mods - list current online mods
 Fun cog
+
     rate - Rates random thing
     f - Pay respect to what you wish
     eightball - Consult 8ball to receive an answer
@@ -82,21 +90,25 @@ Fun cog
     dice - dice game
     inspire - become inspired 
 hotposting cog
+
     hot -  posts hot post from specific subreddit
     thigh - posts hot post from a thigh subreddit
     bois - posts hot post from /r/bois
     femboys - posts hot post from /r/femboys
 Info cog
+
     ping - pong
     invite - invite me to your server
     botserver - get invite link to bot support server
     covid - get covid stats for country
     about - info about bot  
 Logging cog
+
     Log message edit
     Log message delete
     Log nickname changes
 Love cog
+
     kiss - be actioned or action user
     hug - be actioned or action user
     bonk - be actioned or action user
@@ -104,6 +116,7 @@ Love cog
     wink - be actioned or action user
     pat - be actioned or action user
 Mod cog
+
     Timeout - timeout user
     Kick - kick user
     modrole - set mod role which can run most mod actions
@@ -112,10 +125,13 @@ Mod cog
     massrole - add role to all users
     massunrole - remove role from all users
 Reaction role cog
+
     reactionrole - Create reaction role on existing message.
 Story cog
+
     story - Used for one word story channels, gets all current message and sends in nice .txt file as current "complete" story
 Timezone
+
     settime - Set your timezone
     time - Get time of yourself or user
     deltime - Remove your timezone
