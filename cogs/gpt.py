@@ -13,10 +13,9 @@ class SassyCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.client = poe.Client(config.poe_token)
-        poe.logger.setLevel(logging.INFO)
         self.chat_cleanup.start()
 
-    async def cog_unload(self):
+    def cog_unload(self):
         self.chat_cleanup.cancel()
 
     @commands.Cog.listener()

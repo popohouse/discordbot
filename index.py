@@ -37,12 +37,12 @@ async def load_cogs() -> None:
             extension = file[:-3]
             try:
                 await bot.load_extension(f"cogs.{extension}")
-                logging.info(f"Loaded extension '{extension}'")
+                logging.info("Loaded extension '%s'", extension)
                 print(f"Loaded extension '{extension}'")
             except Exception as e:
                 exception = f"{type(e).__name__}: {e}"
-                logging.error(f"Failed to load extension {extension}\n{exception}")
-                print(f"Failed to load extension {extension}\n{exception}")
+                logging.error("Failed to load extension '%s'", extension)
+                print(f"Failed to load extension {extension}")
 
 
 @bot.command()
@@ -93,7 +93,10 @@ async def on_ready():
     await populate_tables(bot)
     await load_cogs()
     if not hasattr(bot, "uptime"):
+
         bot.uptime = time.time() 
+        
+logging.getLogger('asyncio').setLevel(logging.DEBUG)
 
 @bot.event
 async def on_disconnect():
@@ -107,11 +110,21 @@ async def main():
 
     async def shutdown(sig, frame):
         # Unload all cogs
-        for extension in list(bot.extensions):
-            bot.unload_extension(extension)
+        for file in os.listdir("cogs"):
+            if file.endswith(".py"):
+                extension = file[:-3]
+                try:
+                    await bot.unload_extension(f"cogs.{extension}")
+                    logging.info("Unloaded extension '%s'", extension)
+                    print(f"Unloaded extension '{extension}'")
+                except Exception as e:
+                    exception = f"{type(e).__name__}: {e}"
+                    logging.error("Failed to unload extension '%s'", extension)
+                    print(f"Failed to unload extension {extension}")
+
         await bot.pool.close()
         await bot.close()
-        sys.exit(0)
+        os.exit(0)
 
     # Set up signal handlers
     signal.signal(signal.SIGTERM, signal_handler)
@@ -123,4 +136,3 @@ async def main():
         await bot.close()
 
 asyncio.run(main())
-
