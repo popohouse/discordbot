@@ -18,14 +18,14 @@ class Fun_Commands(commands.Cog):
 
     @app_commands.command()
     async def rate(self, interaction: discord.Interaction, *, thing: str):
-        """ Rates what you desire """
+        """Rates what you desire"""
         rate_amount = random.uniform(0.0, 100.0)
         await interaction.response.send_message(f"I'd rate `{thing}` a **{round(rate_amount, 4)} / 100**")
 
 
     @app_commands.command()
     async def f(self, interaction: discord.Interaction, *, text: str):
-        """ Press F to pay respect """
+        """Press F to pay respect"""
         hearts = ["❤", "💛", "💚", "💙", "💜"]
         reason = f"for **{text}** " if text else ""
         await interaction.response.send_message(f"**{interaction.user.name}** has paid their respect {reason}{random.choice(hearts)}")
@@ -33,7 +33,7 @@ class Fun_Commands(commands.Cog):
 
     @app_commands.command()
     async def eightball(self, interaction: discord.Interaction, *, question: str):
-        """ Consult 8ball to receive an answer """
+        """Consult 8ball to receive an answer"""
         ballresponse = [
             "Yes", "No", "Take a wild guess...", "Very doubtful",
             "Sure", "Without a doubt", "Most likely", "Might be possible",
@@ -47,28 +47,26 @@ class Fun_Commands(commands.Cog):
     @app_commands.command()
     async def catmeme(self, interaction: discord.Interaction) -> None:
             """Return cat meme"""
-            async with aiohttp.ClientSession() as session:
-                async with session.get('https://api.popo.house/catmeme') as response:
-                    image_data = await response.read()
-                    content_type = response.headers['Content-Type']
-                    extension = mimetypes.guess_extension(content_type)
-                    image_file = discord.File(io.BytesIO(image_data), filename=f"catmeme{extension}")
-                    await interaction.response.send_message(file=image_file)
+            async with aiohttp.ClientSession() as session, session.get('https://api.popo.house/catmeme') as response:
+                image_data = await response.read()
+                content_type = response.headers['Content-Type']
+                extension = mimetypes.guess_extension(content_type)
+                image_file = discord.File(io.BytesIO(image_data), filename=f"catmeme{extension}")
+                await interaction.response.send_message(file=image_file)
 
     @app_commands.command()
     async def coffee(self, interaction: discord.Interaction) -> None:
             """Return coffee releated image"""
-            async with aiohttp.ClientSession() as session:
-                async with session.get('https://api.popo.house/coffee') as response:
-                    image_data = await response.read()
-                    content_type = response.headers['Content-Type']
-                    extension = mimetypes.guess_extension(content_type)
-                    image_file = discord.File(io.BytesIO(image_data), filename=f"coffee{extension}")
-                    await interaction.response.send_message(file=image_file)
+            async with aiohttp.ClientSession() as session, session.get('https://api.popo.house/coffee') as response:
+                image_data = await response.read()
+                content_type = response.headers['Content-Type']
+                extension = mimetypes.guess_extension(content_type)
+                image_file = discord.File(io.BytesIO(image_data), filename=f"coffee{extension}")
+                await interaction.response.send_message(file=image_file)
 
     @app_commands.command()
     async def urban(self, interaction: discord.Interaction, *, search: str):
-        """ Find the 'best' definition to your words """
+        """Find the 'best' definition to your words"""
         async with interaction.channel.typing():
             try:
                 r = await http.get(f"https://api.urbandictionary.com/v0/define?term={search}", res_method="json")
@@ -77,8 +75,6 @@ class Fun_Commands(commands.Cog):
 
             if not r.response:
                 return await interaction.response.send_message("I think the API broke...")
-            if not len(r.response["list"]):
-                return await interaction.response.send_message("Couldn't find your search in the dictionary...")
 
             result = sorted(r.response["list"], reverse=True, key=lambda g: int(g["thumbs_up"]))[0]
 
@@ -92,15 +88,13 @@ class Fun_Commands(commands.Cog):
 
     @app_commands.command()
     async def coinflip(self, interaction: discord.Interaction):
-        """ Coinflip! """
+        """Coinflip!"""
         coinsides = ["Heads", "Tails"]
         await interaction.response.send_message(f"**{interaction.user.name}** flipped a coin and got **{random.choice(coinsides)}**!")
 
     @app_commands.command()
     async def reverse(self, interaction: discord.Interaction, *, text: str):
-        """ !poow ,ffuts esreveR
-        Everything you type after reverse will of course, be reversed
-        """
+        """Everything you type after reverse will of course, be reversed"""
         t_rev = text[::-1].replace("@", "@\u200B").replace("&", "&\u200B")
         await interaction.response.send_message(
             f"🔁 {t_rev}",
@@ -109,18 +103,14 @@ class Fun_Commands(commands.Cog):
 
     @app_commands.command()
     async def password(self, interaction: discord.Interaction, nbytes: int = 18):
-        """ Generates a random password string for you
-
-        This returns a random URL-safe text string, containing nbytes random bytes.
-        The text is Base64 encoded, so on average each byte results in approximately 1.3 characters.
-        """
+        """Generates a random password string for you"""
         if nbytes not in range(3, 1401):
             return await interaction.response.send_message("I only accept any numbers between 3-1400")
         await interaction.response.send_message(f"🎁 **Here is your password:**\n{secrets.token_urlsafe(nbytes)}", ephemeral=True)
 
     @app_commands.command()
     async def hotcalc(self, interaction: discord.Interaction, *, user: discord.Member = None):
-        """ Returns a random percent for how hot is a discord user """
+        """Returns a random percent for how hot is a discord user"""
         user = user or interaction.user
         random.seed(user.id)
         r = random.randint(1, 100)
@@ -140,7 +130,7 @@ class Fun_Commands(commands.Cog):
 
     @app_commands.command()
     async def noticeme(self, interaction: discord.Interaction):
-        """ Notice me senpai! owo """
+        """Notice me senpai! owo"""
         if not permissions.can_handle(interaction, "attach_files"):
             return await interaction.response.send_message("I cannot send images here ;-;")
 
@@ -150,7 +140,7 @@ class Fun_Commands(commands.Cog):
 
     @app_commands.command()
     async def dice(self, interaction: discord.Interaction):
-        """ Dice game. Good luck """
+        """Dice game. Good luck"""
         bot_dice, player_dice = [random.randint(1, 6) for g in range(2)]
 
         results = "\n".join([
@@ -171,11 +161,9 @@ class Fun_Commands(commands.Cog):
     @app_commands.command()
     async def inspired(self, interaction: discord.Interaction):
         """Be inspired"""
-        async with aiohttp.ClientSession() as session:
-            async with aiohttp.ClientSession() as session:
-                async with session.get('https://inspirobot.me/api?generate=true') as response:
-                    link = await response.text()
-                    await interaction.response.send_message(link)
+        async with aiohttp.ClientSession() as session, session.get('https://inspirobot.me/api?generate=true') as response:
+            link = await response.text()
+            await interaction.response.send_message(link)
 
 
 

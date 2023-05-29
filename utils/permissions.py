@@ -15,7 +15,7 @@ db_user = config.postgres_user
 db_password = config.postgres_password
 
 async def check_permissions(interaction: discord.Interaction, perms, *, check=all) -> bool:
-    """ Checks if author has permissions to a permission """
+    """Checks if author has permissions to a permission"""
     if interaction.user.id == config.discord_owner_id:
         return True
 
@@ -50,7 +50,7 @@ async def check_permissions(interaction: discord.Interaction, perms, *, check=al
 
 
 def has_permissions(*, check=all, **perms) -> bool:
-    """ discord.Commands method to check if author has permissions """
+    """discord.Commands method to check if author has permissions"""
     async def pred(interaction: discord.Interaction):
         return await check_permissions(interaction, perms, check=check)
     return commands.check(pred)
@@ -114,6 +114,6 @@ async def check_priv(bot, interaction: discord.Interaction, target: discord.Memb
 
 
 def can_handle(interaction: discord.Interaction, permission: str) -> bool:
-    """ Checks if bot has permissions or is in DMs right now """
+    """Checks if bot has permissions or is in DMs right now"""
     return isinstance(interaction.channel, discord.DMChannel) or \
         getattr(interaction.channel.permissions_for(interaction.guild.me), permission)

@@ -25,7 +25,7 @@ class dailycat(commands.Cog):
             async with self.bot.pool.acquire() as conn:
                 await self.update_cache()
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.daily_cat.cancel()
 
     @app_commands.command()

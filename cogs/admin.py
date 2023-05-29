@@ -1,5 +1,7 @@
+import aiohttp
 import discord
 from discord import app_commands
+from discord.ext import commands
 import importlib
 import os
 
@@ -15,7 +17,7 @@ class Admin(commands.Cog):
 
     @app_commands.command()
     async def amiadmin(self, interaction: discord.Interaction):
-        """ Are you an admin? """
+        """Are you an admin?"""
         if interaction.user.id == config.discord_owner_id:
             return await interaction.response.send_message(f"Yes **{interaction.user.name}** you are an admin! ✅")
 
@@ -29,7 +31,7 @@ class Admin(commands.Cog):
 
     @app_commands.command()
     async def load(self, interaction: discord.Interaction, name: str):
-        """ Loads an extension. """
+        """Loads an extension."""
         if interaction.user.id == config.discord_owner_id:
             try:
                 await self.bot.load_extension(f"cogs.{name}")
@@ -40,7 +42,7 @@ class Admin(commands.Cog):
 
     @app_commands.command()
     async def unload(self, interaction: discord.Interaction, name: str):
-        """ Unloads an extension. """
+        """Unloads an extension. """
         if interaction.user.id == config.discord_owner_id:
             try:
                 await self.bot.unload_extension(f"cogs.{name}")
@@ -51,7 +53,7 @@ class Admin(commands.Cog):
         
     @app_commands.command()
     async def reload(self, interaction: discord.Interaction, name: str):
-        """ Reloads an extension. """
+        """Reloads an extension."""
         if interaction.user.id == config.discord_owner_id:
             try:
                 await self.bot.reload_extension(f"cogs.{name}")
@@ -61,7 +63,7 @@ class Admin(commands.Cog):
         await interaction.response.send_message(f"no, heck off {interaction.user.name}")
     @app_commands.command()
     async def reloadall(self, interaction: discord.Interaction):
-        """ Reloads all extensions. """
+        """Reloads all extensions."""
         if interaction.user.id == config.discord_owner_id:
             error_collection = []
             for file in os.listdir("cogs"):
@@ -91,7 +93,7 @@ class Admin(commands.Cog):
         await interaction.response.send_message(f"no, heck off {interaction.user.name}")
     @app_commands.command()
     async def reloadutils(self, interaction: discord.Interaction, name: str):
-        """ Reloads a utils module. """
+        """Reloads a utils module."""
         if interaction.user.id == config.discord_owner_id:
             name_maker = f"utils/{name}.py"
             try:
@@ -106,7 +108,7 @@ class Admin(commands.Cog):
         await interaction.response.send_message(f"no, heck off {interaction.user.name}")
     @app_commands.command()
     async def dm(self, interaction: discord.Interaction, user: discord.User, *, message: str):
-        """ DM the user of your choice """
+        """DM the user of your choice"""
         if interaction.user.id == config.discord_owner_id:
             try:
                 await user.send(message)

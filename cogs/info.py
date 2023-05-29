@@ -18,11 +18,7 @@ class Information(commands.Cog):
 
     @app_commands.command(name='ping')
     async def ping(self, interaction: discord.Interaction)-> None:
-        """!
-        ping to check if the bot is available
-
-        @param ctx Context of the message
-        """
+        """ping to check if the bot is available"""
         before = time.monotonic()
         before_ws = int(round(self.bot.latency * 1000, 1))
         msg = await interaction.response.send_message("🏓 Pong")
@@ -31,7 +27,7 @@ class Information(commands.Cog):
 
     @app_commands.command()
     async def invite(self, interaction):
-        """ Invite me to your server """
+        """Invite me to your server"""
         await interaction.response.send_message("\n".join([
             f"**{interaction.user.name}**, use this URL to invite me",
             f"<{discord.utils.oauth_url(self.bot.user.id)}>"
@@ -39,7 +35,7 @@ class Information(commands.Cog):
 
     @app_commands.command(name="source")
     async def source(self, interaction: discord.Interaction)-> None:
-        """ Check out my source code <3 """
+        """Check out my source code <3"""
         # Do not remove this command, this has to stay due to the GitHub LICENSE.
         # TL:DR, you have to disclose source according to MIT, don't change output either.
         # Reference: https://github.com/AlexFlipnote/discord_bot.py/blob/master/LICENSE
@@ -50,7 +46,7 @@ class Information(commands.Cog):
 
     @app_commands.command(name="botserver")
     async def botserver(self, interaction: discord.Interaction):
-        """ Get an invite to our support server! """
+        """Get an invite to our support server!"""
         if isinstance(interaction.channel, discord.DMChannel) or interaction.guild.id != 1099621557128671303:
             return await interaction.response.send_message(f"**Here you go {interaction.user.name} 🍻**\nhttps://discord.gg/Yx6dTZvrGr")
         await interaction.response.send_message(f"**{interaction.user.name}** this is my home you know :3")
@@ -94,7 +90,7 @@ class Information(commands.Cog):
 
     @app_commands.command(name="about")
     async def about(self, interaction: discord.Interaction):
-        """ About the bot """
+        """About the bot"""
         ramUsage = self.process.memory_full_info().rss / 1024**2
         avgmembers = sum(g.member_count for g in self.bot.guilds) / len(self.bot.guilds)
 

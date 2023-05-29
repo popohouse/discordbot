@@ -29,7 +29,7 @@ class Moderator(commands.Cog):
     @commands.guild_only()
     @permissions.has_permissions(kick_members=True)
     async def kick(self, interaction: discord.Interaction, target: discord.Member, *, reason: Optional[str] = None):
-        """ Kicks a user from the current server. """
+        """Kicks a user from the current server."""
         if not await permissions.check_priv(self.bot, interaction, target, {"kick_members": True}):
             return
 
@@ -49,7 +49,7 @@ class Moderator(commands.Cog):
     @commands.guild_only()
     @permissions.has_permissions(moderate_members=True)
     async def timeout(self, interaction: discord.Interaction, target: discord.Member, duration: str, *, reason: Optional[str] = None):
-        """ Timeouts a user in the current server. """
+        """Timeouts a user in the current server."""
         if not await permissions.check_priv(self.bot, interaction, target, {"moderate_members": True}):
             return
 
@@ -95,7 +95,7 @@ class Moderator(commands.Cog):
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
     async def modrole(self, interaction: discord.Interaction, role: discord.Role):
-            """ Set the mod role, allows to run all mod commands"""
+            """Set the mod role, allows to run all mod commands"""
             if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
                 return
             role_id = role.id

@@ -27,7 +27,7 @@ class hotposting (commands.Cog):
         @app_commands.command()
         @commands.guild_only()
         async def bois(self, interaction: discord.Interaction):
-            """ Posts a tomboy"""
+            """Posts a tomboy"""
             if isinstance(interaction.channel, discord.DMChannel):
                 await interaction.response.send_message("This command does not work in DMs. Please use it in an NSFW channel.", ephemeral=True)
                 return

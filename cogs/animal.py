@@ -22,49 +22,42 @@ class Animal(commands.Cog):
     async def animal(self, interaction: discord.Interaction, choice: app_commands.Choice[str])-> None:
         """Send animal"""
         if choice.value == ("dog"):
-            async with aiohttp.ClientSession() as session:
-                async with session.get('https://random.dog/woof.json') as response:
-                    dogimg = await response.json()
-                    await interaction.response.send_message(dogimg['url']) 
+            async with aiohttp.ClientSession() as session, session.get('https://random.dog/woof.json') as response:
+                dogimg = await response.json()
+                await interaction.response.send_message(dogimg['url']) 
 
         elif choice.value == ("fox"):
-            async with aiohttp.ClientSession() as session:
-                async with session.get('https://randomfox.ca/floof/') as response:
-                    foximg = await response.json()
-                    await interaction.response.send_message(foximg['image'])
+            async with aiohttp.ClientSession() as session, session.get('https://randomfox.ca/floof/') as response:
+                foximg = await response.json()
+                await interaction.response.send_message(foximg['image'])
 
         elif choice.value == ("duck"):
-            async with aiohttp.ClientSession() as session:
-                async with session.get('https://random-d.uk/api/random') as response:
-                    duckimg = await response.json()
-                    await interaction.response.send_message(duckimg['url'])
+            async with aiohttp.ClientSession() as session, session.get('https://random-d.uk/api/random') as response:
+                duckimg = await response.json()
+                await interaction.response.send_message(duckimg['url'])
 
         elif choice.value == ("cat"):
-            async with aiohttp.ClientSession() as session:
-                async with session.get('https://api.popo.house/cat') as response:
-                    image_data = await response.read()
-                    content_type = response.headers.get('Content-Type')
+            async with aiohttp.ClientSession() as session, session.get('https://api.popo.house/cat') as response:
+                image_data = await response.read()
+                content_type = response.headers.get('Content-Type')
 
-                    if content_type is None:
-                        # Handle the case where Content-Type is None
-                        await interaction.response.send_message("Failed to retrieve the image.")
-                    else:
-                        extension = mimetypes.guess_extension(content_type)
-                        if extension is None:
-                            extension = '.jpg'  # Default extension if mimetype is not recognized
-                        image_file = discord.File(io.BytesIO(image_data), filename=f"cat{extension}")
-                        await interaction.response.send_message(file=image_file)
-
-
+                if content_type is None:
+                    # Handle the case where Content-Type is None
+                    await interaction.response.send_message("Failed to retrieve the image.")
+                else:
+                    extension = mimetypes.guess_extension(content_type)
+                    if extension is None:
+                        extension = '.jpg'  # Default extension if mimetype is not recognized
+                    image_file = discord.File(io.BytesIO(image_data), filename=f"cat{extension}")
+                    await interaction.response.send_message(file=image_file)
 
         elif choice.value == ("hamster"):
-            async with aiohttp.ClientSession() as session:
-                async with session.get('https://api.popo.house/hamster') as response:
-                    image_data = await response.read()
-                    content_type = response.headers['Content-Type']
-                    extension = mimetypes.guess_extension(content_type)
-                    image_file = discord.File(io.BytesIO(image_data), filename=f"hamster{extension}")
-                    await interaction.response.send_message(file=image_file)
+            async with aiohttp.ClientSession() as session, session.get('https://api.popo.house/hamster') as response:
+                image_data = await response.read()
+                content_type = response.headers['Content-Type']
+                extension = mimetypes.guess_extension(content_type)
+                image_file = discord.File(io.BytesIO(image_data), filename=f"hamster{extension}")
+                await interaction.response.send_message(file=image_file)
 
 async def setup(bot):
     await bot.add_cog(Animal(bot))

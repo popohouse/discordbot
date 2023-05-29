@@ -12,7 +12,7 @@ class Discord_Info(commands.Cog):
     @app_commands.command()
     @commands.guild_only()
     async def avatar(self, interaction: discord.Interaction, *, user: discord.Member = None):
-        """ Get the avatar of you or someone else """
+        """Get the avatar of you or someone else"""
         user = user or interaction.user
 
         avatars_list = []
@@ -49,7 +49,7 @@ class Discord_Info(commands.Cog):
     @app_commands.command()
     @commands.guild_only()
     async def mods(self, interaction: discord.Interaction):
-        """ Check which mods are online on current guild """
+        """Check which mods are online on current guild"""
         message = ""
         all_status = {
             "online": {"users": [], "emoji": "🟢"},

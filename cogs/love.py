@@ -11,7 +11,7 @@ class Love(commands.Cog):
 
     @app_commands.command()
     async def kiss(self, interaction: discord.Interaction, *, target: discord.Member=None):
-        """ Get kissed, or kiss a user"""
+        """Get kissed, or kiss a user"""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/kiss') as response:
                 data = await response.json()
@@ -27,7 +27,7 @@ class Love(commands.Cog):
 
     @app_commands.command()
     async def hug(self, interaction: discord.Interaction, *, target: discord.Member=None):
-        """ Get hugged, or hug a user"""
+        """Get hugged, or hug a user"""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/hug') as response:
                 data = await response.json()
@@ -43,7 +43,7 @@ class Love(commands.Cog):
 
     @app_commands.command()
     async def cuddle(self, interaction: discord.Interaction, *, target: discord.Member=None):
-        """ Get cuddled, or cuddle a user"""
+        """Get cuddled, or cuddle a user"""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/cuddle') as response:
                 data = await response.json()
@@ -59,7 +59,7 @@ class Love(commands.Cog):
 
     @app_commands.command()
     async def bonk(self, interaction: discord.Interaction, *, target: discord.Member=None):
-        """ Bonk, or bonk a user"""
+        """Bonk, or bonk a user"""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/bonk') as response:
                 data = await response.json()
@@ -75,7 +75,7 @@ class Love(commands.Cog):
             
     @app_commands.command()
     async def slap(self, interaction: discord.Interaction, *, target: discord.Member=None):
-        """ Get slapped, or slap a user"""
+        """Get slapped, or slap a user"""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/slap') as response:
                 data = await response.json()
@@ -91,7 +91,7 @@ class Love(commands.Cog):
 
     @app_commands.command()
     async def wink(self, interaction: discord.Interaction, *, target: discord.Member=None):
-        """ Wink, or wink at a user"""
+        """Wink, or wink at a user"""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/wink') as response:
                 data = await response.json()
@@ -107,7 +107,7 @@ class Love(commands.Cog):
 
     @app_commands.command()
     async def pat(self, interaction: discord.Interaction, *, target: discord.Member=None):
-        """ Get headpats, or give headpats to a user"""
+        """Get headpats, or give headpats to a user"""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.waifu.pics/sfw/pat') as response:
                 data = await response.json()

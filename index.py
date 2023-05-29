@@ -10,7 +10,6 @@ import time
 import asyncpg
 
 import signal
-import sys
 import asyncio
 
 from utils.database import create_tables, populate_tables

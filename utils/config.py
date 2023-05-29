@@ -9,6 +9,7 @@ class Config:
     You can load it from a dictionary or from a .env file (recommended).
     By default in this Discord bot template, we use from_env classmethod.
     """
+
     discord_token: str
     discord_prefix: str
     discord_owner_id: int
@@ -27,7 +28,7 @@ class Config:
 
     @classmethod
     def from_dict(self, **kwargs) -> "Config":
-        """ Create a Config object from a dictionary. """
+        """Create a Config object from a dictionary."""
         kwargs_overwrite = {}
 
         for k, v in kwargs.items():
@@ -42,5 +43,5 @@ class Config:
 
     @classmethod
     def from_env(self, filename: str = ".env") -> "Config":
-        """ Create a Config object from a .env file. """
+        """Create a Config object from a .env file."""
         return Config.from_dict(**dotenv_values(filename))

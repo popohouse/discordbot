@@ -53,7 +53,7 @@ class TimezoneCog(commands.Cog):
         
             record = await conn.fetchrow("SELECT timezone FROM timezones WHERE user_id = $1", member.id)
             if member is interaction.user and not record: 
-                await interaction.response.send_message(f"Please set your timezone first", ephemeral=True)
+                await interaction.response.send_message("Please set your timezone first", ephemeral=True)
             elif not record:
                 await interaction.response.send_message(f"{member.display_name} has not set their timezone", ephemeral=True)
             else:

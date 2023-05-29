@@ -2,7 +2,6 @@ from discord.ext import commands, tasks
 from discord.ext.commands import CommandNotFound
 
 import poe
-import logging
 import re
 
 from utils.config import Config
@@ -15,7 +14,7 @@ class SassyCog(commands.Cog):
         self.client = poe.Client(config.poe_token)
         self.chat_cleanup.start()
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.chat_cleanup.cancel()
 
     @commands.Cog.listener()

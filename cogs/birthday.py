@@ -24,7 +24,7 @@ class BirthdayCog(commands.Cog):
         self.check_birthdays.start()
         self.cleanup_birthday_roles.start()
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.check_birthdays.cancel()
         self.cleanup_birthday_roles.cancel()
 

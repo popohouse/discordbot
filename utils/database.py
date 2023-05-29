@@ -1,4 +1,3 @@
-import asyncpg
 from utils.config import Config
 
 config = Config.from_env()
