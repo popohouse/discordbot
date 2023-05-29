@@ -11,11 +11,6 @@ from utils.config import Config
 
 config = Config.from_env()
 
-db_host = config.postgres_host
-db_name = config.postgres_database
-db_user = config.postgres_user
-db_password = config.postgres_password
-
 class ActionReason(commands.Converter):
     async def convert(self, interaction: discord.Interaction, argument):
         ret = argument
@@ -106,17 +101,12 @@ class Moderator(commands.Cog):
                 return
             role_id = role.id
             guild_id = interaction.guild_id
-            conn = await asyncpg.connect(
-                host=db_host,
-                database=db_name,
-                user=db_user,
-                password=db_password
-            )
-            await conn.execute('INSERT INTO mod_role_id (guild_id, role_id) VALUES ($1, $2)'
-                               'ON CONFLICT (guild_id) DO UPDATE SET role_id = $2',
-                               guild_id, role_id
-                                )
-            await interaction.response.send_message(f"{role} has been set as mod role")
+            async with self.bot.pool.acquire() as conn:
+                await conn.execute('INSERT INTO mod_role_id (guild_id, role_id) VALUES ($1, $2)'
+                                'ON CONFLICT (guild_id) DO UPDATE SET role_id = $2',
+                                guild_id, role_id
+                                    )
+                await interaction.response.send_message(f"{role} has been set as mod role")
 
   
     @app_commands.command()

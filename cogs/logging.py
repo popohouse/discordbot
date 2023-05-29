@@ -10,11 +10,6 @@ from utils.config import Config
 
 config = Config.from_env()
 
-db_host = config.postgres_host
-db_name = config.postgres_database
-db_user = config.postgres_user
-db_password = config.postgres_password
-
 
 class LoggingCog(commands.Cog):
     def __init__(self, bot):
@@ -28,38 +23,32 @@ class LoggingCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        conn = await asyncpg.connect(
-            host=db_host,
-            database=db_name,
-            user=db_user,
-            password=db_password
-        )
+        async with self.bot.pool.acquire() as conn:
 
 
-        rows = await conn.fetch('SELECT guild_id, channel_id, log_deleted_messages, log_edited_messages, log_nickname_changes, log_member_join_leave, log_member_kick, log_member_ban_unban FROM logging')
+            rows = await conn.fetch('SELECT guild_id, channel_id, log_deleted_messages, log_edited_messages, log_nickname_changes, log_member_join_leave, log_member_kick, log_member_ban_unban FROM logging')
 
 
-        for row in rows:
-            guild_id = row[0]
-            channel_id = row[1]
-            log_deleted_messages = row[2]
-            log_edited_messages = row[3]
-            log_nickname_changes = row[4]
-            log_member_join_leave = row[5]
-            log_member_kick = row[6]
-            log_member_ban_unban = row[7]
+            for row in rows:
+                guild_id = row[0]
+                channel_id = row[1]
+                log_deleted_messages = row[2]
+                log_edited_messages = row[3]
+                log_nickname_changes = row[4]
+                log_member_join_leave = row[5]
+                log_member_kick = row[6]
+                log_member_ban_unban = row[7]
 
-            self.logging_settings[guild_id] = {
-                'channel_id': channel_id,
-                'log_deleted_messages': log_deleted_messages,
-                'log_edited_messages': log_edited_messages,
-                'log_nickname_changes': log_nickname_changes,
-                'log_member_join_leave': log_member_join_leave,
-                'log_member_kick': log_member_kick,
-                'log_member_ban_unban': log_member_ban_unban
-            }
+                self.logging_settings[guild_id] = {
+                    'channel_id': channel_id,
+                    'log_deleted_messages': log_deleted_messages,
+                    'log_edited_messages': log_edited_messages,
+                    'log_nickname_changes': log_nickname_changes,
+                    'log_member_join_leave': log_member_join_leave,
+                    'log_member_kick': log_member_kick,
+                    'log_member_ban_unban': log_member_ban_unban
+                }
 
-        await conn.close()
 
     #Log command
     @app_commands.command()
@@ -75,33 +64,28 @@ class LoggingCog(commands.Cog):
     ])
     async def log(self, interaction: discord.Interaction, log_type: Optional[app_commands.Choice[str]], channel: Optional[discord.TextChannel], disable: Optional[bool] = None ):
         """Turn on logging for any specific type"""
-        conn = await asyncpg.connect(
-            host=db_host,
-            database=db_name,
-            user=db_user,
-            password=db_password
-        )
-        #Set channel 
-        if not channel is None and disable is None or False:
-            row = await conn.fetch('SELECT * FROM logging WHERE guild_id = $1', interaction.guild.id)
-            if row:
-                await conn.execute('UPDATE logging SET channel_id = $2 WHERE guild_id = $1', channel.id, interaction.guild.id)
-            else:
-                await conn.execute('INSERT INTO logging (guild_id, channel_id) VALUES ($1, $2)', interaction.guild.id, channel.id)
-            await conn.close()
-            if interaction.guild.id in self.logging_settings:
-                self.logging_settings[interaction.guild.id]['channel_id'] = channel.id
-            else:
-                self.logging_settings[interaction.guild.id] = {
-                    'channel_id': channel.id,
-                    'log_deleted_messages': 0,
-                    'log_edited_messages': 0,
-                    'log_nickname_changes': 0,
-                    'log_member_join_leave': 0,
-                    'log_member_kick': 0,
-                    'log_member_ban_unban': 0
-            }
-            await interaction.response.send_message(f'Set logging channel to {channel.mention}')
+        async with self.bot.pool.acquire() as conn:
+            #Set channel 
+            if not channel is None and disable is None or False:
+                row = await conn.fetch('SELECT * FROM logging WHERE guild_id = $1', interaction.guild.id)
+                if row:
+                    await conn.execute('UPDATE logging SET channel_id = $2 WHERE guild_id = $1', channel.id, interaction.guild.id)
+                else:
+                    await conn.execute('INSERT INTO logging (guild_id, channel_id) VALUES ($1, $2)', interaction.guild.id, channel.id)
+                await conn.close()
+                if interaction.guild.id in self.logging_settings:
+                    self.logging_settings[interaction.guild.id]['channel_id'] = channel.id
+                else:
+                    self.logging_settings[interaction.guild.id] = {
+                        'channel_id': channel.id,
+                        'log_deleted_messages': 0,
+                        'log_edited_messages': 0,
+                        'log_nickname_changes': 0,
+                        'log_member_join_leave': 0,
+                        'log_member_kick': 0,
+                        'log_member_ban_unban': 0
+                }
+                await interaction.response.send_message(f'Set logging channel to {channel.mention}')
 
         #Disable logging types
         if disable == True:

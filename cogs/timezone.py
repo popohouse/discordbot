@@ -12,11 +12,6 @@ from utils.config import Config
 
 config = Config.from_env()
 
-db_host = config.postgres_host
-db_name = config.postgres_database
-db_user = config.postgres_user
-db_password = config.postgres_password
-
 
 
 class TimezoneCog(commands.Cog):
@@ -33,24 +28,19 @@ class TimezoneCog(commands.Cog):
             await interaction.response.send_message(f"Invalid timezone. Please choose one from this list: https://bin.ffm.best/popo/19e444b71b134847b1a11e4903989d6a", ephemeral=True)
             return
     
-        conn = await asyncpg.connect(
-            host=db_host,
-            database=db_name,
-            user=db_user,
-            password=db_password
-        )
-        await conn.execute(
-            "INSERT INTO timezones (user_id, timezone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = $2",
-            interaction.user.id,
-            timezone
-        )
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute(
+                "INSERT INTO timezones (user_id, timezone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = $2",
+                interaction.user.id,
+                timezone
+            )
 
-        await interaction.response.send_message(f"Timezone set to {timezone}", ephemeral=True)
+            await interaction.response.send_message(f"Timezone set to {timezone}", ephemeral=True)
 
-        # Update the timezone cache
-        cog = self.bot.get_cog("BirthdayCog")
-        if cog:
-            await cog.update_timezone_cache(interaction.user.id, timezone)
+            # Update the timezone cache
+            cog = self.bot.get_cog("BirthdayCog")
+            if cog:
+                await cog.update_timezone_cache(interaction.user.id, timezone)
 
     @app_commands.command()
     @commands.guild_only()
@@ -60,38 +50,28 @@ class TimezoneCog(commands.Cog):
             member = interaction.user
         if member is interaction.user:
             await interaction.response.send_message(f"Please set your timezone first", ephemeral=True)
-        conn = await asyncpg.connect(
-            host=db_host,
-            database=db_name,
-            user=db_user,
-            password=db_password
-        )
+        async with self.bot.pool.acquire() as conn:
         
-        record = await conn.fetchrow("SELECT timezone FROM timezones WHERE user_id = $1", member.id)
-        if member is interaction.user and not record: 
-            await interaction.response.send_message(f"Please set your timezone first", ephemeral=True)
-        elif not record:
-            await interaction.response.send_message(f"{member.display_name} has not set their timezone", ephemeral=True)
-        else:
-            timezone_name = record['timezone']
-            timezone = pytz.timezone(timezone_name)
-            now = datetime.now(timezone)
-            time_str = now.strftime('%H:%M')
-            await interaction.response.send_message(f"The current time for {member.display_name} is {time_str}", ephemeral=True)
+            record = await conn.fetchrow("SELECT timezone FROM timezones WHERE user_id = $1", member.id)
+            if member is interaction.user and not record: 
+                await interaction.response.send_message(f"Please set your timezone first", ephemeral=True)
+            elif not record:
+                await interaction.response.send_message(f"{member.display_name} has not set their timezone", ephemeral=True)
+            else:
+                timezone_name = record['timezone']
+                timezone = pytz.timezone(timezone_name)
+                now = datetime.now(timezone)
+                time_str = now.strftime('%H:%M')
+                await interaction.response.send_message(f"The current time for {member.display_name} is {time_str}", ephemeral=True)
 
     @app_commands.command()
     @commands.guild_only()
     async def deltime(self, interaction: discord.Interaction):
         """Remove your timezone from the database"""
-        conn = await asyncpg.connect(
-            host=db_host,
-            database=db_name,
-            user=db_user,
-            password=db_password
-        )
+        async with self.bot.pool.acquire() as conn:
         
-        await conn.execute("DELETE FROM timezones WHERE user_id = $1", interaction.user.id)
-        await interaction.response.send_message("Your timezone has been removed", ephemeral=True)
+            await conn.execute("DELETE FROM timezones WHERE user_id = $1", interaction.user.id)
+            await interaction.response.send_message("Your timezone has been removed", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(TimezoneCog(bot))

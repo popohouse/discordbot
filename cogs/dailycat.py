@@ -13,11 +13,6 @@ from utils import permissions
 
 config = Config.from_env()
 
-db_host = config.postgres_host
-db_name = config.postgres_database
-db_user = config.postgres_user
-db_password = config.postgres_password
-
 
 
 class dailycat(commands.Cog):
@@ -28,13 +23,8 @@ class dailycat(commands.Cog):
         self.daily_cat.start()
 
     async def setup(self):
-            self.conn = await asyncpg.connect(
-                host=db_host,
-                database=db_name,
-                user=db_user,
-                password=db_password,
-            )
-            await self.update_cache()
+            async with self.bot.pool.acquire() as conn:
+                await self.update_cache()
 
     def cog_unload(self):
         self.daily_cat.cancel()
@@ -48,55 +38,45 @@ class dailycat(commands.Cog):
             return
         if stop == True:
             guild_id = interaction.guild_id
-            conn = await asyncpg.connect(
-                host=db_host,
-                database=db_name,
-                user=db_user,
-                password=db_password
-            )
-            await conn.execute('DELETE FROM dailycat WHERE guild_id=$1', guild_id)
-            await conn.close()
-            await self.update_cache()
-            await interaction.response.send_message('Daily cat posting stopped.')
-            return
+            async with self.bot.pool.acquire() as conn:
+                await conn.execute('DELETE FROM dailycat WHERE guild_id=$1', guild_id)
+                await conn.close()
+                await self.update_cache()
+                await interaction.response.send_message('Daily cat posting stopped.')
+                return
         
         if channel is None and hour is None and stop is False:
             await interaction.response.send_message('Please set a channel or time.', ephemeral=True)
             return
         
         guild_id = interaction.guild_id
-        conn = await asyncpg.connect(
-            host=db_host,
-            database=db_name,
-            user=db_user,
-            password=db_password
-        )
-        row = await conn.fetchrow('SELECT * FROM dailycat WHERE guild_id= $1', guild_id)
-        if row:
-            channel_id, post_time_str = row['channel_id'], row['post_time']
-            if channel is None:
-                channel = interaction.guild.get_channel(channel_id)
-            if hour is None:
-                post_time = datetime.datetime.strptime(post_time_str, '%H:%M').time()
-                hour = post_time.hour
-        else:
-            if channel is None or hour is None:
-                await interaction.response.send_message('Please provide both a channel and an hour for the first time setup.')
+        async with self.bot.pool.acquire() as conn:
+            row = await conn.fetchrow('SELECT * FROM dailycat WHERE guild_id= $1', guild_id)
+            if row:
+                channel_id, post_time_str = row['channel_id'], row['post_time']
+                if channel is None:
+                    channel = interaction.guild.get_channel(channel_id)
+                if hour is None:
+                    post_time = datetime.datetime.strptime(post_time_str, '%H:%M').time()
+                    hour = post_time.hour
+            else:
+                if channel is None or hour is None:
+                    await interaction.response.send_message('Please provide both a channel and an hour for the first time setup.')
+                    return
+                channel_id = channel.id
+            if not (0 <= hour <= 23 and 0 <= minute <= 59):
+                await interaction.response.send_message('Invalid hour or minute. Please enter a valid time.')
                 return
+            post_time = datetime.time(hour, minute)
             channel_id = channel.id
-        if not (0 <= hour <= 23 and 0 <= minute <= 59):
-            await interaction.response.send_message('Invalid hour or minute. Please enter a valid time.')
-            return
-        post_time = datetime.time(hour, minute)
-        channel_id = channel.id
-        await conn.execute(
-            'INSERT INTO dailycat (guild_id, channel_id, post_time) VALUES ($1, $2, $3) '
-            'ON CONFLICT (guild_id) DO UPDATE SET channel_id = $2, post_time = $3',
-            guild_id, channel_id, post_time.strftime('%H:%M')
-        )
-        await conn.close()
-        await self.update_cache()
-        await interaction.response.send_message(f"Daily cat posting set to {channel.mention} at {post_time.strftime('%H:%M')} server time.")
+            await conn.execute(
+                'INSERT INTO dailycat (guild_id, channel_id, post_time) VALUES ($1, $2, $3) '
+                'ON CONFLICT (guild_id) DO UPDATE SET channel_id = $2, post_time = $3',
+                guild_id, channel_id, post_time.strftime('%H:%M')
+            )
+            await conn.close()
+            await self.update_cache()
+            await interaction.response.send_message(f"Daily cat posting set to {channel.mention} at {post_time.strftime('%H:%M')} server time.")
 
 
     @tasks.loop(minutes=1)
@@ -123,18 +103,13 @@ class dailycat(commands.Cog):
                             await channel.send("Daily cat posting", file=img_file)
 
     async def update_cache(self):
-        conn = await asyncpg.connect(
-            host=db_host,
-            database=db_name,
-            user=db_user,
-            password=db_password
-        )
-        rows = await conn.fetch('SELECT * FROM dailycat')
-        self.cache = {}
-        for row in rows:
-            guild_id, channel_id, post_time_str = row['guild_id'], row['channel_id'], row['post_time']
-            if channel_id is not None and post_time_str is not None:
-                self.cache[guild_id] = (channel_id, post_time_str)
+        async with self.bot.pool.acquire() as conn:
+            rows = await conn.fetch('SELECT * FROM dailycat')
+            self.cache = {}
+            for row in rows:
+                guild_id, channel_id, post_time_str = row['guild_id'], row['channel_id'], row['post_time']
+                if channel_id is not None and post_time_str is not None:
+                    self.cache[guild_id] = (channel_id, post_time_str)
 
 async def setup(bot):
     cat_cog = dailycat(bot)
