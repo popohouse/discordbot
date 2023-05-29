@@ -60,9 +60,8 @@ class Discord_Info(commands.Cog):
 
         for user in interaction.guild.members:
             user_perm = interaction.channel.permissions_for(user)
-            if user_perm.kick_members or user_perm.ban_members:
-                if not user.bot:
-                    all_status[str(user.status)]["users"].append(f"**{user}**")
+            if user_perm.kick_members or user_perm.ban_members and not user.bot:
+                all_status[str(user.status)]["users"].append(f"**{user}**")
 
         for g in all_status:
             if all_status[g]["users"]:

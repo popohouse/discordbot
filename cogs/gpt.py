@@ -16,7 +16,7 @@ class SassyCog(commands.Cog):
         poe.logger.setLevel(logging.INFO)
         self.chat_cleanup.start()
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.chat_cleanup.cancel()
 
     @commands.Cog.listener()

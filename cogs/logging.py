@@ -9,12 +9,6 @@ from utils.config import Config
 
 config = Config.from_env()
 
-
-class LoggingCog(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-        self.logging_settings = {}
-
 class LoggingCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -68,7 +62,7 @@ class LoggingCog(commands.Cog):
         async with self.bot.pool.acquire() as conn:
 
         #Disable logging types
-            if disable == True:
+            if disable is True:
                 if log_type.value == 'all':
                     await conn.execute('UPDATE logging SET log_deleted_messages = false, log_edited_messages = false, log_nickname_changes = false, log_member_join_leave = false, log_member_kick = false, log_member_ban_unban = false WHERE guild_id = $1', interaction.guild.id)
                     self.logging_settings[interaction.guild.id]['log_deleted_messages'] = False
@@ -103,7 +97,7 @@ class LoggingCog(commands.Cog):
             
 
         #Enable logging type
-            if disable == None:
+            if disable is False:
                 if log_type.value == 'all':
                     await conn.execute('UPDATE logging SET log_deleted_messages = true, log_edited_messages = true, log_nickname_changes = true, log_member_join_leave = true, log_member_kick = true, log_member_ban_unban = true WHERE guild_id = $1', interaction.guild.id)
                     self.logging_settings[interaction.guild.id]['log_deleted_messages'] = True

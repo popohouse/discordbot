@@ -25,17 +25,17 @@ class dailycat(commands.Cog):
             async with self.bot.pool.acquire() as conn:
                 await self.update_cache()
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.daily_cat.cancel()
 
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
-    async def dailycat(self, interaction: discord.Interaction, channel: Optional[discord.TextChannel] = None, hour: Optional[int] = None, minute: int = 0, stop: Optional[bool] = False)-> None:
+    async def dailycat(self, interaction: discord.Interaction, channel: Optional[discord.TextChannel] = None, hour: Optional[int] = None, minute: int = 0, stop: Optional[bool] = None)-> None:
         """Set channel and time or stop cat posting"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
-        if stop == True:
+        if stop != None:
             guild_id = interaction.guild_id
             async with self.bot.pool.acquire() as conn:
                 await conn.execute('DELETE FROM dailycat WHERE guild_id=$1', guild_id)

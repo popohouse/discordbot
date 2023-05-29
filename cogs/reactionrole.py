@@ -60,7 +60,7 @@ class ReactionRoles(commands.Cog):
                     self.reaction_roles[interaction.guild.id][message_id] = {}
                 self.reaction_roles[interaction.guild.id][message_id][str(emoji)] = role.id
         else:
-            await interaction.response.send_message(f"Sir you are not popo")
+            await interaction.response.send_message("Sir you are not popo")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):

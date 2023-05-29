@@ -24,7 +24,7 @@ class TimezoneCog(commands.Cog):
     async def settime(self, interaction: discord.Interaction, timezone: str):
         """Set your timezone"""
         if timezone not in pytz.all_timezones:
-            await interaction.response.send_message(f"Invalid timezone. Please choose one from this list: https://bin.ffm.best/popo/19e444b71b134847b1a11e4903989d6a", ephemeral=True)
+            await interaction.response.send_message("Invalid timezone. Please choose one from this list: https://bin.ffm.best/popo/19e444b71b134847b1a11e4903989d6a", ephemeral=True)
             return
     
         async with self.bot.pool.acquire() as conn:
@@ -48,7 +48,7 @@ class TimezoneCog(commands.Cog):
         if member is None:
             member = interaction.user
         if member is interaction.user:
-            await interaction.response.send_message(f"Please set your timezone first", ephemeral=True)
+            await interaction.response.send_message("Please set your timezone first", ephemeral=True)
         async with self.bot.pool.acquire() as conn:
         
             record = await conn.fetchrow("SELECT timezone FROM timezones WHERE user_id = $1", member.id)

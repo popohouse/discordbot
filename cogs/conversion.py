@@ -29,7 +29,7 @@ class ConversionCog(commands.Cog):
             except Exception as e:
                 await interaction.response.send_message(f"Error during conversion: {str(e)}")
         else:
-            await interaction.response.send_message(f"Please provide a value, a from_unit, and a to_unit")
+            await interaction.response.send_message("Please provide a value, a from_unit, and a to_unit")
 
 
 async def setup(bot):

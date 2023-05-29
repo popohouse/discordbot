@@ -24,7 +24,7 @@ class BirthdayCog(commands.Cog):
         self.check_birthdays.start()
         self.cleanup_birthday_roles.start()
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.check_birthdays.cancel()
         self.cleanup_birthday_roles.cancel()
 
@@ -102,7 +102,7 @@ class BirthdayCog(commands.Cog):
             
             guild_id = interaction.guild.id
             await conn.execute("INSERT INTO birthday_extras (guild_id, channel_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET channel_id = $2", guild_id, channel.id)
-            await interaction.response.send_message(f"Birthday channel set")
+            await interaction.response.send_message("Birthday channel set")
 
     @app_commands.command()
     @commands.guild_only()
@@ -116,7 +116,7 @@ class BirthdayCog(commands.Cog):
 
             guild_id = interaction.guild.id
             await conn.execute("INSERT INTO birthday_extras (guild_id, role_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET role_id = $2", guild_id, role.id)
-            await interaction.response.send_message(f"Birthday role set")
+            await interaction.response.send_message("Birthday role set")
 
     @tasks.loop(seconds=10)
     async def cleanup_birthday_roles(self):
@@ -177,21 +177,21 @@ class BirthdayCog(commands.Cog):
                             role = guild.get_role(role_id)
                             if member and role:
                                 await member.add_roles(role)
-                else:
-                    if now_utc.hour == 0 and now_utc.minute == 0:
-                        channel_id = self.birthday_channel_cache.get(guild_id)
-                        role_id = self.birthday_role_cache.get(guild_id)
-                        if channel_id:
-                            channel = self.bot.get_channel(channel_id)
-                            if channel:
-                                await channel.send(f"Happy Birthday <@{user_id}>!")
-                        if role_id:
-                            guild = self.bot.get_guild(guild_id)
-                            if guild:
-                                member = guild.get_member(user_id)
-                                role = guild.get_role(role_id)
-                                if member and role:
-                                    await member.add_roles(role)
+        else:
+            if now_utc.hour == 0 and now_utc.minute == 0:
+                channel_id = self.birthday_channel_cache.get(guild_id)
+                role_id = self.birthday_role_cache.get(guild_id)
+                if channel_id:
+                    channel = self.bot.get_channel(channel_id)
+                    if channel:
+                        await channel.send(f"Happy Birthday <@{user_id}>!")
+                if role_id:
+                    guild = self.bot.get_guild(guild_id)
+                    if guild:
+                        member = guild.get_member(user_id)
+                        role = guild.get_role(role_id)
+                        if member and role:
+                            await member.add_roles(role)
 
 
 async def setup(bot):

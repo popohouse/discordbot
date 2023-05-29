@@ -36,7 +36,7 @@ class hotposting (commands.Cog):
                 return            
 
             hot_posts = list(reddit.subreddit('bois').hot(limit=100))
-            image_posts = [post for post in hot_posts if post.is_self == False and post.url.endswith(('.jpg', '.jpeg', '.png', '.webm', '.gif', '.mp4'))]
+            image_posts = [post for post in hot_posts if post.is_self is False and post.url.endswith(('.jpg', '.jpeg', '.png', '.webm', '.gif', '.mp4'))]
             post = random.choice(image_posts)
             while post in sent_posts:
                 post = random.choice(image_posts)
@@ -59,7 +59,7 @@ class hotposting (commands.Cog):
             subreddits = ['ThighCrushing', 'ThickThighs', 'thighdeology', 'Thigh_Brows', 'thighhighs', 'Thighs' ]
             subreddit = random.choice(subreddits)
             hot_posts = list(reddit.subreddit(subreddit).hot(limit=100))
-            image_posts = [post for post in hot_posts if post.is_self == False and post.url.endswith(('.jpg', '.jpeg', '.png', '.webm', '.gif', '.mp4'))]
+            image_posts = [post for post in hot_posts if post.is_self is False and post.url.endswith(('.jpg', '.jpeg', '.png', '.webm', '.gif', '.mp4'))]
             post = random.choice(image_posts)
             while post in sent_posts:
                 post = random.choice(image_posts)
@@ -82,7 +82,7 @@ class hotposting (commands.Cog):
                 return            
 
             hot_posts = list(reddit.subreddit('femboys').hot(limit=100))
-            image_posts = [post for post in hot_posts if post.is_self == False and post.url.endswith(('.jpg', '.jpeg', '.png', '.webm', '.gif', '.mp4'))]
+            image_posts = [post for post in hot_posts if post.is_self is False and post.url.endswith(('.jpg', '.jpeg', '.png', '.webm', '.gif', '.mp4'))]
             post = random.choice(image_posts)
             while post in sent_posts:
                 post = random.choice(image_posts)
@@ -102,7 +102,7 @@ class hotposting (commands.Cog):
                 await interaction.response.send_message("Please run this command in a channel marked as NSFW.", ephemeral=True)
                 return
             hot_posts = list(reddit.subreddit(subreddit).hot(limit=100))
-            image_posts = [post for post in hot_posts if post.is_self == False and post.url.endswith(('.jpg', '.jpeg', '.png', '.webm', '.gif', '.mp4'))]
+            image_posts = [post for post in hot_posts if post.is_self is False and post.url.endswith(('.jpg', '.jpeg', '.png', '.webm', '.gif', '.mp4'))]
             post = random.choice(image_posts)
             while post in sent_posts:
                 post = random.choice(image_posts)
