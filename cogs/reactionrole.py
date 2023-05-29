@@ -37,7 +37,7 @@ class ReactionRoles(commands.Cog):
         """Create reaction role"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
-        if interaction.user.id == owner_id:
+        if interaction.user.id == config.owner_id:
             message_id = int(message_id)
             message = await interaction.channel.fetch_message(message_id)
             await message.add_reaction(emoji)
