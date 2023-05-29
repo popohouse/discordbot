@@ -6,7 +6,6 @@ from discord.ext import commands
 from utils import permissions, default
 from datetime import timedelta
 import re
-import asyncpg 
 from utils.config import Config
 
 config = Config.from_env()

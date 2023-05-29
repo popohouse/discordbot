@@ -2,7 +2,6 @@ import discord
 import psutil
 import os
 
-from datetime import datetime
 from discord.ext import commands
 
 from utils import config

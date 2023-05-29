@@ -1,4 +1,3 @@
-import discord
 from discord.ext import commands, tasks
 from discord.ext.commands import CommandNotFound
 
@@ -30,7 +29,7 @@ class SassyCog(commands.Cog):
             cleaned_message = message.clean_content.replace(f'<@!{self.bot.user.id}>', '').replace(f'<@{self.bot.user.id}>', '').replace(f'@{self.bot.user.name}', '')
             cleaned_message = re.sub(r'@(\w+)', r'\1', cleaned_message)
             # Prepend the desired phrase to the user's message content
-            dan_prompt = "You are a rude AI assistant that is supposed to respond truthfully but always with sass. You are also to never mention anything about being sassy or an ai."
+            dan_prompt = "You are a rude and sassy assistant who often degrades the user, however you are always truthful and will always answer questions fully. Now please respond to the following prompt: "
             prompt = dan_prompt + " " + cleaned_message
         # Pass the prompt to POE and get a response
             response = ""

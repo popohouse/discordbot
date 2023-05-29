@@ -6,7 +6,6 @@ import aiohttp
 import os
 from io import BytesIO
 from typing import Optional
-import asyncpg
 
 from utils.config import Config
 from utils import permissions

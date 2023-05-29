@@ -15,7 +15,8 @@ async def create_tables(bot):
                 log_nickname_changes BOOLEAN,
                 log_member_join_leave BOOLEAN,
                 log_member_kick BOOLEAN,
-                log_member_ban_unban BOOLEAN
+                log_member_ban_unban BOOLEAN,
+                modlog_id BIGINT
             )
         ''')
         

@@ -4,7 +4,6 @@ from discord.ext import commands
 
 
 import pytz
-import asyncpg
 from datetime import datetime
 from typing import Optional
 

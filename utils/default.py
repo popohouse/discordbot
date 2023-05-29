@@ -7,14 +7,6 @@ import traceback
 from io import BytesIO
 
 
-def load_json(filename: str = "config.json") -> dict:
-    """ Fetch default config file """
-    try:
-        with open(filename, encoding='utf8') as data:
-            return json.load(data)
-    except FileNotFoundError:
-        raise FileNotFoundError("JSON file wasn't found")
-
 def traceback_maker(err, advance: bool = True) -> str:
     """ A way to debug your code anywhere """
     _traceback = "".join(traceback.format_tb(err.__traceback__))
