@@ -2,7 +2,7 @@ This is a heavily modified fork of **https://github.com/AlexFlipnote/discord_bot
 
 Do you need more help? Visit my server here: **https://discord.gg/Yx6dTZvrGr** 
 
-## Requirements 
+# Requirements 
 - Python 3.10 and up - https://www.python.org/downloads/
 - git - https://git-scm.com/download/
 - Discord bot with Message Intent enabled [here](https://discordpy.readthedocs.io/en/stable/discord.html)
@@ -35,4 +35,89 @@ Note this assumes you have postgres already setup on system.
 4. You're done, enjoy your bot!
 
 
+# Current features
 
+## Commands
+Admin cog
+    amiadmin - Check if you are bot owner.
+    load - Load a cog.
+    unload - Unload a cog.
+    reload - Reloads a cog.
+    reloadall -Reloads all cogs.
+    reloadutils - Reloads a utils module.
+    dm - Direct message a user.
+Anilist cog
+    anime - Check info on anime.
+    manga - Check info on manga.
+Animal cog
+    Animal - Post animal type of subcommand choice
+        dog
+        cat
+        duck
+        hamster
+        fox
+Birthday cog
+    setbirthday - Set your birthday
+    birthdayrole - Set role user should get midnight on their birthday
+    birthdaychannel - Set channel where bot should wish users happy birthday at midnight on their birthday
+Conversion cog
+    Convert - Converts between two values
+Dailycat cog
+    dailycat - Set where dailycat pic should be posted
+Discord cog
+    avatar - get avatar of user
+    mods - list current online mods
+Fun cog
+    rate - Rates random thing
+    f - Pay respect to what you wish
+    eightball - Consult 8ball to receive an answer
+    catmeme - Random cat meme 
+    coffee - Random coffee image
+    urban - get definition for word from urban dictionrary
+    coinflip - flip a coin
+    reverse - reverses text 
+    password - get password 
+    hotcalc - Rates how hot a discord user is
+    noticeme - posts gif
+    dice - dice game
+    inspire - become inspired 
+hotposting cog
+    hot -  posts hot post from specific subreddit
+    thigh - posts hot post from a thigh subreddit
+    bois - posts hot post from /r/bois
+    femboys - posts hot post from /r/femboys
+Info cog
+    ping - pong
+    invite - invite me to your server
+    botserver - get invite link to bot support server
+    covid - get covid stats for country
+    about - info about bot  
+Logging cog
+    Log message edit
+    Log message delete
+    Log nickname changes
+Love cog
+    kiss - be actioned or action user
+    hug - be actioned or action user
+    bonk - be actioned or action user
+    slap - be actioned or action user
+    wink - be actioned or action user
+    pat - be actioned or action user
+Mod cog
+    Timeout - timeout user
+    Kick - kick user
+    modrole - set mod role which can run most mod actions
+    addrole - add a role to user
+    delrole - remove role from user
+    massrole - add role to all users
+    massunrole - remove role from all users
+Reaction role cog
+    reactionrole - Create reaction role on existing message.
+Story cog
+    story - Used for one word story channels, gets all current message and sends in nice .txt file as current "complete" story
+Timezone
+    settime - Set your timezone
+    time - Get time of yourself or user
+    deltime - Remove your timezone
+## Misc
+Any metion of bot is passed to poe.com ai for gpt responses.
