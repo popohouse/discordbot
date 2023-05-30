@@ -55,7 +55,7 @@ class Moderator(commands.Cog):
 
         match = re.match(r'(\d+)([mhd])?', duration)
         if not match:
-            await interaction.response.send_message("Invalid duration format. Use a number followed by m (minutes), h (hours), or d (days).")
+            await interaction.response.send_message("Invalid duration format. Use a number followed by m (minutes), h (hours), or d (days).", ephemeral=True)
             return
 
         amount, unit = match.groups()
@@ -76,7 +76,7 @@ class Moderator(commands.Cog):
             timeout_duration = timedelta(days=amount)
 
         if timeout_duration > timedelta(days=27):
-            await interaction.response.send_message("The maximum timeout duration is 27 days.")
+            await interaction.response.send_message("The maximum timeout duration is 27 days.", ephemeral=True)
             return
 
         try:

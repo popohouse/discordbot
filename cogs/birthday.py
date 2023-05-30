@@ -99,7 +99,7 @@ class BirthdayCog(commands.Cog):
             
             guild_id = interaction.guild.id
             await conn.execute("INSERT INTO birthday_extras (guild_id, channel_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET channel_id = $2", guild_id, channel.id)
-            await interaction.response.send_message("Birthday channel set")
+            await interaction.response.send_message("Birthday channel set", ephemeral=True)
 
     @app_commands.command()
     @commands.guild_only()
@@ -113,7 +113,7 @@ class BirthdayCog(commands.Cog):
 
             guild_id = interaction.guild.id
             await conn.execute("INSERT INTO birthday_extras (guild_id, role_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET role_id = $2", guild_id, role.id)
-            await interaction.response.send_message("Birthday role set")
+            await interaction.response.send_message("Birthday role set", ephemeral=True)
 
     @tasks.loop(seconds=10)
     async def cleanup_birthday_roles(self):

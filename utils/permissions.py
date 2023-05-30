@@ -69,10 +69,10 @@ async def check_priv( bot, interaction: discord.Interaction, target: discord.Mem
         # Self checks
         if not skip_self_checks:
             if target.id == interaction.user.id:
-                await interaction.response.send_message(f"You can't {interaction.command.name} yourself")
+                await interaction.response.send_message(f"You can't {interaction.command.name} yourself", ephemeral=True)
                 return False
             elif target.id == bot.user.id:
-                await interaction.response.send_message("So that's what you think of me huh..? sad ;-;")
+                await interaction.response.send_message("So that's what you think of me huh..? sad ;-;", ephemeral=True)
                 return False
 
         # Has Req perm check before following block

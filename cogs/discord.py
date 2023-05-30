@@ -24,7 +24,7 @@ class Discord_Info(commands.Cog):
             return formats
 
         if not user.avatar and not user.guild_avatar:
-            return await interaction.response.send_message(f"**{user}** has no avatar set, at all...")
+            return await interaction.response.send_message(f"**{user}** has no avatar set, at all...", ephemeral=True)
 
         if user.avatar:
             avatars_list.append("**Account avatar:** " + " **-** ".join(

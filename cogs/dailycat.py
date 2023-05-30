@@ -40,7 +40,7 @@ class dailycat(commands.Cog):
             async with self.bot.pool.acquire() as conn:
                 await conn.execute('DELETE FROM dailycat WHERE guild_id=$1', guild_id)
                 await self.update_cache()
-                await interaction.response.send_message('Daily cat posting stopped.')
+                await interaction.response.send_message('Daily cat posting stopped.', ephemeral=True)
                 return
         
         if channel is None and hour is None and stop is False:
@@ -59,11 +59,11 @@ class dailycat(commands.Cog):
                     hour = post_time.hour
             else:
                 if channel is None or hour is None:
-                    await interaction.response.send_message('Please provide both a channel and an hour for the first time setup.')
+                    await interaction.response.send_message('Please provide both a channel and an hour for the first time setup.', ephemeral=True)
                     return
                 channel_id = channel.id
             if not (0 <= hour <= 23 and 0 <= minute <= 59):
-                await interaction.response.send_message('Invalid hour or minute. Please enter a valid time.')
+                await interaction.response.send_message('Invalid hour or minute. Please enter a valid time.', ephemeral=True)
                 return
             post_time = datetime.time(hour, minute)
             channel_id = channel.id
@@ -73,7 +73,7 @@ class dailycat(commands.Cog):
                 guild_id, channel_id, post_time.strftime('%H:%M')
             )
             await self.update_cache()
-            await interaction.response.send_message(f"Daily cat posting set to {channel.mention} at {post_time.strftime('%H:%M')} server time.")
+            await interaction.response.send_message(f"Daily cat posting set to {channel.mention} at {post_time.strftime('%H:%M')} server time.", ephemeral=True)
 
 
     @tasks.loop(minutes=1)

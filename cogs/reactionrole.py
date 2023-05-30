@@ -46,7 +46,7 @@ class ReactionRoles(commands.Cog):
                 message = await interaction.channel.fetch_message(message_id)
             except discord.NotFound:
                 print(f"Message with ID {message_id} not found.")
-                await interaction.response.send_message('The specified message was not found.')
+                await interaction.response.send_message('The specified message was not found.', ephemeral=True)
                 return
 
         await message.add_reaction(emoji)
@@ -58,9 +58,9 @@ class ReactionRoles(commands.Cog):
                     INSERT INTO reaction_roles (guild_id, message_id, emoji, role_id)
                     VALUES ($1, $2, $3, $4)
                 ''', interaction.guild.id, message_id, str(emoji), role.id)
-                await interaction.response.send_message('Successful reaction role added')
+                await interaction.response.send_message('Successful reaction role added', ephemeral=True)
             except asyncpg.UniqueViolationError:
-                await interaction.response.send_message('This reaction role already exists!')
+                await interaction.response.send_message('This reaction role already exists!', ephemeral=True)
 
             if interaction.guild.id not in self.reaction_roles:
                 self.reaction_roles[interaction.guild.id] = {}

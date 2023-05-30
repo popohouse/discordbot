@@ -90,10 +90,10 @@ class LoggingCog(commands.Cog):
                     await conn.execute('UPDATE logging SET log_member_ban_unban = false WHERE guild_id = $1', interaction.guild.id)
                     self.logging_settings[interaction.guild.id]['log_member_ban_unban'] = False
                 else:
-                    await interaction.response.send_message(f'Invalid log type: {log_type.value}')
+                    await interaction.response.send_message(f'Invalid log type: {log_type.value}', ephemeral=True)
                     return
 
-                await interaction.response.send_message(f'Disabled logging for {log_type.value}')
+                await interaction.response.send_message(f'Disabled logging for {log_type.value}', ephemeral=True)
             
 
         #Enable logging type
@@ -125,9 +125,9 @@ class LoggingCog(commands.Cog):
                     await conn.execute('UPDATE logging SET log_member_ban_unban = true WHERE guild_id = $1', interaction.guild.id)
                     self.logging_settings[interaction.guild.id]['log_member_ban_unban'] = True
                 else:
-                    await interaction.response.send_message(f'Invalid log type: {log_type.value}')
+                    await interaction.response.send_message(f'Invalid log type: {log_type.value}', ephemeral=True)
                     return
-                await interaction.response.send_message(f'Enabled logging for {log_type.value}')
+                await interaction.response.send_message(f'Enabled logging for {log_type.value}', ephemeral=True)
 
 
     @app_commands.command()
@@ -153,7 +153,7 @@ class LoggingCog(commands.Cog):
                         'log_member_kick': 0,
                         'log_member_ban_unban': 0
                 }
-                await interaction.response.send_message(f'Set logging channel to {logchannel.mention}')
+                await interaction.response.send_message(f'Set logging channel to {logchannel.mention}', ephemeral=True)
 
             #Set mod log channel
                 if modchannel is not None:
@@ -174,7 +174,7 @@ class LoggingCog(commands.Cog):
                             'log_member_kick': 0,
                             'log_member_ban_unban': 0
                     }
-                    await interaction.response.send_message(f'Set logging channel to {modchannel.mention}')
+                    await interaction.response.send_message(f'Set logging channel to {modchannel.mention}', ephemeral=True)
 
 
 
