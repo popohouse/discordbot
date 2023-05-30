@@ -40,7 +40,7 @@ async def load_cogs() -> None:
                 print(f"Loaded extension '{extension}'")
             except Exception as e:
                 exception = f"{type(e).__name__}: {e}"
-                logging.error("Failed to load extension '%s'", extension, exception)
+                logging.error("Failed to load extension '%s'", extension)
                 print(f"Failed to load extension {extension}")
 
 
@@ -118,7 +118,7 @@ async def main():
                     print(f"Unloaded extension '{extension}'")
                 except Exception as e:
                     exception = f"{type(e).__name__}: {e}"
-                    logging.error("Failed to unload extension '%s'", extension, exception)
+                    logging.error("Failed to unload extension '%s'", extension)
                     print(f"Failed to unload extension {extension}")
 
         await bot.pool.close()

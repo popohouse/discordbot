@@ -37,10 +37,18 @@ class ReactionRoles(commands.Cog):
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
         message_id = int(message_id)
-        message = await interaction.channel.fetch_message(message_id)
-        await message.add_reaction(emoji)
+        print(f"Attempting to fetch message with ID: {message_id}")
+        try:
+            message = await interaction.channel.fetch_message(message_id)
+        except discord.NotFound:
+            print(f"Message with ID {message_id} not found.")
+            await interaction.response.send_message('The specified message was not found.')
+            return
 
-        async with self.bot.pool.transaction() as conn:
+        await message.add_reaction(emoji)
+        print(f"Reaction added to message with ID: {message_id}")
+
+        async with self.bot.pool.acquire() as conn:
             try:
                 await conn.execute('''
                     INSERT INTO reaction_roles (guild_id, message_id, emoji, role_id)
@@ -55,6 +63,7 @@ class ReactionRoles(commands.Cog):
             if message_id not in self.reaction_roles[interaction.guild.id]:
                 self.reaction_roles[interaction.guild.id][message_id] = {}
             self.reaction_roles[interaction.guild.id][message_id][str(emoji)] = role.id
+
 
 
     @commands.Cog.listener()
