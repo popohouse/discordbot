@@ -27,19 +27,20 @@ class SassyCog(commands.Cog):
             cleaned_message = message.clean_content.replace(f'<@!{self.bot.user.id}>', '').replace(f'<@{self.bot.user.id}>', '').replace(f'@{self.bot.user.name}', '')
             cleaned_message = re.sub(r'@(\w+)', r'\1', cleaned_message)
             # Prepend the desired phrase to the user's message content
-            dan_prompt = "You are a rude and sassy assistant who often degrades the user, however you are always truthful and will always answer questions fully. Now please respond to the following prompt: "
-            prompt = dan_prompt + " " + cleaned_message
+            prompt = cleaned_message
         # Pass the prompt to POE and get a response
             response = ""
-            for chunk in self.client.send_message("chinchilla", prompt, with_chat_break=False):
+            for chunk in self.client.send_message("mommygpt", prompt):
                 response += chunk["text_new"]
 
+            response_chunks = [response[i:i+1999] for i in range(0, len(response), 1999)]
             # Send the GPT-4 response back to the Discord channel
-            await message.channel.send(response)
+            for chunk in response_chunks:
+                await message.channel.send(chunk)
 
     @tasks.loop(hours=1)
     async def chat_cleanup(self):
-        self.client.purge_conversation("chinchilla")
+        self.client.purge_conversation("mommygpt")
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
