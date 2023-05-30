@@ -41,9 +41,13 @@ class ReactionRoles(commands.Cog):
         try:
             message = await interaction.channel.fetch_message(message_id)
         except discord.NotFound:
-            print(f"Message with ID {message_id} not found.")
-            await interaction.response.send_message('The specified message was not found.')
-            return
+            print(f"Message with ID {message_id} not found in cache. Fetching from API...")
+            try:
+                message = await interaction.channel.fetch_message(message_id)
+            except discord.NotFound:
+                print(f"Message with ID {message_id} not found.")
+                await interaction.response.send_message('The specified message was not found.')
+                return
 
         await message.add_reaction(emoji)
         print(f"Reaction added to message with ID: {message_id}")
