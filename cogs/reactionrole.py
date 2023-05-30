@@ -28,7 +28,6 @@ class ReactionRoles(commands.Cog):
                 if message_id not in self.reaction_roles[guild_id]:
                     self.reaction_roles[guild_id][message_id] = {}
                 self.reaction_roles[guild_id][message_id][emoji] = role_id
-            await conn.close()
 
     @app_commands.command()
     @commands.guild_only()
@@ -37,30 +36,26 @@ class ReactionRoles(commands.Cog):
         """Create reaction role"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
-        if interaction.user.id == config.owner_id:
-            message_id = int(message_id)
-            message = await interaction.channel.fetch_message(message_id)
-            await message.add_reaction(emoji)
+        message_id = int(message_id)
+        message = await interaction.channel.fetch_message(message_id)
+        await message.add_reaction(emoji)
 
-            async with self.bot.pool.acquire() as conn:
-                try:
-                    await conn.execute('''
-                        INSERT INTO reaction_roles (guild_id, message_id, emoji, role_id)
-                        VALUES ($1, $2, $3, $4)
-                    ''', interaction.guild.id, message_id, str(emoji), role.id)
-                    await interaction.response.send_message('Successful reaction role added')
-                except asyncpg.UniqueViolationError:
-                    await interaction.response.send_message('This reaction role already exists!')
-                finally:
-                    await conn.close()
+        async with self.bot.pool.transaction() as conn:
+            try:
+                await conn.execute('''
+                    INSERT INTO reaction_roles (guild_id, message_id, emoji, role_id)
+                    VALUES ($1, $2, $3, $4)
+                ''', interaction.guild.id, message_id, str(emoji), role.id)
+                await interaction.response.send_message('Successful reaction role added')
+            except asyncpg.UniqueViolationError:
+                await interaction.response.send_message('This reaction role already exists!')
 
-                if interaction.guild.id not in self.reaction_roles:
-                    self.reaction_roles[interaction.guild.id] = {}
-                if message_id not in self.reaction_roles[interaction.guild.id]:
-                    self.reaction_roles[interaction.guild.id][message_id] = {}
-                self.reaction_roles[interaction.guild.id][message_id][str(emoji)] = role.id
-        else:
-            await interaction.response.send_message("Sir you are not popo")
+            if interaction.guild.id not in self.reaction_roles:
+                self.reaction_roles[interaction.guild.id] = {}
+            if message_id not in self.reaction_roles[interaction.guild.id]:
+                self.reaction_roles[interaction.guild.id][message_id] = {}
+            self.reaction_roles[interaction.guild.id][message_id][str(emoji)] = role.id
+
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -96,7 +91,6 @@ async def cleanup_reaction_roles(self):
             DELETE FROM reaction_roles
             WHERE guild_id != ALL($1)
         ''', guild_ids)
-        await conn.close()
 
 @commands.Cog.listener()
 async def on_message_delete(self, message):
@@ -105,7 +99,6 @@ async def on_message_delete(self, message):
             DELETE FROM reaction_roles
             WHERE guild_id = $1 AND message_id = $2
         ''', message.guild.id, message.id)
-        await conn.close()
 
     if message.guild.id in self.reaction_roles and message.id in self.reaction_roles[message.guild.id]:
         del self.reaction_roles[message.guild.id][message.id]    
@@ -113,4 +106,3 @@ async def on_message_delete(self, message):
 
 async def setup(bot):
     await bot.add_cog(ReactionRoles(bot))
-

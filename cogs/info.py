@@ -19,9 +19,9 @@ class Information(commands.Cog):
     @app_commands.command(name='ping')
     async def ping(self, interaction: discord.Interaction)-> None:
         """ping to check if the bot is available"""
+        await interaction.response.send_message("🏓 Pong")
         before = time.monotonic()
         before_ws = int(round(self.bot.latency * 1000, 1))
-        msg = await interaction.response.send_message("🏓 Pong")
         ping = (time.monotonic() - before) * 1000
         await interaction.edit_original_response(content=f"🏓 WS: {before_ws}ms  |  REST: {int(ping)}ms")
 

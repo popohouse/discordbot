@@ -39,7 +39,6 @@ class dailycat(commands.Cog):
             guild_id = interaction.guild_id
             async with self.bot.pool.acquire() as conn:
                 await conn.execute('DELETE FROM dailycat WHERE guild_id=$1', guild_id)
-                await conn.close()
                 await self.update_cache()
                 await interaction.response.send_message('Daily cat posting stopped.')
                 return
@@ -73,7 +72,6 @@ class dailycat(commands.Cog):
                 'ON CONFLICT (guild_id) DO UPDATE SET channel_id = $2, post_time = $3',
                 guild_id, channel_id, post_time.strftime('%H:%M')
             )
-            await conn.close()
             await self.update_cache()
             await interaction.response.send_message(f"Daily cat posting set to {channel.mention} at {post_time.strftime('%H:%M')} server time.")
 
@@ -91,15 +89,14 @@ class dailycat(commands.Cog):
                 channel = guild.get_channel(channel_id)
                 if not channel:
                     continue
-                async with aiohttp.ClientSession() as session:
-                    async with session.get('https://api.thecatapi.com/v1/images/search') as response:
-                        cat = await response.json()
-                        cat_url = cat[0]['url']
-                        file_ext = os.path.splitext(cat_url)[1]
-                        async with session.get(cat_url) as resp:
-                            img_data = await resp.read()
-                            img_file = discord.File(BytesIO(img_data), filename=f'cat{file_ext}')
-                            await channel.send("Daily cat posting", file=img_file)
+                async with aiohttp.ClientSession() as session, session.get('https://api.thecatapi.com/v1/images/search') as response:
+                    cat = await response.json()
+                    cat_url = cat[0]['url']
+                    file_ext = os.path.splitext(cat_url)[1]
+                    async with session.get(cat_url) as resp:
+                        img_data = await resp.read()
+                        img_file = discord.File(BytesIO(img_data), filename=f'cat{file_ext}')
+                        await channel.send("Daily cat posting", file=img_file)
 
     async def update_cache(self):
         async with self.bot.pool.acquire() as conn:
@@ -114,4 +111,3 @@ async def setup(bot):
     cat_cog = dailycat(bot)
     await cat_cog.setup()
     await bot.add_cog(cat_cog)
-    

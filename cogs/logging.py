@@ -141,7 +141,6 @@ class LoggingCog(commands.Cog):
                     await conn.execute('UPDATE logging SET channel_id = $2 WHERE guild_id = $1', logchannel.id, interaction.guild.id)
                 else:
                     await conn.execute('INSERT INTO logging (guild_id, channel_id) VALUES ($1, $2)', interaction.guild.id, logchannel.id)
-                await conn.close()
                 if interaction.guild.id in self.logging_settings:
                     self.logging_settings[interaction.guild.id]['channel_id'] = logchannel.id
                 else:
@@ -163,7 +162,6 @@ class LoggingCog(commands.Cog):
                         await conn.execute('UPDATE logging SET modlog_id = $2 WHERE guild_id = $1', modchannel.id, interaction.guild.id)
                     else:
                         await conn.execute('INSERT INTO logging (guild_id, modlog_id) VALUES ($1, $2)', interaction.guild.id, modchannel.id)
-                    await conn.close()
                     if interaction.guild.id in self.logging_settings:
                         self.logging_settings[interaction.guild.id]['modlog_id'] = modchannel.id
                     else:

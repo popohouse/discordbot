@@ -26,7 +26,6 @@ async def check_permissions(self, interaction: discord.Interaction, perms, *, ch
     if 'manage_guild' not in perms:
         async with self.bot.pool.acquire() as conn:
             mod_role_id = await conn.fetchval('SELECT role_id FROM mod_role_id WHERE guild_id = $1', interaction.guild_id)
-            await conn.close()
             if mod_role_id is not None:
                 member = interaction.guild.get_member(interaction.user.id)
                 if any(role.id == mod_role_id for role in member.roles):

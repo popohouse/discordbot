@@ -72,7 +72,3 @@ async def populate_tables(bot):
         for guild in bot.guilds:
             await conn.execute('INSERT INTO logging (guild_id) VALUES ($1) ON CONFLICT DO NOTHING', guild.id)
             await conn.execute('INSERT INTO dailycat (guild_id) VALUES ($1) ON CONFLICT DO NOTHING', guild.id)
-
-        
-
-    

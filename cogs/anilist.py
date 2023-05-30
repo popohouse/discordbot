@@ -7,11 +7,11 @@ from discord import app_commands
 class AniList(commands.Cog):
     def __init__(self, bot)-> None:
         self.bot = bot
+        self.session = aiohttp.ClientSession()
     async def cog_unload(self):
         self.bot.loop.create_task(self.session.close())    
 
     async def search(self, interaction, media_type: str, search: str):
-        self.session = aiohttp.ClientSession()
         query = '''
         query ($search: String, $type: MediaType) {
           Media (search: $search, type: $type) {
