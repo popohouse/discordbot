@@ -1,8 +1,7 @@
 # Custom
-cogs/eval.py
 .vscode/
-.env
 db/
+testing/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
