@@ -108,7 +108,7 @@ class Information(commands.Cog):
         embed.add_field(
             name="Developer",
             value=str(self.bot.get_user(
-                config.owner_id
+                config.discord_owner_id
             ))
         )
         embed.add_field(name="Library", value="discord.py")

@@ -40,8 +40,8 @@ async def load_cogs() -> None:
                 print(f"Loaded extension '{extension}'")
             except Exception as e:
                 exception = f"{type(e).__name__}: {e}"
-                logging.error("Failed to load extension '%s'", extension)
-                print(f"Failed to load extension {extension}")
+                logging.error("Failed to load extension '%s'", exception)
+                print(f"Failed to load extension {extension} {exception}")
 
 
 @bot.command()
@@ -77,6 +77,20 @@ async def sync(
             ret += 1
 
     await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.")
+
+@bot.command()
+@commands.guild_only()
+@commands.is_owner()
+async def sync_guild(ctx: Context) -> None:
+    try:
+        ctx.bot.tree.copy_global_to(guild=ctx.guild)
+        synced = await ctx.bot.tree.sync(guild=ctx.guild)
+        await ctx.send(f"Synced {len(synced)} commands to the current guild.")
+    except discord.HTTPException:
+        await ctx.send("Failed to sync commands to the current guild.")
+
+
+
 
 #Runs when bot is ready
 @bot.event 
@@ -118,8 +132,8 @@ async def main():
                     print(f"Unloaded extension '{extension}'")
                 except Exception as e:
                     exception = f"{type(e).__name__}: {e}"
-                    logging.error("Failed to unload extension '%s'", extension)
-                    print(f"Failed to unload extension {extension}")
+                    logging.error("Failed to unload extension '%s'", exception)
+                    print(f"Failed to unload extension {extension} {exception}")
 
         await bot.pool.close()
         await bot.close()

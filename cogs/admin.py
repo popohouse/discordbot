@@ -22,10 +22,11 @@ class Admin(commands.Cog):
         # Please do not remove this part.
         # I would love to be credited as the original creator of the source code.
         #   -- AlexFlipnote
-        if interaction.user.id == 86477779717066752:
+        elif interaction.user.id == 86477779717066752:
             return await interaction.response.send_message(f"Well kinda **{interaction.user.name}**.. you still own the source code", ephemeral=True)
 
-        await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
+        else: 
+            await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
 
     @app_commands.command()
     async def load(self, interaction: discord.Interaction, name: str):
@@ -36,7 +37,8 @@ class Admin(commands.Cog):
             except Exception as e:
                 return await interaction.response.send_message(default.traceback_maker(e))
             await interaction.response.send_message(f"Loaded extension **{name}.py**", ephemeral=True)
-        await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
+        else:
+            await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
 
     @app_commands.command()
     async def unload(self, interaction: discord.Interaction, name: str):
@@ -47,7 +49,8 @@ class Admin(commands.Cog):
             except Exception as e:
                 return await interaction.response.send_message(default.traceback_maker(e))
             await interaction.response.send_message(f"Unloaded extension **{name}.py**", ephemeral=True)
-        await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
+        else: 
+            await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
         
     @app_commands.command()
     async def reload(self, interaction: discord.Interaction, name: str):
@@ -55,10 +58,11 @@ class Admin(commands.Cog):
         if interaction.user.id == config.discord_owner_id:
             try:
                 await self.bot.reload_extension(f"cogs.{name}")
+                await interaction.response.send_message(f"Reloaded extension **{name}.py**", ephemeral=True)
             except Exception as e:
                 return await interaction.response.send_message(default.traceback_maker(e))
-            await interaction.response.send_message(f"Reloaded extension **{name}.py**", ephemeral=True)
-        await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
+        else:
+            await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
     @app_commands.command()
     async def reloadall(self, interaction: discord.Interaction):
         """Reloads all extensions."""
@@ -88,7 +92,8 @@ class Admin(commands.Cog):
                 )
 
             await interaction.response.send_message("Successfully reloaded all extensions", ephemeral=True)
-        await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
+        else:
+            await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
     @app_commands.command()
     async def reloadutils(self, interaction: discord.Interaction, name: str):
         """Reloads a utils module."""
@@ -103,7 +108,8 @@ class Admin(commands.Cog):
                 error = default.traceback_maker(e)
                 return await interaction.response.send_message(f"Module **{name_maker}** returned error and was not reloaded...\n{error}", ephemeral=True)
             await interaction.response.send_message(f"Reloaded module **{name_maker}**", ephemeral=True)
-        await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
+        else: 
+            await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
     @app_commands.command()
     async def dm(self, interaction: discord.Interaction, user: discord.User, *, message: str):
         """DM the user of your choice"""
@@ -113,7 +119,8 @@ class Admin(commands.Cog):
                 await interaction.response.send_message(f"✉️ Sent a DM to **{user}**", ephemeral=True)
             except discord.Forbidden:
                 await interaction.response.send_message("This user might be having DMs blocked or it's a bot account...", ephemeral=True)
-        await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
+        else:
+            await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(Admin(bot))

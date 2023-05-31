@@ -64,7 +64,16 @@ async def create_tables(bot):
             role_id BIGINT
                 )
             ''')
-
+        await conn.execute('''
+            CREATE TABLE IF NOT EXISTS auto_responses(
+            id SERIAL PRIMARY KEY,
+            guild_id BIGINT NOT NULL,
+            triggers TEXT[],
+            response TEXT,
+            ping BOOLEAN,
+            UNIQUE (guild_id, triggers, response)
+                ) 
+            ''')
 
 
 async def populate_tables(bot):
