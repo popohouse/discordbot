@@ -4,6 +4,8 @@ import re
 import discord
 from discord import app_commands
 
+###todo
+#Add user lookup
 class AniList(commands.Cog):
     def __init__(self, bot)-> None:
         self.bot = bot

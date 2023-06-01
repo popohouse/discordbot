@@ -5,6 +5,9 @@ import aiohttp
 import os
 from io import BytesIO
 
+
+###todo
+#Use pool version of aiohttp
 class Love(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

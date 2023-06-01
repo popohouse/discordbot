@@ -7,6 +7,12 @@ import json
 
 from utils import permissions
 
+### Possible todo###
+#Implement limit of AR per guild in both database and cache
+#Possibly add timestamp to AR when triggered so can cleanup old ones
+#Add cooldown to AR
+#Add ability to add AR to specific channel(s)/ignore specific channel(s)
+#Add ability to add AR to specific role(s)/ignore specific role(s)
 
 class Buttons(discord.ui.View):
     def __init__(self, pages):
@@ -44,13 +50,6 @@ class AutoResponseCog(commands.Cog):
             async with self.bot.pool.acquire() as conn:
                 await self.update_cache()
 
-
-    ### Possible todo###
-    #Implement limit of AR per guild in both database and cache
-    #Possibly add timestamp to AR when triggered so can cleanup old ones
-    #Add cooldown to AR
-    #Add ability to add AR to specific channel(s)/ignore specific channel(s)
-    #Add ability to add AR to specific role(s)/ignore specific role(s)
     async def update_cache(self, guild_id=None):
         print("AR cache updated")
         try:

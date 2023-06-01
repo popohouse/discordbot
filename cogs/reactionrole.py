@@ -8,7 +8,9 @@ from utils import permissions
 
 config = Config.from_env()
 
-
+###Todo
+#Add limit to amount of reactionroles a guild can have
+#Add command to list reactionroles
 class ReactionRoles(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

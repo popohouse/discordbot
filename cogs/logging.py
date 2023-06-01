@@ -9,6 +9,11 @@ from utils.config import Config
 
 config = Config.from_env()
 
+
+###todo
+#Log mod command from mod.py
+#Check if logs work as intended for each logging type
+#Make sure if modlog channel not set defaults sending those logs to main log channel
 class LoggingCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

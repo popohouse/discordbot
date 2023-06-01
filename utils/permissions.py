@@ -10,9 +10,6 @@ config = Config.from_env()
 
 async def check_permissions(self, interaction: discord.Interaction, perms, *, check=all) -> bool:
     """Checks if author has permissions to a permission"""
-    if interaction.user.id == config.discord_owner_id:
-        return True
-
     # Check if user has required permissions
     if 'manage_guild' in perms:
         resolved = interaction.guild_permissions_for(interaction.user)

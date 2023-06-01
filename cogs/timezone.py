@@ -11,13 +11,11 @@ from utils.config import Config
 
 config = Config.from_env()
 
-
-
+###todo
+#Admin commnad to set/delete timezone for a user
 class TimezoneCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
-
 
     @app_commands.command()
     @commands.guild_only()

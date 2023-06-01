@@ -78,17 +78,6 @@ async def sync(
 
     await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.")
 
-@bot.command()
-@commands.guild_only()
-@commands.is_owner()
-async def sync_guild(ctx: Context) -> None:
-    try:
-        ctx.bot.tree.copy_global_to(guild=ctx.guild)
-        synced = await ctx.bot.tree.sync(guild=ctx.guild)
-        await ctx.send(f"Synced {len(synced)} commands to the current guild.")
-    except discord.HTTPException:
-        await ctx.send("Failed to sync commands to the current guild.")
-
 
 
 

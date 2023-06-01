@@ -20,10 +20,6 @@ class Config:
     postgres_user: str
     postgres_password: str
 
-    reddit_client_id: str
-    reddit_client_secret: str
-    reddit_user_agent: str
-
     poe_token: str
 
     @classmethod
