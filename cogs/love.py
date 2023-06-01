@@ -6,8 +6,6 @@ import os
 from io import BytesIO
 
 
-###todo
-#Use pool version of aiohttp
 class Love(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -116,6 +114,7 @@ class Love(commands.Cog):
             await interaction.response.send_message(f'{interaction.user.mention} gets headpats!', file=image_file)
         else:
             await interaction.response.send_message(f'{interaction.user.mention} gives headpats to {target.mention}!', file=image_file)
+
 
 async def setup(bot):
     await bot.add_cog(Love(bot))

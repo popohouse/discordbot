@@ -42,6 +42,7 @@ class Buttons(discord.ui.View):
             await interaction.response.edit_message(content=f"{self.pages[self.current_page]}Page {self.current_page + 1}/{len(self.pages)}")
             self.update_page_counter()
 
+
 class AutoResponseCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

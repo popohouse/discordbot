@@ -6,10 +6,8 @@ import secrets
 import aiohttp
 import mimetypes
 import io
-
 from io import BytesIO
 from utils import permissions, http
-
 
 
 class Fun_Commands(commands.Cog):
@@ -40,7 +38,6 @@ class Fun_Commands(commands.Cog):
             "You'll be the judge", "no... (╯°□°）╯︵ ┻━┻", "no... baka",
             "senpai, pls no ;-;"
         ]
-
         answer = random.choice(ballresponse)
         await interaction.response.send_message(f"🎱 **Question:** {question}\n**Answer:** {answer}")
 
@@ -72,18 +69,14 @@ class Fun_Commands(commands.Cog):
                 r = await http.get(f"https://api.urbandictionary.com/v0/define?term={search}", res_method="json")
             except Exception:
                 return await interaction.response.send_message("Urban API returned invalid data... might be down atm.")
-
             if not r.response:
                 return await interaction.response.send_message("I think the API broke...")
-
             result = sorted(r.response["list"], reverse=True, key=lambda g: int(g["thumbs_up"]))[0]
-
             definition = result["definition"]
             if len(definition) >= 1000:
                 definition = definition[:1000]
                 definition = definition.rsplit(" ", 1)[0]
                 definition += "..."
-
             await interaction.response.send_message(f"📚 Definitions for **{result['word']}**```fix\n{definition}```")
 
     @app_commands.command()
@@ -115,7 +108,6 @@ class Fun_Commands(commands.Cog):
         random.seed(user.id)
         r = random.randint(1, 100)
         hot = r / 1.17
-
         match hot:
             case x if x > 75:
                 emoji = "💞"
@@ -125,7 +117,6 @@ class Fun_Commands(commands.Cog):
                 emoji = "❤"
             case _:
                 emoji = "💔"
-
         await interaction.response.send_message(f"**{user.name}** is **{hot:.2f}%** hot {emoji}")
 
     @app_commands.command()
@@ -133,7 +124,6 @@ class Fun_Commands(commands.Cog):
         """Notice me senpai! owo"""
         if not permissions.can_handle(interaction, "attach_files"):
             return await interaction.response.send_message("I cannot send images here ;-;")
-
         r = await http.get("https://i.alexflipnote.dev/500ce4.gif", res_method="read")
         bio = BytesIO(r.response)
         await interaction.response.send_message(file=discord.File(bio, filename="noticeme.gif"))
@@ -142,12 +132,10 @@ class Fun_Commands(commands.Cog):
     async def dice(self, interaction: discord.Interaction):
         """Dice game. Good luck"""
         bot_dice, player_dice = [random.randint(1, 6) for g in range(2)]
-
         results = "\n".join([
             f"**{self.bot.user.display_name}:** 🎲 {bot_dice}",
             f"**{interaction.user.display_name}** 🎲 {player_dice}"
         ])
-
         match player_dice:
             case x if x > bot_dice:
                 final_message = "Congrats, you won 🎉"
@@ -155,7 +143,6 @@ class Fun_Commands(commands.Cog):
                 final_message = "You lost, try again... 🍃"
             case _:
                 final_message = "It's a tie 🎲"
-
         await interaction.response.send_message(f"{results}\n> {final_message}")
         
     @app_commands.command()
@@ -164,7 +151,6 @@ class Fun_Commands(commands.Cog):
         async with aiohttp.ClientSession() as session, session.get('https://inspirobot.me/api?generate=true') as response:
             link = await response.text()
             await interaction.response.send_message(link)
-
 
 
 async def setup(bot):

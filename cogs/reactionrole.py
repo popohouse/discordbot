@@ -7,9 +7,7 @@ from utils import permissions
 
 config = Config.from_env()
 
-###Todo
-#Add limit to amount of reactionroles a guild can have
-#Add command to list reactionroles
+
 class ReactionRoles(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -108,6 +106,7 @@ async def on_message_delete(self, message):
         ''', message.guild.id, message.id)
     if message.guild.id in self.reaction_roles and message.id in self.reaction_roles[message.guild.id]:
         del self.reaction_roles[message.guild.id][message.id]    
+
 
 async def setup(bot):
     await bot.add_cog(ReactionRoles(bot))

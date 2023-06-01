@@ -11,8 +11,7 @@ from utils.config import Config
 
 config = Config.from_env()
 
-###todo
-#Admin commnad to set/delete timezone for a user
+
 class TimezoneCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -64,6 +63,7 @@ class TimezoneCog(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             await conn.execute("DELETE FROM timezones WHERE user_id = $1", interaction.user.id)
             await interaction.response.send_message("Your timezone has been removed", ephemeral=True)
+
 
 async def setup(bot):
     await bot.add_cog(TimezoneCog(bot))

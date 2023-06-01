@@ -8,6 +8,7 @@ from utils import default, http, config
 
 config = config.Config.from_env(".env")
 
+
 class Information(commands.Cog):
     def __init__(self, bot: commands.Bot)-> None:
         self.bot = bot
@@ -105,6 +106,7 @@ class Information(commands.Cog):
         embed.add_field(name="Commands loaded", value=len(self.bot.tree.get_commands()))
         embed.add_field(name="RAM", value=f"{ramUsage:.2f} MB")
         await interaction.response.send_message(content=f"ℹ About **{self.bot.user}**", embed=embed)
+
 
 async def setup(bot):
     await bot.add_cog(Information(bot))

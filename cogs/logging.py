@@ -8,10 +8,6 @@ from utils.config import Config
 config = Config.from_env()
 
 
-###todo
-#Log mod command from mod.py
-#Check if logs work as intended for each logging type
-#Make sure if modlog channel not set defaults sending those logs to main log channel
 class LoggingCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -269,6 +265,7 @@ class LoggingCog(commands.Cog):
             channel = self.bot.get_channel(modlog_id)
             embed = discord.Embed(title="Member Unbanned", description=f"{member.mention} was unbanned from the server.", color=discord.Color.red())
             await channel.send(embed=embed)
+
 
 async def setup(bot):
     await bot.add_cog(LoggingCog(bot))

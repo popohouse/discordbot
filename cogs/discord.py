@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+
 class Discord_Info(commands.Cog):
     def __init__(self, bot: commands.Bot)-> None:
         self.bot = bot
@@ -54,6 +55,7 @@ class Discord_Info(commands.Cog):
             if all_status[g]["users"]:
                 message += f"{all_status[g]['emoji']} {', '.join(all_status[g]['users'])}\n"
         await interaction.response.send_message(f"Mods in **{interaction.guild.name}**\n{message}")
+
 
 async def setup(bot):
     await bot.add_cog(Discord_Info(bot))

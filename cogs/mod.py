@@ -9,21 +9,7 @@ from utils.config import Config
 
 config = Config.from_env()
 
-###todo
-#Lockdown command
-#Massban command
-#Masskick command
-#Masstimeout command
-#Massunban command
-#Slowmode command
-#Warn command
-#Unwarn command
-#System to keep track of how many times a user has been warned, and what for. Possibly a way to view this info.
-#System to set how many warns before certain actions are taken at set vales, per guild. Let user set current warning amount equals punishment for amount. Punishemnt being kick, timeout, ban, etc. amount being possibly a time for things like timeout/ban.
-#Notes on a user, for mods to keep track of things like previous bans, warnings, and specific notes written by mods.
-#Prune command
-#Unban command
-#Ban command
+
 class ActionReason(commands.Converter):
     async def convert(self, interaction: discord.Interaction, argument):
         ret = argument
@@ -173,6 +159,7 @@ class Moderator(commands.Cog):
             await interaction.response.send_message(default.actionmessage(f"removed every user from {role}"))
         except Exception as e:
             print(e)
+
 
 async def setup(bot):
     await bot.add_cog(Moderator(bot))

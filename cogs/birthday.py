@@ -166,6 +166,7 @@ class BirthdayCog(commands.Cog):
                             if member and role:
                                 await member.add_roles(role)
 
+
 async def setup(bot):
     birthday_cog = BirthdayCog(bot)
     await birthday_cog.setup()

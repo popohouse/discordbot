@@ -6,6 +6,7 @@ from utils import config
 
 config = config.Config.from_env(".env")
 
+
 class Events(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -20,6 +21,7 @@ class Events(commands.Cog):
 
         if to_send:
             await to_send.send(config.discord_join_message)
+
 
 async def setup(bot):
     await bot.add_cog(Events(bot))

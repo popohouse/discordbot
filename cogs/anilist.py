@@ -99,5 +99,6 @@ class AniList(commands.Cog):
     async def manga(self, interaction: discord.Interaction, search: str)-> None:
         await self.search(interaction, "manga", search)
 
+
 async def setup(bot):
     await bot.add_cog(AniList(bot))

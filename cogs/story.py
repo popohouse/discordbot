@@ -25,5 +25,6 @@ class StoryCog(commands.Cog):
         with StringIO(' '.join(messages)) as f:
             await interaction.response.send_message(file=File(f, 'story.txt'))
 
+
 async def setup(bot)-> None:
     await bot.add_cog(StoryCog(bot))

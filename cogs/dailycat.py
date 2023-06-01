@@ -11,6 +11,7 @@ from utils import permissions
 
 config = Config.from_env()
 
+
 class dailycat(commands.Cog):
     def __init__(self, bot)-> None:
         self.bot = bot
@@ -100,6 +101,7 @@ class dailycat(commands.Cog):
                 guild_id, channel_id, post_time_str = row['guild_id'], row['channel_id'], row['post_time']
                 if channel_id is not None and post_time_str is not None:
                     self.cache[guild_id] = (channel_id, post_time_str)
+
 
 async def setup(bot):
     cat_cog = dailycat(bot)

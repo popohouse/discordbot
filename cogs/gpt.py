@@ -50,6 +50,7 @@ class SassyCog(commands.Cog):
             return
         # Otherwise, propagate the error
         raise error
-            
+          
+
 async def setup(bot):
     await bot.add_cog(SassyCog(bot))

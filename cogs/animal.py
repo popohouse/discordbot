@@ -59,5 +59,6 @@ class Animal(commands.Cog):
                 image_file = discord.File(io.BytesIO(image_data), filename=f"hamster{extension}")
                 await interaction.response.send_message(file=image_file)
 
+
 async def setup(bot):
     await bot.add_cog(Animal(bot))
