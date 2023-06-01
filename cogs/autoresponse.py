@@ -7,6 +7,34 @@ import json
 
 from utils import permissions
 
+
+class Buttons(discord.ui.View):
+    def __init__(self, pages):
+        super().__init__()
+        self.value = None
+        self.pages = pages
+        self.current_page = 0
+        self.page_counter = None
+
+    def update_page_counter(self):
+        if self.page_counter:
+            self.page_counter.content = f"Page {self.current_page + 1}/{len(self.pages)}"
+
+    @discord.ui.button(label="Back", style=discord.ButtonStyle.green)
+    async def backpage(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.current_page > 0:
+            self.current_page -= 1
+            await interaction.response.edit_message(content=f"{self.pages[self.current_page]}Page {self.current_page + 1}/{len(self.pages)}")
+            self.update_page_counter()
+
+    @discord.ui.button(label="Forward", style=discord.ButtonStyle.green)
+    async def forwardpage(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.current_page < len(self.pages) - 1:
+            self.current_page += 1
+            await interaction.response.edit_message(content=f"{self.pages[self.current_page]}Page {self.current_page + 1}/{len(self.pages)}")
+            self.update_page_counter()
+
+
 class AutoResponseCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -121,6 +149,8 @@ class AutoResponseCog(commands.Cog):
         except Exception as e:
             await interaction.response.send_message(f"Failed to remove alias: {str(e)}", ephemeral=True)
 
+
+
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
@@ -130,12 +160,26 @@ class AutoResponseCog(commands.Cog):
         try:
             # Retrieve auto responses from the database
             async with self.bot.pool.acquire() as conn:
-                auto_responses = await conn.fetch("SELECT id, triggers, response FROM auto_responses WHERE guild_id = $1", interaction.guild.id)
-                # Format the auto responses as a string
+                auto_responses = await conn.fetch(
+                    "SELECT id, triggers, response FROM auto_responses WHERE guild_id = $1", interaction.guild.id
+                )
+                # Format the auto responses as a list of strings (pages)
+                pages = []
+                page_limit = 2000  # Character limit per page
                 response_str = "Auto responses:\n"
                 for row in auto_responses:
-                    response_str += f"ID: {row['id']}\nTriggers: {', '.join(row['triggers'])}\nResponse: {row['response']}\n\n"
-                await interaction.response.send_message(response_str, ephemeral=True)
+                    entry = f"ID: {row['id']}\nTriggers: {', '.join(row['triggers'])}\nResponse: {row['response']}\n"
+                    if len(response_str) + len(entry) > page_limit:
+                        pages.append(response_str)
+                        response_str = ""
+                    response_str += entry
+                pages.append(response_str)
+
+            view = Buttons(pages)
+            view.page_counter = await interaction.response.send_message(
+                f"{pages[0]}Page 1/{len(pages)}", view=view, ephemeral=True
+            )
+
         except Exception as e:
             await interaction.response.send_message(f"Failed to list auto responses: {str(e)}", ephemeral=True)
 
