@@ -4,6 +4,7 @@ from utils.config import Config
 
 config = Config.from_env()
 
+
 async def check_permissions(self, interaction: discord.Interaction, perms, *, check=all) -> bool:
     """Checks if author has permissions to a permission"""
     # Check if user has required permissions
@@ -23,11 +24,13 @@ async def check_permissions(self, interaction: discord.Interaction, perms, *, ch
                     return True
     return False
 
+
 def has_permissions(*, check=all, **perms) -> bool:
     """discord.Commands method to check if author has permissions"""
     async def pred(interaction: discord.Interaction):
         return await check_permissions(interaction, perms, check=check)
     return commands.check(pred)
+
 
 async def check_priv(bot, interaction: discord.Interaction, target: discord.Member, perms, skip_self_checks=False) -> bool:
     # mod role check :)
@@ -68,6 +71,7 @@ async def check_priv(bot, interaction: discord.Interaction, target: discord.Memb
             return True
         await interaction.response.send_message("Not a mod sadchamp")
         return False
+
 
 def can_handle(interaction: discord.Interaction, permission: str) -> bool:
     """Checks if bot has permissions or is in DMs right now"""
