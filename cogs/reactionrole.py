@@ -11,6 +11,7 @@ config = Config.from_env()
 ###Todo
 #Add limit to amount of reactionroles a guild can have
 #Add command to list reactionroles
+#Allow reactionroles to be toggled, so if user reacts again, it removes the role. Keep in mind bot is currently removing reactions, so will need to watch for that event and ignore it.
 class ReactionRoles(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

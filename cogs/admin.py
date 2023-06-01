@@ -22,7 +22,7 @@ class Admin(commands.Cog):
         # Please do not remove this part.
         # I would love to be credited as the original creator of the source code.
         #   -- AlexFlipnote
-        elif interaction.user.id == 86477779717066752:
+        if interaction.user.id == 86477779717066752:
             return await interaction.response.send_message(f"Well kinda **{interaction.user.name}**.. you still own the source code", ephemeral=True)
 
         else: 

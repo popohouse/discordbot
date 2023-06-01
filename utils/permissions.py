@@ -59,9 +59,9 @@ async def check_priv( bot, interaction: discord.Interaction, target: discord.Mem
             if has_mod_role is True and has_required_permission is False:
                 await interaction.response.send_message("Lack permissions")
                 return False
-            else:
-                await interaction.response.send_message("Not a mod sadchamp")
-                return False
+
+            await interaction.response.send_message("Not a mod sadchamp")
+            return False
 
         # Self checks
         if not skip_self_checks:
@@ -82,15 +82,9 @@ async def check_priv( bot, interaction: discord.Interaction, target: discord.Mem
             if interaction.user.top_role <= target.top_role:
                 await interaction.response.send_message(f"Nope, you can't {interaction.command.name} someone higher than yourself.")
                 return False
-            else:
-                return True
-        else:
-            await interaction.response.send_message("Not a mod sadchamp")
-            return False
-    
-
-
-
+            return True
+        await interaction.response.send_message("Not a mod sadchamp")
+        return False
 
 def can_handle(interaction: discord.Interaction, permission: str) -> bool:
     """Checks if bot has permissions or is in DMs right now"""
