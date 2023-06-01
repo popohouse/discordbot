@@ -1,14 +1,10 @@
 from discord.ext import commands, tasks
 from discord.ext.commands import CommandNotFound
-
 import poe
 import re
-
 from utils.config import Config
 
 config = Config.from_env()
-
-
 
 ###todo
 #Add commands to limit where gpt can run
@@ -38,7 +34,6 @@ class SassyCog(commands.Cog):
             response = ""
             for chunk in self.client.send_message("mommygpt", prompt):
                 response += chunk["text_new"]
-
             response_chunks = [response[i:i+1999] for i in range(0, len(response), 1999)]
             # Send the GPT-4 response back to the Discord channel
             for chunk in response_chunks:

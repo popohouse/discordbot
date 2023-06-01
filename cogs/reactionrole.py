@@ -2,7 +2,6 @@ from discord.ext import commands
 import discord
 import asyncpg
 from discord import app_commands
-
 from utils.config import Config
 from utils import permissions
 
@@ -53,7 +52,6 @@ class ReactionRoles(commands.Cog):
 
         await message.add_reaction(emoji)
         print(f"Reaction added to message with ID: {message_id}")
-
         async with self.bot.pool.acquire() as conn:
             try:
                 await conn.execute('''
@@ -63,24 +61,19 @@ class ReactionRoles(commands.Cog):
                 await interaction.response.send_message('Successful reaction role added', ephemeral=True)
             except asyncpg.UniqueViolationError:
                 await interaction.response.send_message('This reaction role already exists!', ephemeral=True)
-
             if interaction.guild.id not in self.reaction_roles:
                 self.reaction_roles[interaction.guild.id] = {}
             if message_id not in self.reaction_roles[interaction.guild.id]:
                 self.reaction_roles[interaction.guild.id][message_id] = {}
             self.reaction_roles[interaction.guild.id][message_id][str(emoji)] = role.id
 
-
-
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         if payload.member.bot:
             return
-
         guild_id = payload.guild_id
         message_id = payload.message_id
         emoji = str(payload.emoji)
-
         if guild_id in self.reaction_roles and message_id in self.reaction_roles[guild_id] and emoji in self.reaction_roles[guild_id][message_id]:
             channel = self.bot.get_channel(payload.channel_id)
             message = await channel.fetch_message(message_id)
@@ -96,7 +89,6 @@ class ReactionRoles(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(bot):
         await bot.cache_reaction_roles()    
-
 
 # Cleanup old reaction role from dB
 async def cleanup_reaction_roles(self):
@@ -114,10 +106,8 @@ async def on_message_delete(self, message):
             DELETE FROM reaction_roles
             WHERE guild_id = $1 AND message_id = $2
         ''', message.guild.id, message.id)
-
     if message.guild.id in self.reaction_roles and message.id in self.reaction_roles[message.guild.id]:
         del self.reaction_roles[message.guild.id][message.id]    
-
 
 async def setup(bot):
     await bot.add_cog(ReactionRoles(bot))

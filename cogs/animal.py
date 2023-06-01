@@ -20,7 +20,6 @@ class Animal(commands.Cog):
         app_commands.Choice(name="cat", value="cat"),
         app_commands.Choice(name="hamster", value="hamster"),
     ])
-
     async def animal(self, interaction: discord.Interaction, choice: app_commands.Choice[str])-> None:
         """Send animal"""
         if choice.value == ("dog"):
@@ -42,7 +41,6 @@ class Animal(commands.Cog):
             async with aiohttp.ClientSession() as session, session.get('https://api.popo.house/cat') as response:
                 image_data = await response.read()
                 content_type = response.headers.get('Content-Type')
-
                 if content_type is None:
                     # Handle the case where Content-Type is None
                     await interaction.response.send_message("Failed to retrieve the image.")

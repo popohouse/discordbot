@@ -1,7 +1,6 @@
 import discord
 from discord import app_commands
 from typing import Optional
-
 from discord.ext import commands
 from utils import permissions, default
 from datetime import timedelta
@@ -35,11 +34,10 @@ class ActionReason(commands.Converter):
                 f"reason is too long ({len(argument)}/{reason_max})"
             )
         return ret
-    
+
 class Moderator(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(kick_members=True)
@@ -47,18 +45,13 @@ class Moderator(commands.Cog):
         """Kicks a user from the current server."""
         if not await permissions.check_priv(self.bot, interaction, target, {"kick_members": True}):
             return
-
         try:
             dm_channel = await target.create_dm()
             await dm_channel.send(f"You have been kicked from {interaction.guild.name}. Reason: {reason}")
-            
             await target.kick(reason=default.responsible(interaction.user, reason))
             await interaction.response.send_message(default.actionmessage("kicked"))
-
         except Exception as e:
             await print(e)
-
-
 
     @app_commands.command()
     @commands.guild_only()
@@ -67,22 +60,18 @@ class Moderator(commands.Cog):
         """Timeouts a user in the current server."""
         if not await permissions.check_priv(self.bot, interaction, target, {"moderate_members": True}):
             return
-
         match = re.match(r'(\d+)([mhd])?', duration)
         if not match:
             await interaction.response.send_message("Invalid duration format. Use a number followed by m (minutes), h (hours), or d (days).", ephemeral=True)
             return
-
         amount, unit = match.groups()
         amount = int(amount)
         unit = unit or 'm'
-
         unit_names = {
             'm': ('minute', 'minutes'),
             'h': ('hour', 'hours'),
             'd': ('day', 'days')
         }
-
         if unit == 'm':
             timeout_duration = timedelta(minutes=amount)
         elif unit == 'h':
@@ -93,18 +82,14 @@ class Moderator(commands.Cog):
         if timeout_duration > timedelta(days=27):
             await interaction.response.send_message("The maximum timeout duration is 27 days.", ephemeral=True)
             return
-
         try:
             await target.timeout(timeout_duration, reason=default.responsible(interaction.user, reason))
             await interaction.response.send_message(default.actionmessage("timed out"))
-
             unit_name = unit_names[unit][1] if amount > 1 else unit_names[unit][0]
             dm_channel = await target.create_dm()
             await dm_channel.send(f"You have been timed out in {interaction.guild.name} for {amount} {unit_name}. Reason: {reason}")
-            
         except Exception as e:
             print(e)
-
 
     @app_commands.command()
     @commands.guild_only()
@@ -121,7 +106,6 @@ class Moderator(commands.Cog):
                                 guild_id, role_id
                                     )
                 await interaction.response.send_message(f"{role} has been set as mod role")
-
   
     @app_commands.command()
     @commands.guild_only()
@@ -137,7 +121,6 @@ class Moderator(commands.Cog):
 
             await target.add_roles(role, reason=default.responsible(interaction.user, "Added role"))
             await interaction.response.send_message(default.actionmessage("added to {role}"))
-
         except Exception as e:
             print(e)
 
@@ -152,13 +135,10 @@ class Moderator(commands.Cog):
             await interaction.response.send_message("You can't remove a role that is higher or equal to your current highest role.")
             return
         try:
-
             await target.remove_roles(role, reason=default.responsible(interaction.user, "Removed role"))
             await interaction.response.send_message(default.actionmessage("removed from {role}"))
-
         except Exception as e:
             print(e)
-
 
     @app_commands.command()
     @commands.guild_only()
@@ -177,7 +157,6 @@ class Moderator(commands.Cog):
         except Exception as e:
             print(e)
 
-
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(manage_roles=True)
@@ -194,7 +173,6 @@ class Moderator(commands.Cog):
             await interaction.response.send_message(default.actionmessage(f"removed every user from {role}"))
         except Exception as e:
             print(e)
-
 
 async def setup(bot):
     await bot.add_cog(Moderator(bot))

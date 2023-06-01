@@ -2,7 +2,6 @@ from utils.config import Config
 
 config = Config.from_env()
 
-
 async def create_tables(bot):
     async with bot.pool.acquire() as conn:
         await conn.execute('''
@@ -18,7 +17,6 @@ async def create_tables(bot):
                 modlog_id BIGINT
             )
         ''')
-        
         await conn.execute('''
             CREATE TABLE IF NOT EXISTS dailycat (
                 guild_id BIGINT PRIMARY KEY,
@@ -35,7 +33,6 @@ async def create_tables(bot):
                 role_id BIGINT NOT NULL,
                 UNIQUE (guild_id, message_id, emoji)
         );
-        
         ''')
         await conn.execute(''' 
             CREATE TABLE IF NOT EXISTS timezones (
@@ -74,7 +71,6 @@ async def create_tables(bot):
             UNIQUE (guild_id, triggers, response)
                 ) 
             ''')
-
 
 async def populate_tables(bot):
    async with bot.pool.acquire() as conn:

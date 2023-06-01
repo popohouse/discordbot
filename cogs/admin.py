@@ -3,10 +3,9 @@ from discord import app_commands
 from discord.ext import commands
 import importlib
 import os
-
 from utils import default
-
 from utils import config
+
 config = config.Config.from_env(".env")
 
 class Admin(commands.Cog):
@@ -18,14 +17,11 @@ class Admin(commands.Cog):
         """Are you an admin?"""
         if interaction.user.id == config.discord_owner_id:
             return await interaction.response.send_message(f"Yes **{interaction.user.name}** you are an admin! ✅", ephemeral=True)
-
         # Please do not remove this part.
         # I would love to be credited as the original creator of the source code.
         #   -- AlexFlipnote
         if interaction.user.id == 86477779717066752:
             return await interaction.response.send_message(f"Well kinda **{interaction.user.name}**.. you still own the source code", ephemeral=True)
-
-        
         await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
 
     @app_commands.command()
@@ -63,6 +59,7 @@ class Admin(commands.Cog):
                 return await interaction.response.send_message(default.traceback_maker(e))
         else:
             await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
+
     @app_commands.command()
     async def reloadall(self, interaction: discord.Interaction):
         """Reloads all extensions."""
@@ -94,6 +91,7 @@ class Admin(commands.Cog):
             await interaction.response.send_message("Successfully reloaded all extensions", ephemeral=True)
         else:
             await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
+
     @app_commands.command()
     async def reloadutils(self, interaction: discord.Interaction, name: str):
         """Reloads a utils module."""
@@ -110,6 +108,7 @@ class Admin(commands.Cog):
             await interaction.response.send_message(f"Reloaded module **{name_maker}**", ephemeral=True)
         else: 
             await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
+
     @app_commands.command()
     async def dm(self, interaction: discord.Interaction, user: discord.User, *, message: str):
         """DM the user of your choice"""

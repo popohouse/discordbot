@@ -1,10 +1,9 @@
 import discord
 import psutil
 import os
-
 from discord.ext import commands
-
 from utils import config
+
 config = config.Config.from_env(".env")
 
 class Events(commands.Cog):
@@ -22,6 +21,5 @@ class Events(commands.Cog):
         if to_send:
             await to_send.send(config.discord_join_message)
 
-  
 async def setup(bot):
     await bot.add_cog(Events(bot))

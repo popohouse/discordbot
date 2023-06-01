@@ -24,16 +24,13 @@ class TimezoneCog(commands.Cog):
         if timezone not in pytz.all_timezones:
             await interaction.response.send_message("Invalid timezone. Please choose one from this list: https://bin.ffm.best/popo/19e444b71b134847b1a11e4903989d6a", ephemeral=True)
             return
-    
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
                 "INSERT INTO timezones (user_id, timezone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = $2",
                 interaction.user.id,
                 timezone
             )
-
             await interaction.response.send_message(f"Timezone set to {timezone}", ephemeral=True)
-
             # Update the timezone cache
             cog = self.bot.get_cog("BirthdayCog")
             if cog:
@@ -48,7 +45,6 @@ class TimezoneCog(commands.Cog):
         if member is interaction.user:
             await interaction.response.send_message("Please set your timezone first", ephemeral=True)
         async with self.bot.pool.acquire() as conn:
-        
             record = await conn.fetchrow("SELECT timezone FROM timezones WHERE user_id = $1", member.id)
             if member is interaction.user and not record: 
                 await interaction.response.send_message("Please set your timezone first", ephemeral=True)
@@ -66,7 +62,6 @@ class TimezoneCog(commands.Cog):
     async def deltime(self, interaction: discord.Interaction):
         """Remove your timezone from the database"""
         async with self.bot.pool.acquire() as conn:
-        
             await conn.execute("DELETE FROM timezones WHERE user_id = $1", interaction.user.id)
             await interaction.response.send_message("Your timezone has been removed", ephemeral=True)
 

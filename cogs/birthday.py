@@ -2,17 +2,12 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import pytz
-
-
 from discord.ext import tasks
 from datetime import datetime
-
 from utils.config import Config
 from utils import permissions
 
 config = Config.from_env()
-
-
 
 class BirthdayCog(commands.Cog):
     def __init__(self, bot):
@@ -43,7 +38,6 @@ class BirthdayCog(commands.Cog):
         self.birthday_role_cache = {extra['guild_id']: extra['role_id'] for extra in birthday_extras if extra['role_id']}
         self.timezone_cache = {row['user_id']: row['timezone'] for row in user_timezones}
 
-
     async def update_timezone_cache(self, user_id: int, timezone: str):
         """Update the timezone cache"""
         self.timezone_cache[user_id] = timezone
@@ -58,7 +52,6 @@ class BirthdayCog(commands.Cog):
         """Sets the user's birthday in the guild"""
         # Define the accepted date formats
         date_formats = ["%Y-%m-%d", "%B %d", "%b %d", "%m/%d"]
-        
         # Convert the date string to a date object
         date_obj = None
         for date_format in date_formats:
@@ -67,23 +60,19 @@ class BirthdayCog(commands.Cog):
                 break
             except ValueError:
                 pass
-        
         # Check if the conversion was successful
         if not date_obj:
             await interaction.response.send_message("Invalid date format. Please use one of the following formats: YYYY-MM-DD, Month DD, Mon DD, MM/DD.", ephemeral=True)
             return
-        
         # Add a default year if the user didn't provide one
         if "%Y" not in date_format:
             now = datetime.utcnow()
             date_obj = date_obj.replace(year=now.year)
-        
         async with self.bot.pool.acquire() as conn:
             guild_id = interaction.guild.id
             user_id = interaction.user.id
             await conn.execute("INSERT INTO birthdays (guild_id, user_id, date) VALUES ($1, $2, $3) ON CONFLICT (guild_id, user_id) DO UPDATE SET date = $3", guild_id, user_id, date_obj)
             await interaction.response.send_message(f"Birthday set as {date_obj} in this guild!", ephemeral=True)
-        
             # Update the cache
             await self.update_cache()
 
@@ -93,10 +82,8 @@ class BirthdayCog(commands.Cog):
     async def birthday_channel(self, interaction: discord.Interaction, channel: discord.TextChannel):
         """Sets the birthday channel for the guild"""
         async with self.bot.pool.acquire() as conn:
-            
             if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
                 return
-            
             guild_id = interaction.guild.id
             await conn.execute("INSERT INTO birthday_extras (guild_id, channel_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET channel_id = $2", guild_id, channel.id)
             await interaction.response.send_message("Birthday channel set", ephemeral=True)
@@ -107,10 +94,8 @@ class BirthdayCog(commands.Cog):
     async def birthdayrole(self, interaction: discord.Interaction, role: discord.Role):
         """Sets the birthday role for the guild"""
         async with self.bot.pool.acquire() as conn:
-
             if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
                 return
-
             guild_id = interaction.guild.id
             await conn.execute("INSERT INTO birthday_extras (guild_id, role_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET role_id = $2", guild_id, role.id)
             await interaction.response.send_message("Birthday role set", ephemeral=True)
@@ -119,7 +104,6 @@ class BirthdayCog(commands.Cog):
     async def cleanup_birthday_roles(self):
         # Get the current time in UTC
         now_utc = datetime.utcnow().replace(tzinfo=pytz.utc)
-
         # Check if it's no longer the user's birthday
         for guild_id, role_id in self.birthday_role_cache.items():
             guild = self.bot.get_guild(guild_id)
@@ -142,16 +126,10 @@ class BirthdayCog(commands.Cog):
                         else:
                             await member.remove_roles(role)
 
-
-
-            
-
-
     @tasks.loop(minutes=1)
     async def check_birthdays(self):
         # Get the current time in UTC
         now_utc = datetime.utcnow().replace(tzinfo=pytz.utc)
-        
         # Check if it's midnight in the user's timezone
         for (guild_id, user_id), birthday in self.birthday_cache.items():
             user_timezone = self.timezone_cache.get(user_id)
@@ -187,7 +165,6 @@ class BirthdayCog(commands.Cog):
                             role = guild.get_role(role_id)
                             if member and role:
                                 await member.add_roles(role)
-
 
 async def setup(bot):
     birthday_cog = BirthdayCog(bot)

@@ -1,11 +1,8 @@
 import time
-
 import psutil
 import os
-
 import discord
 from discord import app_commands
-
 from discord.ext import commands
 from utils import default, http, config
 
@@ -56,32 +53,26 @@ class Information(commands.Cog):
         """Covid-19 Statistics for any countries"""
         async with interaction.channel.typing():
             r = await http.get(f"https://disease.sh/v3/covid-19/countries/{country.lower()}", res_method="json")
-
             if "message" in r.response:
                 return await interaction.response.send_message(f"The API returned an error:\n{r['message']}")
-
             r = r.response
-
             json_data = [
                 ("Total Cases", r["cases"]), ("Total Deaths", r["deaths"]),
                 ("Total Recover", r["recovered"]), ("Total Active Cases", r["active"]),
                 ("Total Critical Condition", r["critical"]), ("New Cases Today", r["todayCases"]),
                 ("New Deaths Today", r["todayDeaths"]), ("New Recovery Today", r["todayRecovered"])
             ]
-
             embed = discord.Embed(
                 description=(
                     "The information provided was last "
                     f"updated <t:{int(r['updated'] / 1000)}:R>"
                 )
             )
-
             for name, value in json_data:
                 embed.add_field(
                     name=name,
                     value=f"{value:,}" if isinstance(value, int) else value
                 )
-
             await interaction.response.send_message(
                 f"**COVID-19** statistics in :flag_{r['countryInfo']['iso2'].lower()}: "
                 f"**{country.capitalize()}** *({r['countryInfo']['iso3']})*",
@@ -93,12 +84,10 @@ class Information(commands.Cog):
         """About the bot"""
         ramUsage = self.process.memory_full_info().rss / 1024**2
         avgmembers = sum(g.member_count for g in self.bot.guilds) / len(self.bot.guilds)
-
         embedColour = None
         if hasattr(interaction, "guild") and interaction.guild is not None:
             bot_member = interaction.guild.me
             embedColour = bot_member.top_role.colour
-
         embed = discord.Embed(colour=embedColour)
         embed.set_thumbnail(url=self.bot.user.avatar)
         embed.add_field(
@@ -115,9 +104,7 @@ class Information(commands.Cog):
         embed.add_field(name="Servers", value=f"{len(self.bot.guilds)} ( avg: {avgmembers:,.2f} users/server )")
         embed.add_field(name="Commands loaded", value=len(self.bot.tree.get_commands()))
         embed.add_field(name="RAM", value=f"{ramUsage:.2f} MB")
-
         await interaction.response.send_message(content=f"ℹ About **{self.bot.user}**", embed=embed)
-
 
 async def setup(bot):
     await bot.add_cog(Information(bot))

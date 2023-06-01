@@ -2,12 +2,11 @@ from discord.ext import commands
 import re
 from discord import app_commands
 import discord
-from typing import  Optional
+from typing import Optional
 import json
-
 from utils import permissions
 
-### Possible todo###
+###Possible todo###
 #Implement limit of AR per guild in both database and cache
 #Possibly add timestamp to AR when triggered so can cleanup old ones
 #Add cooldown to AR
@@ -43,18 +42,16 @@ class Buttons(discord.ui.View):
             await interaction.response.edit_message(content=f"{self.pages[self.current_page]}Page {self.current_page + 1}/{len(self.pages)}")
             self.update_page_counter()
 
-
 class AutoResponseCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.auto_responses_cache = {}
 
     async def setup(self):
-            async with self.bot.pool.acquire() as conn:
-                await self.update_cache()
+        async with self.bot.pool.acquire() as conn:
+            await self.update_cache()
 
     async def update_cache(self, guild_id=None):
-        print("AR cache updated")
         try:
             if guild_id is not None and guild_id in self.auto_responses_cache:
                 del self.auto_responses_cache[guild_id]  # Clear existing cache for the guild
@@ -81,7 +78,6 @@ class AutoResponseCog(commands.Cog):
         except Exception as e:
             print(f"Failed to fetch auto responses: {str(e)}")
 
-
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
@@ -102,7 +98,6 @@ class AutoResponseCog(commands.Cog):
         except json.JSONDecodeError:
             # The response is not a valid JSON object, store it as a regular string
             response_data = response
-
         try:
             # Split the triggers string into a list of individual triggers
             trigger = re.sub(r'^/(.*)/[^/]*$', r'\1', trigger)
@@ -195,12 +190,10 @@ class AutoResponseCog(commands.Cog):
                         response_str = ""
                     response_str += entry
                 pages.append(response_str)
-
             view = Buttons(pages)
             view.page_counter = await interaction.response.send_message(
                 f"{pages[0]}Page 1/{len(pages)}", view=view, ephemeral=True
             )
-
         except Exception as e:
             await interaction.response.send_message(f"Failed to list auto responses: {str(e)}", ephemeral=True)
 
@@ -241,6 +234,7 @@ class AutoResponseCog(commands.Cog):
                                 else:
                                     await message.channel.send(escaped_response)
                             break
+
 
 async def setup(bot):
     autoresponsecog_cog = AutoResponseCog(bot)

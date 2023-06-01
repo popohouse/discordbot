@@ -6,13 +6,10 @@ import aiohttp
 import os
 from io import BytesIO
 from typing import Optional
-
 from utils.config import Config
 from utils import permissions
 
 config = Config.from_env()
-
-
 
 class dailycat(commands.Cog):
     def __init__(self, bot)-> None:
@@ -42,11 +39,9 @@ class dailycat(commands.Cog):
                 await self.update_cache()
                 await interaction.response.send_message('Daily cat posting stopped.', ephemeral=True)
                 return
-        
         if channel is None and hour is None and stop is False:
             await interaction.response.send_message('Please set a channel or time.', ephemeral=True)
             return
-        
         guild_id = interaction.guild_id
         async with self.bot.pool.acquire() as conn:
             row = await conn.fetchrow('SELECT * FROM dailycat WHERE guild_id= $1', guild_id)
@@ -74,7 +69,6 @@ class dailycat(commands.Cog):
             )
             await self.update_cache()
             await interaction.response.send_message(f"Daily cat posting set to {channel.mention} at {post_time.strftime('%H:%M')} server time.", ephemeral=True)
-
 
     @tasks.loop(minutes=1)
     async def daily_cat(self)-> None:

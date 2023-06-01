@@ -9,7 +9,6 @@ class Config:
     You can load it from a dictionary or from a .env file (recommended).
     By default in this Discord bot template, we use from_env classmethod.
     """
-
     discord_token: str
     discord_prefix: str
     discord_owner_id: int

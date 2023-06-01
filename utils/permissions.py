@@ -24,7 +24,6 @@ async def check_permissions(self, interaction: discord.Interaction, perms, *, ch
                 member = interaction.guild.get_member(interaction.user.id)
                 if any(role.id == mod_role_id for role in member.roles):
                     return True
-
     return False
 
 
@@ -35,7 +34,7 @@ def has_permissions(*, check=all, **perms) -> bool:
     return commands.check(pred)
 
 
-async def check_priv( bot, interaction: discord.Interaction, target: discord.Member, perms, skip_self_checks=False) -> bool:
+async def check_priv(bot, interaction: discord.Interaction, target: discord.Member, perms, skip_self_checks=False) -> bool:
     # mod role check :)
     has_mod_role = False
     async with bot.pool.acquire() as conn:
@@ -44,20 +43,16 @@ async def check_priv( bot, interaction: discord.Interaction, target: discord.Mem
             member = interaction.guild.get_member(interaction.user.id)
             if any(role.id == mod_role_id for role in member.roles):
                 has_mod_role = True
-
         if 'manage_guild' in perms:
             member = interaction.guild.get_member(interaction.user.id)
             has_required_permission = all(getattr(member.guild_permissions, name, None) == value for name, value in perms.items())
-
             if has_required_permission:
                 return True
             if has_mod_role is True and has_required_permission is False:
                 await interaction.response.send_message("Lack permissions")
                 return False
-
             await interaction.response.send_message("Not a mod sadchamp")
             return False
-
         # Self checks
         if not skip_self_checks:
             if target.id == interaction.user.id:
@@ -66,12 +61,10 @@ async def check_priv( bot, interaction: discord.Interaction, target: discord.Mem
             elif target.id == bot.user.id:
                 await interaction.response.send_message("So that's what you think of me huh..? sad ;-;", ephemeral=True)
                 return False
-
         # Has Req perm check before following block
         has_required_permission = all(getattr(interaction.channel.permissions_for(interaction.user), name, None) == value for name, value in perms.items())
         if has_mod_role or has_required_permission and skip_self_checks:
             return True
-        
         if has_mod_role or has_required_permission:
             # Check if target user is above user in role hierarchy
             if interaction.user.top_role <= target.top_role:

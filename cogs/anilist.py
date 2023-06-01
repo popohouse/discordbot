@@ -10,9 +10,10 @@ class AniList(commands.Cog):
     def __init__(self, bot)-> None:
         self.bot = bot
         self.session = aiohttp.ClientSession()
+
     async def cog_unload(self):
         self.bot.loop.create_task(self.session.close())    
-
+        
     async def search(self, interaction, media_type: str, search: str):
         query = '''
         query ($search: String, $type: MediaType) {
@@ -45,65 +46,46 @@ class AniList(commands.Cog):
           }
         }
         '''
-
         variables = {
             'search': search,
             'type': media_type.upper()
         }
-
         url = 'https://graphql.anilist.co'
         async with self.session.post(url, json={'query': query, 'variables': variables}) as response:
             json_data = await response.json()
             data = json_data['data']['Media']
-            
             if not data:
                 return await interaction.response.send_message("This title doesn't exist.")
-            
             romaji_title = data['title'].get('romaji', '')
             english_title = data['title'].get('english', '')
             native_title = data['title'].get('native', '')
             title = english_title or romaji_title or native_title
-
             url = data['siteUrl']
-            
             if data['description'] is not None:
                 description = re.sub('<[^<]+?>', '', data['description'])
             else:
-                description = ""
-                
+                description = "" 
             if len(description) >= 400:
                 description = description[:350] + f'... [(more)]({url})'
-            
             genres = ', '.join(data['genres'])
             if "hentai" in genres.lower() and interaction.channel.nsfw is False:
-                return await interaction.response.send_message("Please run this in the nsfw channel.", ephemeral=True)        
-                    
+                return await interaction.response.send_message("Please run this in the nsfw channel.", ephemeral=True)          
             image_url = 'https://img.anili.st/media/' + str(data['id'])
             status = data['status']
-            
             start_date = ''
             if data['startDate']['year'] and data['startDate']['month'] and data['startDate']['day']:
                 start_date = f"{data['startDate']['month']}/{data['startDate']['day']}/{data['startDate']['year']}"
-
             end_date = ''
             if data['endDate'] and data['endDate']['year'] and data['endDate']['month'] and data['endDate']['day']:
                 end_date = f"{data['endDate']['month']}/{data['endDate']['day']}/{data['endDate']['year']}"
-
             if end_date and status not in ['RELEASING', 'NOT_YET_RELEASED']:
                 footer_text = f"{media_type.capitalize()} • {status} • {start_date} - {end_date}"
             else:
                 footer_text = f"{media_type.capitalize()} • {status} • {start_date}"
-            
             embed = discord.Embed(description=f"[{title}]({url})", color=5814783)
-            
             embed.add_field(name=genres, value=description)
-            
             embed.set_footer(text=footer_text)
-            
-
             embed.set_image(url=image_url)
-
-
             await interaction.response.send_message(embed=embed)
             await self.session.close()
 

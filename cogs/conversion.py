@@ -16,21 +16,17 @@ class ConversionCog(commands.Cog):
         if value and from_unit and to_unit:
             try:
                 quantity = self.ureg.Quantity(value, self.ureg(from_unit))
-                
                 # temperature conversion
                 if from_unit in ['degC', 'degF', 'kelvin'] and to_unit in ['degC', 'degF', 'kelvin']:
                     quantity.ito(self.ureg(to_unit))
-                
                 # other conversions
                 else:
                     quantity = quantity.to(self.ureg(to_unit))
-                
                 await interaction.response.send_message(f"{value} {from_unit} is {quantity.magnitude:.2f} {to_unit}")
             except Exception as e:
                 await interaction.response.send_message(f"Error during conversion: {str(e)}", ephemeral=True)
         else:
             await interaction.response.send_message("Please provide a value, a from_unit, and a to_unit", ephemeral=True)
-
 
 async def setup(bot):
     await bot.add_cog(ConversionCog(bot))         
