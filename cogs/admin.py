@@ -25,8 +25,8 @@ class Admin(commands.Cog):
         if interaction.user.id == 86477779717066752:
             return await interaction.response.send_message(f"Well kinda **{interaction.user.name}**.. you still own the source code", ephemeral=True)
 
-        else: 
-            await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
+        
+        await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
 
     @app_commands.command()
     async def load(self, interaction: discord.Interaction, name: str):

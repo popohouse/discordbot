@@ -54,7 +54,7 @@ class SassyCog(commands.Cog):
         if isinstance(error, CommandNotFound):
             return
         # Otherwise, propagate the error
-        raise error            
+        raise error
             
 async def setup(bot):
     await bot.add_cog(SassyCog(bot))

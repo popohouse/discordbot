@@ -89,7 +89,7 @@ async def on_ready():
             user=config.postgres_user, 
             password=config.postgres_password,
             database=config.postgres_database,
-            host=config.postgres_host, 
+            host=config.postgres_host,
             command_timeout=30
         )
     await create_tables(bot)
