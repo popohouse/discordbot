@@ -147,7 +147,7 @@ class BirthdayCog(commands.Cog):
             
 
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(minutes=1)
     async def check_birthdays(self):
         # Get the current time in UTC
         now_utc = datetime.utcnow().replace(tzinfo=pytz.utc)
@@ -158,7 +158,7 @@ class BirthdayCog(commands.Cog):
             if user_timezone:
                 tz = pytz.timezone(user_timezone)
                 now_user = now_utc.astimezone(tz)
-                if now_user.hour == 12 and now_user.minute == 0:
+                if now_user.hour == 0 and now_user.minute == 0:
                     channel_id = self.birthday_channel_cache.get(guild_id)
                     role_id = self.birthday_role_cache.get(guild_id)
                     if channel_id:
