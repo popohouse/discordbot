@@ -13,7 +13,10 @@ from utils import permissions
 #Add cooldown to AR
 #Add ability to add AR to specific channel(s)/ignore specific channel(s)
 #Add ability to add AR to specific role(s)/ignore specific role(s)
-
+#Ignore bots
+#Ingore certain roles
+#Allow users to edit response
+#Dont display buttons if only one page, only don't display the Page x/y part
 class Buttons(discord.ui.View):
     def __init__(self, pages):
         super().__init__()
@@ -118,11 +121,21 @@ class AutoResponseCog(commands.Cog):
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
         try:
-            # Add the alias to the triggers array for the specified auto response
+            # Check if the guild owns the autoresponse
             async with self.bot.pool.acquire() as conn:
-                await conn.execute("UPDATE auto_responses SET triggers = array_append(triggers, $3) WHERE guild_id = $1 AND id = $2", interaction.guild.id, id, alias)
-                await self.update_cache(interaction.guild.id)
-                await interaction.response.send_message("Alias added successfully!", ephemeral=True)
+                auto_response = await conn.fetchrow(
+                    "SELECT guild_id FROM auto_responses WHERE id = $1", id
+                )
+                if auto_response and auto_response["guild_id"] == interaction.guild.id:
+                    # Add the alias to the triggers array for the specified auto response
+                    await conn.execute(
+                        "UPDATE auto_responses SET triggers = array_append(triggers, $3) WHERE guild_id = $1 AND id = $2",
+                        interaction.guild.id, id, alias
+                    )
+                    await self.update_cache(interaction.guild.id)
+                    await interaction.response.send_message("Alias added successfully!", ephemeral=True)
+                else:
+                    await interaction.response.send_message("Unknown autoresponse.", ephemeral=True)
         except Exception as e:
             await interaction.response.send_message(f"Failed to add alias: {str(e)}", ephemeral=True)
 
@@ -133,22 +146,31 @@ class AutoResponseCog(commands.Cog):
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
         try:
-            # Remove the alias from the triggers array for the specified auto response
+            # Check if the guild owns the autoresponse
             async with self.bot.pool.acquire() as conn:
-                #Should remove alias only
-                if alias is not None:
-                    await conn.execute("UPDATE auto_responses SET triggers = array_remove(triggers, $3) WHERE guild_id = $1 AND id = $2", interaction.guild.id, id, alias)
-                    await self.update_cache(interaction.guild.id)
-                    await interaction.response.send_message("Alias removed successfully!", ephemeral=True)
-                #Should only trigger when user wants to remove
-                if alias is None:
-                    await conn.execute("DELETE FROM auto_responses WHERE guild_id = $1 AND id = $2", interaction.guild.id, id)
-                    await self.update_cache(interaction.guild.id)
-                    await interaction.response.send_message("Response removed successfully!", ephemeral=True)
+                auto_response = await conn.fetchrow(
+                    "SELECT guild_id FROM auto_responses WHERE id = $1", id
+                )
+                if auto_response and auto_response["guild_id"] == interaction.guild.id:
+                    # Remove the alias from the triggers array for the specified auto response
+                    if alias is not None:
+                        await conn.execute(
+                            "UPDATE auto_responses SET triggers = array_remove(triggers, $3) WHERE guild_id = $1 AND id = $2",
+                            interaction.guild.id, id, alias
+                        )
+                        await self.update_cache(interaction.guild.id)
+                        await interaction.response.send_message("Alias removed successfully!", ephemeral=True)
+                    else:
+                        await conn.execute(
+                            "DELETE FROM auto_responses WHERE guild_id = $1 AND id = $2",
+                            interaction.guild.id, id
+                        )
+                        await self.update_cache(interaction.guild.id)
+                        await interaction.response.send_message("Response removed successfully!", ephemeral=True)
+                else:
+                    await interaction.response.send_message("Unknown autoresponse.", ephemeral=True)
         except Exception as e:
             await interaction.response.send_message(f"Failed to remove alias: {str(e)}", ephemeral=True)
-
-
 
     @app_commands.command()
     @commands.guild_only()
@@ -167,7 +189,7 @@ class AutoResponseCog(commands.Cog):
                 page_limit = 2000  # Character limit per page
                 response_str = "Auto responses:\n"
                 for row in auto_responses:
-                    entry = f"ID: {row['id']}\nTriggers: {', '.join(row['triggers'])}\nResponse: {row['response']}\n"
+                    entry = f"ID: {row['id']}\nTriggers: {', '.join(row['triggers'])}\nResponse: {row['response']}\n\n"
                     if len(response_str) + len(entry) > page_limit:
                         pages.append(response_str)
                         response_str = ""
