@@ -1,5 +1,7 @@
 This is a heavily modified fork of **https://github.com/AlexFlipnote/discord_bot.py**
 
+Currently WIP, features half implemented and cogs half done. I have an internal list of features/plans for cog modifications I plan to share.
+
 Do you need more help? Visit my server here: **https://discord.gg/Yx6dTZvrGr** 
 
 # Requirements 
@@ -89,12 +91,6 @@ Fun cog
     noticeme - posts gif
     dice - dice game
     inspire - become inspired 
-hotposting cog
-
-    hot -  posts hot post from specific subreddit
-    thigh - posts hot post from a thigh subreddit
-    bois - posts hot post from /r/bois
-    femboys - posts hot post from /r/femboys
 Info cog
 
     ping - pong

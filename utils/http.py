@@ -11,7 +11,7 @@ class HTTPResponse:
         self.response = response
         self.res_method = res_method
         self.headers = headers
-        
+
     def __repr__(self) -> str:
         return f"<HTTPResponse status={self.status} res_method='{self.res_method}'>"
 

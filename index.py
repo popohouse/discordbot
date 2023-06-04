@@ -1,6 +1,5 @@
 import discord
 import os
-
 import logging
 from typing import Literal, Optional
 from discord.ext.commands import Bot, Context, Greedy
@@ -8,10 +7,8 @@ from discord.ext import commands
 from utils import config
 import time
 import asyncpg
-
 import signal
 import asyncio
-
 from utils.database import create_tables, populate_tables
 
 config = config.Config.from_env(".env")
