@@ -8,8 +8,8 @@ Do you need more help? Visit my server here: **https://discord.gg/Yx6dTZvrGr**
 - Python 3.10 and up - https://www.python.org/downloads/
 - git - https://git-scm.com/download/
 - Discord bot with Message Intent enabled [here](https://discordpy.readthedocs.io/en/stable/discord.html)
-- Reddit api key [here](https://www.reddit.com/prefs/apps)
 - Docker if wanting longer uptime
+- Poe api key, Find how to get it [here](https://github.com/ading2210/poe-api#finding-your-token)
 ## Useful to always have
 Keep [this](https://discordpy.readthedocs.io/en/latest/) saved somewhere, as this is the docs to discord.py@rewrite.
 All you need to know about the library is defined inside here, even code that I don't use in this example is here.
