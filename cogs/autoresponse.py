@@ -6,16 +6,7 @@ from typing import Optional
 import json
 from utils import permissions
 
-###Possible todo###
-#Implement limit of AR per guild in both database and cache
-#Possibly add timestamp to AR when triggered so can cleanup old ones
-#Add cooldown to AR
-#Add ability to add AR to specific channel(s)/ignore specific channel(s)
-#Add ability to add AR to specific role(s)/ignore specific role(s)
-#Ignore bots
-#Ingore certain roles
-#Allow users to edit response
-#Dont display buttons if only one page, only don't display the Page x/y part
+
 class Buttons(discord.ui.View):
     def __init__(self, pages):
         super().__init__()

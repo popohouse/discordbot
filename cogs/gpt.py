@@ -6,10 +6,6 @@ from utils.config import Config
 
 config = Config.from_env()
 
-###todo
-#Add commands to limit where gpt can run
-#Add command to set gpt prompt, be it mention or always running in specific channel
-#add cooldown, maybe per user?
 class SassyCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

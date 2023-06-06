@@ -98,9 +98,6 @@ async def on_ready():
         
 logging.getLogger('asyncio').setLevel(logging.DEBUG)
 
-@bot.event
-async def on_disconnect():
-    await bot.pool.close()
 
 async def main():
     # Signal handler
