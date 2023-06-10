@@ -5,6 +5,9 @@ import discord
 from typing import Optional
 import json
 from utils import permissions
+from discord.ext.commands import CooldownMapping
+
+cooldowns = commands.CooldownMapping.from_cooldown(1, 3, commands.BucketType.user)
 
 
 class Buttons(discord.ui.View):
@@ -179,6 +182,13 @@ class AutoResponseCog(commands.Cog):
                             response = response_data["response"]
                             ping = response_data["ping"]
                             deletemsg = response_data["deletemsg"]
+                            cooldown = cooldowns.get_bucket(message)
+                            retry_after = cooldown.update_rate_limit()
+                            if retry_after:
+                                if deletemsg:
+                                    await message.delete()
+                                    return
+                                return
                             try:
                                 response_data = json.loads(response)
                                 if isinstance(response_data, dict) and "embeds" in response_data:
