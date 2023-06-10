@@ -114,7 +114,6 @@ class StickyPost(commands.Cog):
                             await conn.execute("UPDATE stickyposts SET message_id = $1 WHERE guild_id = $2 AND channel_id = $3", sent_message.id, guild_id, message.channel.id)
 
 
-
 async def setup(bot):
     StickyPost_cog = StickyPost(bot)
     await StickyPost_cog.setup()

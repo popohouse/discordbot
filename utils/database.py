@@ -89,6 +89,7 @@ async def create_tables(bot):
                 guild_id BIGINT NOT NULL,
                 channel_id BIGINT NOT NULL,
                 stickypost TEXT,
+                message_id BIGINT,
                 UNIQUE (guild_id, channel_id)
                     )
                 ''')
