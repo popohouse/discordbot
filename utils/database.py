@@ -83,6 +83,15 @@ async def create_tables(bot):
                 UNIQUE (guild_id, triggers, response)
                     )
                 ''')
+            await conn.execute('''
+                CREATE TABLE IF NOT EXISTS stickyposts(
+                id SERIAL PRIMARY KEY,
+                guild_id BIGINT NOT NULL,
+                channel_id BIGINT NOT NULL,
+                stickypost TEXT,
+                UNIQUE (guild_id, channel_id)
+                    )
+                ''')
             await conn.execute('''CREATE TABLE schema_version (version INT NOT NULL)''')
             await conn.execute('INSERT INTO schema_version (version) VALUES ($1)', expected_version)
         else:
