@@ -25,7 +25,8 @@ bot = Bot(
     intents=discord.Intents.all()
 )
 
-#load the commands
+
+# load the commands
 async def load_cogs() -> None:
     """The code in this function is executed whenever the bot will start."""
     for file in os.listdir("cogs"):
@@ -58,12 +59,8 @@ async def sync(
             synced = []
         else:
             synced = await ctx.bot.tree.sync()
-
-        await ctx.send(
-            f"Synced {len(synced)} commands {'globally' if spec is None else 'to the current guild.'}"
-        )
+        await ctx.send(f"Synced {len(synced)} commands {'globally' if spec is None else 'to the current guild.'}")
         return
-
     ret = 0
     for guild in guilds:
         try:
@@ -76,9 +73,7 @@ async def sync(
     await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.")
 
 
-
-
-#Runs when bot is ready
+# Runs when bot is ready
 @bot.event 
 async def on_ready():
     print(f'{bot.user} is ready!')
@@ -93,9 +88,9 @@ async def on_ready():
     await populate_tables(bot)
     await load_cogs()
     if not hasattr(bot, "uptime"):
-
         bot.uptime = time.time() 
-        
+
+
 logging.getLogger('asyncio').setLevel(logging.DEBUG)
 
 
@@ -118,18 +113,16 @@ async def main():
                     exception = f"{type(e).__name__}: {e}"
                     logging.error("Failed to unload extension '%s'", exception)
                     print(f"Failed to unload extension {extension} {exception}")
-
         await bot.pool.close()
         await bot.close()
         os.exit(0)
-
     # Set up signal handlers
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
-
     try:
         await bot.start(config.discord_token)
     except KeyboardInterrupt:
         await bot.close()
+
 
 asyncio.run(main())

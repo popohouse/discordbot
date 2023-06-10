@@ -144,7 +144,7 @@ class Fun_Commands(commands.Cog):
             case _:
                 final_message = "It's a tie 🎲"
         await interaction.response.send_message(f"{results}\n> {final_message}")
-        
+
     @app_commands.command()
     async def inspired(self, interaction: discord.Interaction):
         """Be inspired"""

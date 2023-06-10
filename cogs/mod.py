@@ -21,6 +21,7 @@ class ActionReason(commands.Converter):
             )
         return ret
 
+
 class Moderator(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -81,18 +82,15 @@ class Moderator(commands.Cog):
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
     async def modrole(self, interaction: discord.Interaction, role: discord.Role):
-            """Set the mod role, allows to run all mod commands"""
-            if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
-                return
-            role_id = role.id
-            guild_id = interaction.guild_id
-            async with self.bot.pool.acquire() as conn:
-                await conn.execute('INSERT INTO mod_role_id (guild_id, role_id) VALUES ($1, $2)'
-                                'ON CONFLICT (guild_id) DO UPDATE SET role_id = $2',
-                                guild_id, role_id
-                                    )
-                await interaction.response.send_message(f"{role} has been set as mod role")
-  
+        """Set the mod role, allows to run all mod commands"""
+        if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
+            return
+        role_id = role.id
+        guild_id = interaction.guild_id
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute('INSERT INTO mod_role_id (guild_id, role_id) VALUES ($1, $2)' 'ON CONFLICT (guild_id) DO UPDATE SET role_id = $2', guild_id, role_id)
+            await interaction.response.send_message(f"{role} has been set as mod role")
+
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(kick_members=True)

@@ -10,12 +10,12 @@ config = config.Config.from_env(".env")
 
 
 class Information(commands.Cog):
-    def __init__(self, bot: commands.Bot)-> None:
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.process = psutil.Process(os.getpid())
 
     @app_commands.command(name='ping')
-    async def ping(self, interaction: discord.Interaction)-> None:
+    async def ping(self, interaction: discord.Interaction) -> None:
         """ping to check if the bot is available"""
         await interaction.response.send_message("🏓 Pong")
         before = time.monotonic()
@@ -32,7 +32,7 @@ class Information(commands.Cog):
         ]))
 
     @app_commands.command(name="source")
-    async def source(self, interaction: discord.Interaction)-> None:
+    async def source(self, interaction: discord.Interaction) -> None:
         """Check out my source code <3"""
         # Do not remove this command, this has to stay due to the GitHub LICENSE.
         # TL:DR, you have to disclose source according to MIT, don't change output either.

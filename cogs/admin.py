@@ -48,7 +48,7 @@ class Admin(commands.Cog):
             await interaction.response.send_message(f"Unloaded extension **{name}.py**", ephemeral=True)
         else: 
             await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
-        
+
     @app_commands.command()
     async def reload(self, interaction: discord.Interaction, name: str):
         """Reloads an extension."""

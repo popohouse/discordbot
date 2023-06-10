@@ -1,7 +1,7 @@
 from discord.ext import commands
 import discord
-import asyncpg
 from discord import app_commands
+import asyncpg
 from utils.config import Config
 from utils import permissions
 
@@ -88,14 +88,6 @@ class ReactionRoles(commands.Cog):
     async def on_ready(bot):
         await bot.cache_reaction_roles()    
 
-# Cleanup old reaction role from dB
-async def cleanup_reaction_roles(self):
-    guild_ids = [guild.id for guild in self.bot.guilds]
-    async with self.bot.pool.acquire() as conn:
-        await conn.execute('''
-            DELETE FROM reaction_roles
-            WHERE guild_id != ALL($1)
-        ''', guild_ids)
 
 @commands.Cog.listener()
 async def on_message_delete(self, message):

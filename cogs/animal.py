@@ -5,10 +5,9 @@ from discord.ext import commands
 import io
 import mimetypes
 
-###todo
-#Switch to pool version of aiohttp
+
 class Animal(commands.Cog):
-    def __init__(self, bot: commands.Bot)-> None:
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.channel_id = None
 
@@ -20,7 +19,7 @@ class Animal(commands.Cog):
         app_commands.Choice(name="cat", value="cat"),
         app_commands.Choice(name="hamster", value="hamster"),
     ])
-    async def animal(self, interaction: discord.Interaction, choice: app_commands.Choice[str])-> None:
+    async def animal(self, interaction: discord.Interaction, choice: app_commands.Choice[str]) -> None:
         """Send animal"""
         if choice.value == ("dog"):
             async with aiohttp.ClientSession() as session, session.get('https://random.dog/woof.json') as response:

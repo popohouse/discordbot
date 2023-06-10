@@ -13,15 +13,15 @@ config = Config.from_env()
 
 
 class dailycat(commands.Cog):
-    def __init__(self, bot)-> None:
+    def __init__(self, bot) -> None:
         self.bot = bot
         self.conn = None
         self.cache = {}
         self.daily_cat.start()
 
     async def setup(self):
-            async with self.bot.pool.acquire() as conn:
-                await self.update_cache()
+        async with self.bot.pool.acquire() as conn:
+         await self.update_cache()
 
     async def cog_unload(self):
         self.daily_cat.cancel()
@@ -29,7 +29,7 @@ class dailycat(commands.Cog):
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
-    async def dailycat(self, interaction: discord.Interaction, channel: Optional[discord.TextChannel] = None, hour: Optional[int] = None, minute: int = 0, stop: Optional[bool] = None)-> None:
+    async def dailycat(self, interaction: discord.Interaction, channel: Optional[discord.TextChannel] = None, hour: Optional[int] = None, minute: int = 0, stop: Optional[bool] = None) -> None:
         """Set channel and time or stop cat posting"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
@@ -72,7 +72,7 @@ class dailycat(commands.Cog):
             await interaction.response.send_message(f"Daily cat posting set to {channel.mention} at {post_time.strftime('%H:%M')} server time.", ephemeral=True)
 
     @tasks.loop(minutes=1)
-    async def daily_cat(self)-> None:
+    async def daily_cat(self) -> None:
         now = datetime.datetime.utcnow()
         for guild_id, data in self.cache.items():
             channel_id, post_time_str = data

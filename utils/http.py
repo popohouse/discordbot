@@ -2,6 +2,7 @@ import aiohttp
 import json
 from aiohttp.client_exceptions import ContentTypeError
 
+
 class HTTPResponse:
     def __init__(
         self, status: int, response: str,
@@ -14,6 +15,7 @@ class HTTPResponse:
 
     def __repr__(self) -> str:
         return f"<HTTPResponse status={self.status} res_method='{self.res_method}'>"
+
 
 async def query(url, method="get", res_method="text", *args, **kwargs) -> HTTPResponse:
     """Make a HTTP request using aiohttp"""
@@ -32,6 +34,7 @@ async def query(url, method="get", res_method="text", *args, **kwargs) -> HTTPRe
         )
     await session.close()
     return output
+
 
 async def get(url, *args, **kwargs) -> HTTPResponse:
     """Shortcut for query(url, "get", *args, **kwargs)"""

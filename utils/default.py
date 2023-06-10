@@ -3,26 +3,28 @@ import discord
 import traceback
 from io import BytesIO
 
+
 def traceback_maker(err, advance: bool = True) -> str:
     """A way to debug your code anywhere"""
     _traceback = "".join(traceback.format_tb(err.__traceback__))
     error = f"```py\n{_traceback}{type(err).__name__}: {err}\n```"
     return error if advance else f"{type(err).__name__}: {err}"
 
+
 def timetext(name) -> str:
     """Timestamp, but in text form"""
     return f"{name}_{int(time.time())}.txt"
+
 
 def date(
     target, clock: bool = True,
     ago: bool = False, only_ago: bool = False
 ) -> str:
     """Converts a timestamp to a Discord timestamp format"""
-    if isinstance(target, (float,int)): 
+    if isinstance(target, (float,int)):
         unix = int(target)
     else:
         unix = int(time.mktime(target.timetuple()))
-
     timestamp = f"<t:{unix}:{'f' if clock else 'D'}>"
     if ago:
         timestamp += f" (<t:{unix}:R>)"
@@ -30,12 +32,14 @@ def date(
         timestamp = f"<t:{unix}:R>"
     return timestamp
 
+
 def responsible(target: discord.Member, reason: str) -> str:
     """Default responsible maker targeted to find user in AuditLogs"""
     responsible = f"[ {target} ]"
     if not reason:
         return f"{responsible} no reason given..."
     return f"{responsible} {reason}"
+
 
 def actionmessage(case: str, mass: bool = False) -> str:
     """Default way to present action confirmation in chat"""
@@ -45,6 +49,7 @@ def actionmessage(case: str, mass: bool = False) -> str:
         output = f"**{case}** the IDs/Users"
 
     return f"✅ Successfully {output}"
+
 
 async def pretty_results(
     ctx, filename: str = "Results",

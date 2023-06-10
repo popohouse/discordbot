@@ -2,6 +2,7 @@ from utils.config import Config
 
 config = Config.from_env()
 
+
 async def create_tables(bot):
     async with bot.pool.acquire() as conn:
         # Define current version of schema here
@@ -88,12 +89,13 @@ async def create_tables(bot):
             stored_version = await conn.fetchval('SELECT version FROM schema_version')
             if stored_version == expected_version:
                 return
-            elif stored_version < expected_version:
+            if stored_version < expected_version:
                 # Please actually add here, and remove the return statement simply here as place holder currently
                 # Also have it work through migrations in case of multiple schema updates
                 return
             # Hey future me please add better error handling in case of users having issues with schema updates.
             raise ValueError('Invalid schema version detected')
+
 
 async def populate_tables(bot):
    async with bot.pool.acquire() as conn:

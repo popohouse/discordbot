@@ -38,7 +38,7 @@ class LoggingCog(commands.Cog):
                     'mod_channel_id': mod_channel_id
                 }
 
-    #Log command
+    # Log command
     @app_commands.command()
     @commands.guild_only()
     @app_commands.choices(log_type=[
@@ -53,7 +53,7 @@ class LoggingCog(commands.Cog):
     async def log(self, interaction: discord.Interaction, log_type: Optional[app_commands.Choice[str]], disable: Optional[bool] = None):
         """Enable or disable logging type"""
         async with self.bot.pool.acquire() as conn:
-            #Disable logging types
+            # Disable logging types
             if disable is True:
                 if log_type.value == 'all':
                     await conn.execute('UPDATE logging SET log_deleted_messages = false, log_edited_messages = false, log_nickname_changes = false, log_member_join_leave = false, log_member_kick = false, log_member_ban_unban = false WHERE guild_id = $1', interaction.guild.id)
@@ -86,7 +86,7 @@ class LoggingCog(commands.Cog):
                     return
 
                 await interaction.response.send_message(f'Disabled logging for {log_type.value}', ephemeral=True)
-            #Enable logging type
+            # Enable logging type
             if disable is False:
                 if log_type.value == 'all':
                     await conn.execute('UPDATE logging SET log_deleted_messages = true, log_edited_messages = true, log_nickname_changes = true, log_member_join_leave = true, log_member_kick = true, log_member_ban_unban = true WHERE guild_id = $1', interaction.guild.id)
@@ -123,7 +123,7 @@ class LoggingCog(commands.Cog):
     @commands.guild_only()
     async def setlogchannel(self, interaction: discord.Interaction, logchannel: Optional[discord.TextChannel], modchannel: Optional[discord.TextChannel]):
         async with self.bot.pool.acquire() as conn:
-            #Set main log channel 
+            # Set main log channel 
             if logchannel is not None:
                 row = await conn.fetch('SELECT * FROM logging WHERE guild_id = $1', interaction.guild.id)
                 if row:
@@ -141,9 +141,9 @@ class LoggingCog(commands.Cog):
                         'log_member_join_leave': 0,
                         'log_member_kick': 0,
                         'log_member_ban_unban': 0
-                }
+                    }
                 await interaction.response.send_message(f'Set logging channel to {logchannel.mention}', ephemeral=True)
-            #Set mod log channel
+            # Set mod log channel
             if modchannel is not None:
                 row = await conn.fetch('SELECT * FROM logging WHERE guild_id = $1', interaction.guild.id)
                 if row:
@@ -161,11 +161,11 @@ class LoggingCog(commands.Cog):
                         'log_member_join_leave': 0,
                         'log_member_kick': 0,
                         'log_member_ban_unban': 0
-                }
+                    }
                 await interaction.response.send_message(f'Set logging channel to {modchannel.mention}', ephemeral=True)
 
-    ###Event listeners for all logging types below###
-    #Message delete listener(should be in finished state)
+    ### Event listeners for all logging types below###
+    # Message delete listener(should be in finished state)
     @commands.Cog.listener()
     async def on_message_delete(self, message):
         guild_id = message.guild.id
@@ -188,7 +188,7 @@ class LoggingCog(commands.Cog):
             embed.set_author(name=message.author.display_name, icon_url=message.author.avatar.url)
             await channel.send(embed=embed)
 
-    #Message edit logging(should be in finished state)
+    # Message edit logging(should be in finished state)
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
         guild_id = before.guild.id
@@ -211,7 +211,7 @@ class LoggingCog(commands.Cog):
                 embed.set_author(name=before.display_name, icon_url=before.avatar.url)
                 await channel.send(embed=embed)
 
-    #Currently only logs nickname change, could be user for avatar as well. 
+    # Currently only logs nickname change, could be user for avatar as well. 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
         guild_id = before.guild.id
@@ -224,7 +224,7 @@ class LoggingCog(commands.Cog):
                 embed.set_author(name=before.display_name, icon_url=before.avatar.url)
                 await channel.send(embed=embed)
 
-    #Logs user join, note the prejoin state of community servers will be run on on_member_remove
+    # Logs user join, note the prejoin state of community servers will be run on on_member_remove
     @commands.Cog.listener()
     async def on_member_join(self, member):
         print("member joined")
@@ -235,7 +235,7 @@ class LoggingCog(commands.Cog):
             embed = discord.Embed(title="Member Left", description=f"{member.mention} left the server.", color=discord.Color.red())
             await channel.send(embed=embed)
 
-    #Logs user leaves a guild, note the prejoin state of community servers will be run on on_member_remove
+    # Logs user leaves a guild, note the prejoin state of community servers will be run on on_member_remove
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         print("member removed")
@@ -246,7 +246,7 @@ class LoggingCog(commands.Cog):
             embed = discord.Embed(title="Member Left", description=f"{member.mention} left the server.", color=discord.Color.red())
             await channel.send(embed=embed)
 
-    #Log bans
+    # Log bans
     @commands.Cog.listener()
     async def on_member_ban(self, member):
         guild_id = member.guild.id
@@ -256,7 +256,7 @@ class LoggingCog(commands.Cog):
             embed = discord.Embed(title="Member Banned", description=f"{member.mention} was banned from the server.", color=discord.Color.red())
             await channel.send(embed=embed)
 
-    #logs unbans
+    # logs unbans
     @commands.Cog.listener()
     async def on_member_unban(self, member):
         guild_id = member.guild.id

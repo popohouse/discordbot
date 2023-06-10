@@ -6,6 +6,7 @@ from utils.config import Config
 
 config = Config.from_env()
 
+
 class SassyCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -28,7 +29,7 @@ class SassyCog(commands.Cog):
             prompt = cleaned_message
         # Pass the prompt to POE and get a response
             response = ""
-            for chunk in self.client.send_message("mommygpt", prompt):
+            for chunk in self.client.send_message("uwuify", prompt):
                 response += chunk["text_new"]
             response_chunks = [response[i:i+1999] for i in range(0, len(response), 1999)]
             # Send the GPT-4 response back to the Discord channel
@@ -37,7 +38,7 @@ class SassyCog(commands.Cog):
 
     @tasks.loop(hours=1)
     async def chat_cleanup(self):
-        self.client.purge_conversation("mommygpt")
+        self.client.purge_conversation("uwuify")
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -46,7 +47,7 @@ class SassyCog(commands.Cog):
             return
         # Otherwise, propagate the error
         raise error
-          
+
 
 async def setup(bot):
     await bot.add_cog(SassyCog(bot))
