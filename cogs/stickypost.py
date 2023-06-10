@@ -65,7 +65,7 @@ class StickyPost(commands.Cog):
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
-    async def delstickypost(self, interaction: discord.Interaction, id: int):
+    async def delsp(self, interaction: discord.Interaction, id: int):
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
         async with self.bot.pool.acquire() as conn:
@@ -80,7 +80,7 @@ class StickyPost(commands.Cog):
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
-    async def liststickyposts(self, interaction: discord.Interaction):
+    async def listsp(self, interaction: discord.Interaction):
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
         async with self.bot.pool.acquire() as conn:
