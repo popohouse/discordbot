@@ -98,7 +98,7 @@ class BirthdayCog(commands.Cog):
             await self.update_cache()
             await interaction.response.send_message("Birthday role set", ephemeral=True)
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(minutes=1)
     async def cleanup_birthday_roles(self):
         # Get the current time in UTC
         now_utc = datetime.utcnow().replace(tzinfo=pytz.utc)
@@ -124,7 +124,7 @@ class BirthdayCog(commands.Cog):
                         else:
                             await member.remove_roles(role)
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(minutes=1)
     async def check_birthdays(self):
         now_utc = datetime.utcnow().replace(tzinfo=pytz.utc)
         for (guild_id, user_id), birthday in self.birthday_cache.items():
