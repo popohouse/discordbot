@@ -51,7 +51,7 @@ class AutoResponseCog(commands.Cog):
                 if guild_id is None:
                     auto_responses = await conn.fetch("SELECT guild_id, triggers, response, ping, deletemsg FROM auto_responses")
                 else:
-                    auto_responses = await conn.fetch("SELECT guild_id, triggers, response, ping, deletemsg FROM auto_responses WHERE guild_id = $1",guild_id)
+                    auto_responses = await conn.fetch("SELECT guild_id, triggers, response, ping, deletemsg FROM auto_responses WHERE guild_id = $1", guild_id)
                 for row in auto_responses:
                     guild_id = row["guild_id"]
                     triggers = row["triggers"]
@@ -107,7 +107,7 @@ class AutoResponseCog(commands.Cog):
                 auto_response = await conn.fetchrow("SELECT guild_id FROM auto_responses WHERE id = $1", id)
                 if auto_response and auto_response["guild_id"] == interaction.guild.id:
                     # Add the alias to the triggers array for the specified auto response
-                    await conn.execute("UPDATE auto_responses SET triggers = array_append(triggers, $3) WHERE guild_id = $1 AND id = $2",interaction.guild.id, id, alias)
+                    await conn.execute("UPDATE auto_responses SET triggers = array_append(triggers, $3) WHERE guild_id = $1 AND id = $2", interaction.guild.id, id, alias)
                     await self.update_cache(interaction.guild.id)
                     await interaction.response.send_message("Alias added successfully!", ephemeral=True)
                 else:
@@ -129,11 +129,11 @@ class AutoResponseCog(commands.Cog):
                 if auto_response and auto_response["guild_id"] == interaction.guild.id:
                     # Remove the alias from the triggers array for the specified auto response
                     if alias is not None:
-                        await conn.execute("UPDATE auto_responses SET triggers = array_remove(triggers, $3) WHERE guild_id = $1 AND id = $2",interaction.guild.id, id, alias)
+                        await conn.execute("UPDATE auto_responses SET triggers = array_remove(triggers, $3) WHERE guild_id = $1 AND id = $2", interaction.guild.id, id, alias)
                         await self.update_cache(interaction.guild.id)
                         await interaction.response.send_message("Alias removed successfully!", ephemeral=True)
                     else:
-                        await conn.execute("DELETE FROM auto_responses WHERE guild_id = $1 AND id = $2",interaction.guild.id, id)
+                        await conn.execute("DELETE FROM auto_responses WHERE guild_id = $1 AND id = $2", interaction.guild.id, id)
                         await self.update_cache(interaction.guild.id)
                         await interaction.response.send_message("Response removed successfully!", ephemeral=True)
                 else:
@@ -186,14 +186,14 @@ class AutoResponseCog(commands.Cog):
                                         if ping:
                                             if deletemsg:
                                                 await message.delete()
-                                                await message.channel.send(f"{message.author.mention}",embed=discord.Embed.from_dict(embed),)
+                                                await message.channel.send(f"{message.author.mention}", embed=discord.Embed.from_dict(embed),)
                                             else:
-                                                await message.channel.send(f"{message.author.mention}",embed=discord.Embed.from_dict(embed),)
+                                                await message.channel.send(f"{message.author.mention}", embed=discord.Embed.from_dict(embed),)
                                         else:
                                             if deletemsg:
                                                 await message.delete()
                                                 await message.channel.send(embed=discord.Embed.from_dict(embed))
-                                            else: 
+                                            else:
                                                 await message.channel.send(embed=discord.Embed.from_dict(embed))
                                 else:
                                     raise json.JSONDecodeError("", "", 0)
@@ -209,7 +209,7 @@ class AutoResponseCog(commands.Cog):
                                     if deletemsg:
                                         await message.delete()
                                         await message.channel.send(escaped_response)
-                                    else: 
+                                    else:
                                         await message.channel.send(escaped_response)
                             break
 

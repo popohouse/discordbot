@@ -44,13 +44,13 @@ async def create_tables(bot):
                     UNIQUE (guild_id, message_id, emoji)
             );
             ''')
-            await conn.execute(''' 
+            await conn.execute('''
                 CREATE TABLE IF NOT EXISTS timezones (
                     user_id BIGINT PRIMARY KEY,
                     timezone TEXT NOT NULL
                 )
             ''')
-            await conn.execute(''' 
+            await conn.execute('''
                 CREATE TABLE IF NOT EXISTS mod_role_id (
                     guild_id BIGINT PRIMARY KEY,
                     role_id BIGINT NOT NULL
@@ -80,7 +80,7 @@ async def create_tables(bot):
                 ping BOOLEAN,
                 deletemsg BOOLEAN,
                 UNIQUE (guild_id, triggers, response)
-                    ) 
+                    )
                 ''')
             await conn.execute('''CREATE TABLE schema_version (version INT NOT NULL)''')
             await conn.execute('INSERT INTO schema_version (version) VALUES ($1)', expected_version)
@@ -90,11 +90,10 @@ async def create_tables(bot):
                 return
             elif stored_version < expected_version:
                 # Please actually add here, and remove the return statement simply here as place holder currently
-                #Also have it work through migrations in case of multiple schema updates
+                # Also have it work through migrations in case of multiple schema updates
                 return
-            else:
-                #Hey future me please add better error handling in case of users having issues with schema updates.
-                raise ValueError('Invalid schema version detected')
+            # Hey future me please add better error handling in case of users having issues with schema updates.
+            raise ValueError('Invalid schema version detected')
 
 async def populate_tables(bot):
    async with bot.pool.acquire() as conn:
