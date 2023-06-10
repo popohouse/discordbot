@@ -5,7 +5,6 @@ import discord
 from typing import Optional
 import json
 from utils import permissions
-from discord.ext.commands import CooldownMapping
 
 cooldowns = commands.CooldownMapping.from_cooldown(1, 3, commands.BucketType.user)
 
@@ -43,8 +42,7 @@ class AutoResponseCog(commands.Cog):
         self.auto_responses_cache = {}
 
     async def setup(self):
-        async with self.bot.pool.acquire() as conn:
-            await self.update_cache()
+        await self.update_cache()
 
     async def update_cache(self, guild_id=None):
         try:
