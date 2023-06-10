@@ -8,6 +8,7 @@ from utils import permissions
 
 config = Config.from_env()
 
+
 class BirthdayCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -171,7 +172,6 @@ class BirthdayCog(commands.Cog):
                             role = guild.get_role(role_id)
                             if member and role:
                                 await member.add_roles(role)
-
 
 
 async def setup(bot):

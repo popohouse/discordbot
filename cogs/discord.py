@@ -13,6 +13,7 @@ class Discord_Info(commands.Cog):
         """Get the avatar of you or someone else"""
         user = user or interaction.user
         avatars_list = []
+
         def target_avatar_formats(target):
             formats = ["JPEG", "PNG", "WebP"]
             if target.is_animated():

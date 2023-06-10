@@ -39,7 +39,7 @@ class Admin(commands.Cog):
 
     @app_commands.command()
     async def unload(self, interaction: discord.Interaction, name: str):
-        """Unloads an extension. """
+        """Unloads an extension."""
         if interaction.user.id == config.discord_owner_id:
             try:
                 await self.bot.unload_extension(f"cogs.{name}")

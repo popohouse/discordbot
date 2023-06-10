@@ -20,14 +20,12 @@ class Fun_Commands(commands.Cog):
         rate_amount = random.uniform(0.0, 100.0)
         await interaction.response.send_message(f"I'd rate `{thing}` a **{round(rate_amount, 4)} / 100**")
 
-
     @app_commands.command()
     async def f(self, interaction: discord.Interaction, *, text: str):
         """Press F to pay respect"""
         hearts = ["❤", "💛", "💚", "💙", "💜"]
         reason = f"for **{text}** " if text else ""
         await interaction.response.send_message(f"**{interaction.user.name}** has paid their respect {reason}{random.choice(hearts)}")
-
 
     @app_commands.command()
     async def eightball(self, interaction: discord.Interaction, *, question: str):

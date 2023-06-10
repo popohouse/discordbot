@@ -205,11 +205,11 @@ class LoggingCog(commands.Cog):
     async def on_user_update(self, before, after):
         guild_id = before.guild.id
         if guild_id in self.logging_settings and self.logging.settings[guild_id]['log_nickname_changes'] and before.username is not after.username:
-                channel_id = self.logging_settings[guild_id]['channel_id']
-                channel = self.bot.get_channel(channel_id)
-                embed = discord.Embed(title="Username Changed", description=f"{before.mention} changed their username.\n\n**Before**\n{before.username or before.name}\n\n**After**\n{after.username or after.name}\n\n**Date**\n<t:{int(datetime.utcnow().timestamp())}>", color=discord.Color.blue())
-                embed.set_author(name=before.display_name, icon_url=before.avatar.url)
-                await channel.send(embed=embed)
+            channel_id = self.logging_settings[guild_id]['channel_id']
+            channel = self.bot.get_channel(channel_id)
+            embed = discord.Embed(title="Username Changed", description=f"{before.mention} changed their username.\n\n**Before**\n{before.username or before.name}\n\n**After**\n{after.username or after.name}\n\n**Date**\n<t:{int(datetime.utcnow().timestamp())}>", color=discord.Color.blue())
+            embed.set_author(name=before.display_name, icon_url=before.avatar.url)
+            await channel.send(embed=embed)
 
     # Currently only logs nickname change, could be user for avatar as well.
     @commands.Cog.listener()

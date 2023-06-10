@@ -65,8 +65,8 @@ async def create_tables(bot):
                     PRIMARY KEY (guild_id, user_id)
                     )
                 ''')
-            await conn.execute ('''
-            CREATE TABLE IF NOT EXISTS birthday_extras(
+            await conn.execute('''
+                CREATE TABLE IF NOT EXISTS birthday_extras(
                 guild_id BIGINT PRIMARY KEY,
                 channel_id BIGINT,
                 role_id BIGINT
@@ -108,7 +108,7 @@ async def create_tables(bot):
 
 
 async def populate_tables(bot):
-   async with bot.pool.acquire() as conn:
+    async with bot.pool.acquire() as conn:
         for guild in bot.guilds:
             await conn.execute('INSERT INTO logging (guild_id) VALUES ($1) ON CONFLICT DO NOTHING', guild.id)
             await conn.execute('INSERT INTO dailycat (guild_id) VALUES ($1) ON CONFLICT DO NOTHING', guild.id)

@@ -25,6 +25,7 @@ class ActionReason(commands.Converter):
 class Moderator(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(kick_members=True)
