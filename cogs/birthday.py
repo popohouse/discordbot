@@ -42,10 +42,6 @@ class BirthdayCog(commands.Cog):
         """Update the timezone cache"""
         self.timezone_cache[user_id] = timezone
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        await self.update_cache()
-
     @app_commands.command()
     @commands.guild_only()
     async def setbirthday(self, interaction: discord.Interaction, date: str):
@@ -86,6 +82,7 @@ class BirthdayCog(commands.Cog):
                 return
             guild_id = interaction.guild.id
             await conn.execute("INSERT INTO birthday_extras (guild_id, channel_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET channel_id = $2", guild_id, channel.id)
+            await self.update_cache()
             await interaction.response.send_message("Birthday channel set", ephemeral=True)
 
     @app_commands.command()
@@ -98,6 +95,7 @@ class BirthdayCog(commands.Cog):
                 return
             guild_id = interaction.guild.id
             await conn.execute("INSERT INTO birthday_extras (guild_id, role_id) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET role_id = $2", guild_id, role.id)
+            await self.update_cache()
             await interaction.response.send_message("Birthday role set", ephemeral=True)
 
     @tasks.loop(seconds=10)
@@ -126,17 +124,15 @@ class BirthdayCog(commands.Cog):
                         else:
                             await member.remove_roles(role)
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(seconds=10)
     async def check_birthdays(self):
-        # Get the current time in UTC
         now_utc = datetime.utcnow().replace(tzinfo=pytz.utc)
-        # Check if it's midnight in the user's timezone
         for (guild_id, user_id), birthday in self.birthday_cache.items():
             user_timezone = self.timezone_cache.get(user_id)
             if user_timezone:
                 tz = pytz.timezone(user_timezone)
                 now_user = now_utc.astimezone(tz)
-                if now_user.hour == 0 and now_user.minute == 0:
+                if now_user.date() == birthday and now_user.hour == 0 and now_user.minute == 0:  # Compare the dates
                     channel_id = self.birthday_channel_cache.get(guild_id)
                     role_id = self.birthday_role_cache.get(guild_id)
                     if channel_id:
@@ -151,7 +147,8 @@ class BirthdayCog(commands.Cog):
                             if member and role:
                                 await member.add_roles(role)
             else:
-                if now_utc.hour == 0 and now_utc.minute == 0:
+                now_date = now_utc.date()
+                if now_date == birthday and now_utc.hour == 0 and now_utc.minute == 0:  # Compare the plus time
                     channel_id = self.birthday_channel_cache.get(guild_id)
                     role_id = self.birthday_role_cache.get(guild_id)
                     if channel_id:
@@ -165,6 +162,7 @@ class BirthdayCog(commands.Cog):
                             role = guild.get_role(role_id)
                             if member and role:
                                 await member.add_roles(role)
+
 
 
 async def setup(bot):
