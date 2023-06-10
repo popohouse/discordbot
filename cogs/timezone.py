@@ -25,10 +25,7 @@ class TimezoneCog(commands.Cog):
             return
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
-                "INSERT INTO timezones (user_id, timezone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = $2",
-                interaction.user.id,
-                timezone
-            )
+                "INSERT INTO timezones (user_id, timezone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = $2",interaction.user.id,timezone)
             await interaction.response.send_message(f"Timezone set to {timezone}", ephemeral=True)
             # Update the timezone cache
             cog = self.bot.get_cog("BirthdayCog")
@@ -63,6 +60,21 @@ class TimezoneCog(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             await conn.execute("DELETE FROM timezones WHERE user_id = $1", interaction.user.id)
             await interaction.response.send_message("Your timezone has been removed", ephemeral=True)
+
+    @app_commands.command()
+    @commands.guild_only()
+    @commands.is_owner()
+    async def admtime(self, interaction: discord.Interaction, user: int):
+        """Removes a users timezone from database for them"""
+        try: 
+            user_id = int(user)
+        except ValueError:
+            await interaction.response.send_message("Invalid user ID", ephemeral=True)
+            return
+        
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute("DELETE FROM timezones WHERE user_id = $1", user_id)
+            await interaction.response.send_message(f"Timezone removed for user ID: {user_id}.", ephemeral=True)
 
 
 async def setup(bot):
