@@ -4,7 +4,6 @@ from dotenv import dotenv_values
 
 @dataclass
 class Config:
-
     """
     This class is used to store the bot's configuration.
     You can load it from a dictionary or from a .env file (recommended).

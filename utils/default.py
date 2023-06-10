@@ -21,7 +21,7 @@ def date(
     ago: bool = False, only_ago: bool = False
 ) -> str:
     """Converts a timestamp to a Discord timestamp format"""
-    if isinstance(target, (float,int)): 
+    if isinstance(target, (float,int)):
         unix = int(target)
     else:
         unix = int(time.mktime(target.timetuple()))
