@@ -1,8 +1,6 @@
 from discord.ext import commands
-import re
 from discord import app_commands
 import discord
-from typing import Optional
 import json
 from utils import permissions
 
