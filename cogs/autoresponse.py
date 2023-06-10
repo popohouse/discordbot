@@ -119,7 +119,7 @@ class AutoResponseCog(commands.Cog):
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
-    async def removear(self, interaction: discord.Interaction, id: int, alias: Optional[str]):
+    async def delar(self, interaction: discord.Interaction, id: int, alias: Optional[str]):
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
         try:
@@ -145,7 +145,7 @@ class AutoResponseCog(commands.Cog):
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
-    async def listresponses(self, interaction: discord.Interaction):
+    async def listar(self, interaction: discord.Interaction):
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
         try:
