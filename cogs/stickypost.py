@@ -79,7 +79,6 @@ class StickyPost(commands.Cog):
             else:
                 await interaction.response.send_message("Unknown sticky post", ephemeral=True)
 
-
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
@@ -103,7 +102,18 @@ class StickyPost(commands.Cog):
             if guild_id in self.stickypost_cache:
                 for stickypost in self.stickypost_cache[guild_id]:
                     if message.channel.id == stickypost['channel_id']:
-                        await message.channel.send(stickypost['stickypost'])
+                        async with self.bot.pool.acquire() as conn:
+                            to_delete = await conn.fetchval("SELECT message_id FROM stickyposts WHERE guild_id = $1 AND channel_id = $2", guild_id, message.channel.id)
+                            if to_delete:
+                                try:
+                                    msg_to_delete = await message.channel.fetch_message(to_delete)
+                                    await msg_to_delete.delete()
+                                except discord.NotFound:
+                                    pass
+                            sent_message = await message.channel.send(stickypost['stickypost'])
+                            await conn.execute("UPDATE stickyposts SET message_id = $1 WHERE guild_id = $2 AND channel_id = $3", sent_message.id, guild_id, message.channel.id)
+
+
 
 async def setup(bot):
     StickyPost_cog = StickyPost(bot)
