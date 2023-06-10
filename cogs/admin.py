@@ -46,7 +46,7 @@ class Admin(commands.Cog):
             except Exception as e:
                 return await interaction.response.send_message(default.traceback_maker(e))
             await interaction.response.send_message(f"Unloaded extension **{name}.py**", ephemeral=True)
-        else: 
+        else:
             await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
 
     @app_commands.command()
@@ -107,7 +107,7 @@ class Admin(commands.Cog):
                 error = default.traceback_maker(e)
                 return await interaction.response.send_message(f"Module **{name_maker}** returned error and was not reloaded...\n{error}", ephemeral=True)
             await interaction.response.send_message(f"Reloaded module **{name_maker}**", ephemeral=True)
-        else: 
+        else:
             await interaction.response.send_message(f"no, heck off {interaction.user.name}", ephemeral=True)
 
     @app_commands.command()

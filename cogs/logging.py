@@ -123,7 +123,7 @@ class LoggingCog(commands.Cog):
     @commands.guild_only()
     async def setlogchannel(self, interaction: discord.Interaction, logchannel: Optional[discord.TextChannel], modchannel: Optional[discord.TextChannel]):
         async with self.bot.pool.acquire() as conn:
-            # Set main log channel 
+            # Set main log channel
             if logchannel is not None:
                 row = await conn.fetch('SELECT * FROM logging WHERE guild_id = $1', interaction.guild.id)
                 if row:
@@ -164,7 +164,7 @@ class LoggingCog(commands.Cog):
                     }
                 await interaction.response.send_message(f'Set logging channel to {modchannel.mention}', ephemeral=True)
 
-    ### Event listeners for all logging types below###
+    # Event listeners for all logging types below
     # Message delete listener(should be in finished state)
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -178,7 +178,7 @@ class LoggingCog(commands.Cog):
                     moderator = entry.user
                     break
             else:
-                moderator = None     
+                moderator = None
             # Update embed description based on whether a moderator deleted the message
             if moderator:
                 description = f"Message sent by {message.author.mention} in {message.channel.mention} was deleted by {moderator.mention}."
@@ -211,7 +211,7 @@ class LoggingCog(commands.Cog):
                 embed.set_author(name=before.display_name, icon_url=before.avatar.url)
                 await channel.send(embed=embed)
 
-    # Currently only logs nickname change, could be user for avatar as well. 
+    # Currently only logs nickname change, could be user for avatar as well.
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
         guild_id = before.guild.id

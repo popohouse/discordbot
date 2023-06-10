@@ -24,7 +24,7 @@ class Animal(commands.Cog):
         if choice.value == ("dog"):
             async with aiohttp.ClientSession() as session, session.get('https://random.dog/woof.json') as response:
                 dogimg = await response.json()
-                await interaction.response.send_message(dogimg['url']) 
+                await interaction.response.send_message(dogimg['url'])
 
         elif choice.value == ("fox"):
             async with aiohttp.ClientSession() as session, session.get('https://randomfox.ca/floof/') as response:

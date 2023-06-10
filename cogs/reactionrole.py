@@ -86,7 +86,7 @@ class ReactionRoles(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(bot):
-        await bot.cache_reaction_roles()    
+        await bot.cache_reaction_roles()
 
 
 @commands.Cog.listener()
@@ -97,7 +97,7 @@ async def on_message_delete(self, message):
             WHERE guild_id = $1 AND message_id = $2
         ''', message.guild.id, message.id)
     if message.guild.id in self.reaction_roles and message.id in self.reaction_roles[message.guild.id]:
-        del self.reaction_roles[message.guild.id][message.id]    
+        del self.reaction_roles[message.guild.id][message.id]
 
 
 async def setup(bot):

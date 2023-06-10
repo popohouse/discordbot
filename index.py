@@ -74,11 +74,11 @@ async def sync(
 
 
 # Runs when bot is ready
-@bot.event 
+@bot.event
 async def on_ready():
     print(f'{bot.user} is ready!')
     bot.pool = await asyncpg.create_pool(
-            user=config.postgres_user, 
+            user=config.postgres_user,
             password=config.postgres_password,
             database=config.postgres_database,
             host=config.postgres_host,
@@ -88,7 +88,7 @@ async def on_ready():
     await populate_tables(bot)
     await load_cogs()
     if not hasattr(bot, "uptime"):
-        bot.uptime = time.time() 
+        bot.uptime = time.time()
 
 
 logging.getLogger('asyncio').setLevel(logging.DEBUG)

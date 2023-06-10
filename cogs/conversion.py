@@ -31,4 +31,4 @@ class ConversionCog(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(ConversionCog(bot))         
+    await bot.add_cog(ConversionCog(bot))

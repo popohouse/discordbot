@@ -5,15 +5,13 @@ import discord
 from discord import app_commands
 
 
-### todo
-# Add user lookup
 class AniList(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
         self.session = aiohttp.ClientSession()
 
     async def cog_unload(self):
-        self.bot.loop.create_task(self.session.close())    
+        self.bot.loop.create_task(self.session.close())
 
     async def search(self, interaction, media_type: str, search: str):
         query = '''
@@ -65,12 +63,12 @@ class AniList(commands.Cog):
             if data['description'] is not None:
                 description = re.sub('<[^<]+?>', '', data['description'])
             else:
-                description = "" 
+                description = ""
             if len(description) >= 400:
                 description = description[:350] + f'... [(more)]({url})'
             genres = ', '.join(data['genres'])
             if "hentai" in genres.lower() and interaction.channel.nsfw is False:
-                return await interaction.response.send_message("Please run this in the nsfw channel.", ephemeral=True)          
+                return await interaction.response.send_message("Please run this in the nsfw channel.", ephemeral=True)
             image_url = 'https://img.anili.st/media/' + str(data['id'])
             status = data['status']
             start_date = ''
