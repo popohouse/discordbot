@@ -74,6 +74,16 @@ class BirthdayCog(commands.Cog):
 
     @app_commands.command()
     @commands.guild_only()
+    async def delbirthday(self, interaction: discord.Interaction):
+        """Remove your birthday from server"""
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute('DELETE FROM birthdays WHERE guild_id=$1 AND user_id=$2', interaction.guild.id, interaction.user.id)
+            await interaction.response.send_message('Birthday removed from this guild!', ephemeral=True)
+            # Update the cache
+            await self.update_cache()
+
+    @app_commands.command()
+    @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     async def birthday_channel(self, interaction: discord.Interaction, channel: discord.TextChannel):
         """Sets the birthday channel for the guild"""
