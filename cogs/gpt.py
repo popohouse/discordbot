@@ -1,8 +1,10 @@
 from discord.ext import commands, tasks
 from discord.ext.commands import CommandNotFound
+import discord
 import poe
-import re
+from typing import Optional
 from utils.config import Config
+from discord import app_commands
 
 config = Config.from_env()
 
@@ -11,35 +13,49 @@ class SassyCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.client = poe.Client(config.poe_token)
-        self.chat_cleanup.start()
+        #self.chat_cleanup.start()
 
-    async def cog_unload(self):
-        self.chat_cleanup.cancel()
+    #async def cog_unload(self):
+        #self.chat_cleanup.cancel()
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        # Don't process messages sent by the bot itself
-        if message.author == self.bot.user:
-            return
+    @app_commands.command()
+    @app_commands.choices(model=[
+        app_commands.Choice(name="Claude", value="a2"),
+        app_commands.Choice(name="ChatGPT", value="chinchilla"),
+        app_commands.Choice(name="UwUbot", value="uwuify"),
+    ])
+    async def gpt(self, interaction: discord.Interaction, prompt: str, model: Optional[app_commands.Choice[str]] = 'ChatGpt'):
         # Check if the bot was mentioned in the message
-        if self.bot.user in message.mentions or f'@{self.bot.user.name}' in message.content:
-            cleaned_message = message.clean_content.replace(f'<@!{self.bot.user.id}>', '').replace(f'<@{self.bot.user.id}>', '').replace(f'@{self.bot.user.name}', '')
-            cleaned_message = re.sub(r'@(\w+)', r'\1', cleaned_message)
             # Prepend the desired phrase to the user's message content
-            prompt = cleaned_message
         # Pass the prompt to POE and get a response
-            response = ""
-            for chunk in self.client.send_message("uwuify", prompt, timeout=10):
-                response += chunk["text_new"]
-            response_chunks = [response[i:i+1999] for i in range(0, len(response), 1999)]
-            # Send the GPT-4 response back to the Discord channel
-            for chunk in response_chunks:
-                await message.channel.send(chunk)
+            try:
+                model_name = model.name
+                if model_name is None:
+                    model_name = 'ChatGPT'
+                print (interaction.user.name, prompt, model_name)
+                models = {
+                'Claude': 'a2',
+                'ChatGPT': 'chinchilla',
+                'UwUbot': 'uwuify'
+                        }
+                base = f'*model*: `{model_name}`\n'
+                token = config.poe_token
+                client = poe.Client(token)
+                await interaction.response.send_message(base)
+                base += '\n'
+                completion = client.send_message(models[model_name], prompt, with_chat_break=True)
+                for token in completion:
+                    base += token['text_new']
+                    base = base.replace('Discord Message:', '')
+                    await interaction.edit_original_response(content=base)
+            except Exception as e:
+                print (e)
 
-    @tasks.loop(hours=1)
-    async def chat_cleanup(self):
-        self.client.purge_conversation("uwuify")
-
+    #Cleanup of old chat messages, possibly do this another way.
+    #@tasks.loop(hours=1)
+    #async def chat_cleanup(self):
+    #    self.client.purge_conversation("uwuify")
+        
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         # Ignore CommandNotFound errors
