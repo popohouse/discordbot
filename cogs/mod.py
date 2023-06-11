@@ -173,6 +173,46 @@ class Moderator(commands.Cog):
         except Exception as e:
             print(e)
 
+    @app_commands.command()
+    @commands.guild_only()
+    @permissions.has_permissions(manage_channels=True)
+    async def slowmode(self, interaction: discord.Interaction, slowmode: int, channel: Optional[discord.TextChannel], reason: Optional[str] = None):
+        """Toggles slowmode in the current channel"""
+        if not await permissions.check_priv(self.bot, interaction, None, {"manage_channels": True}):
+            return
+        channel = channel or interaction.channel or interaction.guild.system_channel 
+        if slowmode > 21600:
+            await interaction.response.send_message("Slowmode can't be longer than 6 hours", ephemeral=True)
+            return
+        if slowmode < 0:
+            await interaction.response.send_message("Slowmode can't be negative", ephemeral=True)
+            return
+        if slowmode == 0:
+            await channel.edit(slowmode_delay=slowmode, reason=default.responsible(interaction.user, reason))
+            await interaction.response.send_message("Disabled slowmode")
+            return
+        try:
+            await channel.edit(slowmode_delay=slowmode, reason=default.responsible(interaction.user, reason))
+            await interaction.response.send_message("Slowmode now set to {slowmode} seconds")
+        except Exception as e:
+            print(e)
+
+    @app_commands.command()
+    @commands.guild_only()
+    @permissions.has_permissions(manage_channels=True)
+    async def unban(self, interaction: discord.Interaction, target: str, *, reason: Optional[str] = None):
+        """Unbans a user from the current server."""
+        target_id = int(target)
+        if not await permissions.check_priv(self.bot, interaction, None, {"manage_channels": True}):
+            return
+        try:
+            target_user = await self.bot.fetch_user(target_id)
+            await interaction.guild.unban(target_user, reason=default.responsible(interaction.user, reason))
+            await interaction.response.send_message(f"{target_user} has been unbanned")
+        except discord.NotFound:
+            await interaction.response.send_message("User not found", ephemeral=True)
+        except Exception as e:
+            print(e)
 
 async def setup(bot):
     await bot.add_cog(Moderator(bot))
