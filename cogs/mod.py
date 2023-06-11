@@ -159,6 +159,20 @@ class Moderator(commands.Cog):
         except Exception as e:
             print(e)
 
+    @app_commands.command()
+    @commands.guild_only()
+    @permissions.has_permissions(manage_messages=True)
+    async def purge(self, interaction: discord.Interaction, amount: int, channel: Optional[discord.TextChannel], reason: Optional[str] = None):
+        """Purges a specified amount of messages in the current channel"""
+        if not await permissions.check_priv(self.bot, interaction, None, {"manage_messages": True}):
+            return
+        channel = channel or interaction.channel or interaction.guild.system_channel 
+        try:
+            await channel.purge(limit=amount + 1, reason=default.responsible(interaction.user, reason))
+            await interaction.response.send_message(default.actionmessage(f"Will purge {amount} messages"))
+        except Exception as e:
+            print(e)
+
 
 async def setup(bot):
     await bot.add_cog(Moderator(bot))
