@@ -29,7 +29,7 @@ class SassyCog(commands.Cog):
             prompt = cleaned_message
         # Pass the prompt to POE and get a response
             response = ""
-            for chunk in self.client.send_message("uwuify", prompt):
+            for chunk in self.client.send_message("uwuify", prompt, timeout=10):
                 response += chunk["text_new"]
             response_chunks = [response[i:i+1999] for i in range(0, len(response), 1999)]
             # Send the GPT-4 response back to the Discord channel
