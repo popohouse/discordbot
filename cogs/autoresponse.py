@@ -50,18 +50,15 @@ class AutoResponseCog(commands.Cog):
                 del self.auto_responses_cache[guild_id]  # Clear existing cache for the guild
             async with self.bot.pool.acquire() as conn:
                 if guild_id is None:
-                    auto_responses = await conn.fetch("SELECT guild_id, triggers, response, ping, deletemsg FROM auto_responses")
+                    auto_responses = await conn.fetch("SELECT guild_id, triggers FROM auto_responses")
                 else:
-                    auto_responses = await conn.fetch("SELECT guild_id, triggers, response, ping, deletemsg FROM auto_responses WHERE guild_id = $1", guild_id)
+                    auto_responses = await conn.fetch("SELECT guild_id, triggers FROM auto_responses WHERE guild_id = $1", guild_id)
                 for row in auto_responses:
                     guild_id = row["guild_id"]
                     triggers = row["triggers"]
-                    response = row["response"]
-                    ping = row["ping"]
-                    deletemsg = row["deletemsg"]
                     if guild_id not in self.auto_responses_cache:
                         self.auto_responses_cache[guild_id] = []
-                    self.auto_responses_cache[guild_id].append({"triggers": triggers, "response": response, "ping": ping, "deletemsg": deletemsg})
+                    self.auto_responses_cache[guild_id].append({"triggers": triggers})
         except Exception as e:
             print(f"Failed to fetch auto responses: {str(e)}")
 
@@ -177,49 +174,62 @@ class AutoResponseCog(commands.Cog):
                 for response_data in auto_responses:
                     for trigger in response_data["triggers"]:
                         if re.search(trigger, message.content):
-                            response = response_data["response"]
-                            ping = response_data["ping"]
-                            deletemsg = response_data["deletemsg"]
-                            cooldown = cooldowns.get_bucket(message)
-                            retry_after = cooldown.update_rate_limit()
-                            if retry_after:
-                                if deletemsg:
-                                    await message.delete()
+                            trigger_data = response_data  # Rename response_data to trigger_data for clarity
+                            triggers = trigger_data["triggers"]
+                            
+                            # Retrieve additional values from the database
+                            async with self.bot.pool.acquire() as conn:
+                                auto_response = await conn.fetchrow(
+                                    "SELECT response, ping, deletemsg FROM auto_responses WHERE triggers = $1",
+                                    triggers
+                                )
+                                
+                            if auto_response:
+                                response = auto_response["response"]
+                                ping = auto_response["ping"]
+                                deletemsg = auto_response["deletemsg"]
+                                
+                                cooldown = cooldowns.get_bucket(message)
+                                retry_after = cooldown.update_rate_limit()
+                                if retry_after:
+                                    if deletemsg:
+                                        await message.delete()
                                     return
-                                return
-                            try:
-                                response_data = json.loads(response)
-                                if isinstance(response_data, dict) and "embeds" in response_data:
-                                    for embed in response_data["embeds"]:
-                                        if ping:
-                                            if deletemsg:
-                                                await message.delete()
-                                                await message.channel.send(f"{message.author.mention}", embed=discord.Embed.from_dict(embed),)
+                                
+                                try:
+                                    response_data = json.loads(response)
+                                    if isinstance(response_data, dict) and "embeds" in response_data:
+                                        for embed in response_data["embeds"]:
+                                            if ping:
+                                                if deletemsg:
+                                                    await message.delete()
+                                                    await message.channel.send(f"{message.author.mention}", embed=discord.Embed.from_dict(embed))
+                                                else:
+                                                    await message.channel.send(f"{message.author.mention}", embed=discord.Embed.from_dict(embed))
                                             else:
-                                                await message.channel.send(f"{message.author.mention}", embed=discord.Embed.from_dict(embed),)
+                                                if deletemsg:
+                                                    await message.delete()
+                                                    await message.channel.send(embed=discord.Embed.from_dict(embed))
+                                                else:
+                                                    await message.channel.send(embed=discord.Embed.from_dict(embed))
+                                    else:
+                                        raise json.JSONDecodeError("", "", 0)
+                                except json.JSONDecodeError:
+                                    escaped_response = response.replace("{", "{{").replace("}", "}}").strip('"')
+                                    if ping:
+                                        if deletemsg:
+                                            await message.delete()
+                                            await message.channel.send(f"{message.author.mention} {escaped_response}")
                                         else:
-                                            if deletemsg:
-                                                await message.delete()
-                                                await message.channel.send(embed=discord.Embed.from_dict(embed))
-                                            else:
-                                                await message.channel.send(embed=discord.Embed.from_dict(embed))
-                                else:
-                                    raise json.JSONDecodeError("", "", 0)
-                            except json.JSONDecodeError:
-                                escaped_response = response.replace("{", "{{").replace("}", "}}").strip('"')
-                                if ping:
-                                    if deletemsg:
-                                        await message.delete()
-                                        await message.channel.send(f"{message.author.mention} {escaped_response}")
+                                            await message.channel.send(f"{message.author.mention} {escaped_response}")
                                     else:
-                                        await message.channel.send(f"{message.author.mention} {escaped_response}")
-                                else:
-                                    if deletemsg:
-                                        await message.delete()
-                                        await message.channel.send(escaped_response)
-                                    else:
-                                        await message.channel.send(escaped_response)
+                                        if deletemsg:
+                                            await message.delete()
+                                            await message.channel.send(escaped_response)
+                                        else:
+                                            await message.channel.send(escaped_response)
                             break
+
 
 
 async def setup(bot):
