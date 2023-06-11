@@ -166,7 +166,7 @@ class Moderator(commands.Cog):
         """Purges a specified amount of messages in the current channel"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_messages": True}):
             return
-        channel = channel or interaction.channel or interaction.guild.system_channel 
+        channel = channel or interaction.channel or interaction.guild.system_channel
         try:
             await channel.purge(limit=amount + 1, reason=default.responsible(interaction.user, reason))
             await interaction.response.send_message(default.actionmessage(f"Will purge {amount} messages"))
