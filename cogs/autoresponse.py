@@ -50,15 +50,16 @@ class AutoResponseCog(commands.Cog):
                 del self.auto_responses_cache[guild_id]  # Clear existing cache for the guild
             async with self.bot.pool.acquire() as conn:
                 if guild_id is None:
-                    auto_responses = await conn.fetch("SELECT guild_id, triggers FROM auto_responses")
+                    auto_responses = await conn.fetch("SELECT guild_id, triggers, deletemsg FROM auto_responses")
                 else:
-                    auto_responses = await conn.fetch("SELECT guild_id, triggers FROM auto_responses WHERE guild_id = $1", guild_id)
+                    auto_responses = await conn.fetch("SELECT guild_id, triggers, deletemsg FROM auto_responses WHERE guild_id = $1", guild_id)
                 for row in auto_responses:
                     guild_id = row["guild_id"]
                     triggers = row["triggers"]
+                    deletemsg = row["deletemsg"]
                     if guild_id not in self.auto_responses_cache:
                         self.auto_responses_cache[guild_id] = []
-                    self.auto_responses_cache[guild_id].append({"triggers": triggers})
+                    self.auto_responses_cache[guild_id].append({"triggers": triggers, "deletemsg": deletemsg})
         except Exception as e:
             print(f"Failed to fetch auto responses: {str(e)}")
 
@@ -176,26 +177,25 @@ class AutoResponseCog(commands.Cog):
                         if re.search(trigger, message.content):
                             trigger_data = response_data  # Rename response_data to trigger_data for clarity
                             triggers = trigger_data["triggers"]
-                            
+                            deletemsg =  trigger_data["deletemsg"]
+                            cooldown = cooldowns.get_bucket(message)
+                            retry_after = cooldown.update_rate_limit()
+                            if retry_after:
+                                if deletemsg:
+                                    await message.delete()
+                                    return
+                                return
                             # Retrieve additional values from the database
                             async with self.bot.pool.acquire() as conn:
                                 auto_response = await conn.fetchrow(
-                                    "SELECT response, ping, deletemsg FROM auto_responses WHERE triggers = $1",
+                                    "SELECT response, ping FROM auto_responses WHERE triggers = $1",
                                     triggers
                                 )
                                 
                             if auto_response:
                                 response = auto_response["response"]
                                 ping = auto_response["ping"]
-                                deletemsg = auto_response["deletemsg"]
-                                
-                                cooldown = cooldowns.get_bucket(message)
-                                retry_after = cooldown.update_rate_limit()
-                                if retry_after:
-                                    if deletemsg:
-                                        await message.delete()
-                                    return
-                                
+                                deletemsg = trigger_data["deletemsg"]
                                 try:
                                     response_data = json.loads(response)
                                     if isinstance(response_data, dict) and "embeds" in response_data:
