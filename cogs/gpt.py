@@ -24,14 +24,12 @@ class SassyCog(commands.Cog):
         app_commands.Choice(name="ChatGPT", value="chinchilla"),
         app_commands.Choice(name="UwUbot", value="uwuify"),
     ])
-    async def gpt(self, interaction: discord.Interaction, prompt: str, model: Optional[app_commands.Choice[str]] = 'ChatGpt'):
+    async def gpt(self, interaction: discord.Interaction, prompt: str, model: Optional[app_commands.Choice[str]]):
         # Check if the bot was mentioned in the message
             # Prepend the desired phrase to the user's message content
         # Pass the prompt to POE and get a response
             try:
-                model_name = model.name
-                if model_name is None:
-                    model_name = 'ChatGPT'
+                model_name = model.name if model else 'ChatGPT'
                 print (interaction.user.name, prompt, model_name)
                 models = {
                 'Claude': 'a2',
