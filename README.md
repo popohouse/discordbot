@@ -14,7 +14,6 @@ Do you need more help? Visit my server here: **https://discord.gg/Yx6dTZvrGr**
 Keep [this](https://discordpy.readthedocs.io/en/latest/) saved somewhere, as this is the docs to discord.py@rewrite.
 All you need to know about the library is defined inside here, even code that I don't use in this example is here.
 
-
 # Steup
 ## Docker setup
 
@@ -35,7 +34,6 @@ Note this assumes you have postgres already setup on system.
 3. Start the bot by having the cmd/terminal inside the bot folder and type **python index.py**
 
 4. You're done, enjoy your bot!
-
 
 # Current features
 Found here while WIP **https://bin.ffm.best/popo/9845fd1e359c4439871fe156fc1c4673**
