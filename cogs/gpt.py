@@ -20,6 +20,7 @@ class SassyCog(commands.Cog):
         app_commands.Choice(name="Claude", value="a2"),
         app_commands.Choice(name="ChatGPT", value="chinchilla"),
         app_commands.Choice(name="UwUbot", value="uwuify"),
+        app_commands.Choice(name="Mommygpt", value="BotY1IW6KZQ2I"),
     ])
     async def gpt(self, interaction: discord.Interaction, prompt: str, model: Optional[app_commands.Choice[str]]):
         try:
@@ -27,7 +28,8 @@ class SassyCog(commands.Cog):
             models = {
                 'Claude': 'a2',
                 'ChatGPT': 'chinchilla',
-                'UwUbot': 'uwuify'
+                'UwUbot': 'uwuify',
+                'Mommygpt': 'BotY1IW6KZQ2I'
             }
             base = f'*model*: `{model_name}`\n'
             token = config.poe_token
