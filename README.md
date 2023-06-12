@@ -26,6 +26,8 @@ If you choose to run the bot using Docker, the setup process is simplified. Foll
 
 2. Run the following command to start the Docker containers: **docker-compose up -d --build**
 
+3. Currently need to sync slash commands via !sync 
+
 ## Non docker setup
 If you prefer to run the bot without Docker, follow these steps:<br>
 `Note: This assumes you have already set up a PostgreSQL database on your system.`
@@ -38,3 +40,5 @@ If you prefer to run the bot without Docker, follow these steps:<br>
 3. Start the bot by navigating to the bot folder in your command prompt or terminal and running the following command: **python index.py**
 
 4. You're done, enjoy your bot!
+
+5. Currently need to sync slash commands via !sync
