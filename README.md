@@ -26,7 +26,7 @@ If you choose to run the bot using Docker, the setup process is simplified. Foll
 
 2. Run the following command to start the Docker containers: **docker-compose up -d --build**
 
-3. Currently need to sync slash commands via !sync 
+3. To enable the slash commands, execute the !sync command (prefix can be changed in the bot's .env file) in any text channel while the bot is running and connected to your Discord server.
 
 ## Non docker setup
 If you prefer to run the bot without Docker, follow these steps:<br>
@@ -41,4 +41,4 @@ If you prefer to run the bot without Docker, follow these steps:<br>
 
 4. You're done, enjoy your bot!
 
-5. Currently need to sync slash commands via !sync
+5. To enable the slash commands, execute the !sync command (prefix can be changed in the bot's .env file) in any text channel while the bot is running and connected to your Discord server.
