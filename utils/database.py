@@ -76,10 +76,12 @@ async def create_tables(bot):
                 CREATE TABLE IF NOT EXISTS auto_responses(
                 id SERIAL PRIMARY KEY,
                 guild_id BIGINT NOT NULL,
-                triggers TEXT[],
-                response TEXT,
+                triggers TEXT[] NOT NULL,
+                response TEXT NOT NULL,
                 ping BOOLEAN,
                 deletemsg BOOLEAN,
+                selfdelete INT,
+                ignoreroles BIGINT[],
                 UNIQUE (guild_id, triggers, response)
                     )
                 ''')
