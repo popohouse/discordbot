@@ -17,9 +17,18 @@ class Buttons(discord.ui.View):
         self.current_page = 0
         self.page_counter = None
 
+        # Remove buttons and page counter if there is only one page
+        if len(self.pages) <= 1:
+            self.clear_items()
+            self.page_counter = None  # Set page_counter to None
+
     def update_page_counter(self):
         if self.page_counter:
-            self.page_counter.content = f"Page {self.current_page + 1}/{len(self.pages)}"
+            if len(self.pages) > 1:
+                self.page_counter.content = f"Page {self.current_page + 1}/{len(self.pages)}"
+            else:
+                self.page_counter.content = ""  # Empty string to hide the page counter
+
 
     @discord.ui.button(label="Back", style=discord.ButtonStyle.green)
     async def backpage(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -34,6 +43,7 @@ class Buttons(discord.ui.View):
             self.current_page += 1
             await interaction.response.edit_message(content=f"{self.pages[self.current_page]}Page {self.current_page + 1}/{len(self.pages)}")
             self.update_page_counter()
+
 
 
 class AutoResponseCog(commands.Cog):
@@ -162,22 +172,30 @@ class AutoResponseCog(commands.Cog):
         try:
             # Retrieve auto responses from the database
             async with self.bot.pool.acquire() as conn:
-                auto_responses = await conn.fetch("SELECT id, triggers, response FROM auto_responses WHERE guild_id = $1", interaction.guild.id)
-                # Format the auto responses as a list of strings (pages)
-                pages = []
-                page_limit = 2000  # Character limit per page
-                response_str = "Auto responses:\n"
-                for row in auto_responses:
-                    entry = f"ID: {row['id']}\nTriggers: {', '.join(row['triggers'])}\nResponse: {row['response']}\n\n"
-                    if len(response_str) + len(entry) > page_limit:
-                        pages.append(response_str)
-                        response_str = ""
-                    response_str += entry
+                auto_responses = await conn.fetch("SELECT id, triggers, response, ping, deletemsg FROM auto_responses WHERE guild_id = $1", interaction.guild.id)
+            if not auto_responses:
+                await interaction.response.send_message("No auto responses found.", ephemeral=True)
+                return
+            # Format the auto responses as a list of strings (pages)
+            pages = []
+            page_limit = 2000  # Character limit per page
+            response_str = "Auto responses:\n"
+            for row in auto_responses:
+                entry = f"ID: {row['id']}\n**Triggers**: {', '.join(row['triggers'])}\n**Response**: {row['response']}\n **Ping**: {row['ping']} **Delete message**: {row['deletemsg']}\n\n"
+                if len(response_str) + len(entry) > page_limit:
+                    pages.append(response_str)
+                    response_str = ""
+                response_str += entry
+            if response_str:  # Add any remaining entries to the last page
                 pages.append(response_str)
-            view = Buttons(pages)
-            view.page_counter = await interaction.response.send_message(f"{pages[0]}Page 1/{len(pages)}", view=view, ephemeral=True)
+            if len(pages) == 1:  # If there is only one page, send without page counter
+                await interaction.response.send_message(pages[0], ephemeral=True)
+            else:
+                view = Buttons(pages)
+                view.page_counter = await interaction.response.send_message(f"{pages[0]}Page 1/{len(pages)}", view=view, ephemeral=True)
         except Exception as e:
             await interaction.response.send_message(f"Failed to list auto responses: {str(e)}", ephemeral=True)
+
 
     def should_ignore_message(self, message, ignoreroles):
         if ignoreroles:
