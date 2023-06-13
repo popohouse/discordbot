@@ -2,7 +2,7 @@ from discord.ext import commands
 import re
 from discord import app_commands
 import discord
-from typing import Optional
+from typing import Optional, List
 import json
 from utils import permissions
 
@@ -50,25 +50,38 @@ class AutoResponseCog(commands.Cog):
                 del self.auto_responses_cache[guild_id]  # Clear existing cache for the guild
             async with self.bot.pool.acquire() as conn:
                 if guild_id is None:
-                    auto_responses = await conn.fetch("SELECT guild_id, triggers, deletemsg FROM auto_responses")
+                    auto_responses = await conn.fetch("SELECT guild_id, triggers, deletemsg, ignoreroles, selfdelete FROM auto_responses")
                 else:
-                    auto_responses = await conn.fetch("SELECT guild_id, triggers, deletemsg FROM auto_responses WHERE guild_id = $1", guild_id)
+                    auto_responses = await conn.fetch("SELECT guild_id, triggers, deletemsg, ignoreroles, selfdelete FROM auto_responses WHERE guild_id = $1", guild_id)
                 for row in auto_responses:
                     guild_id = row["guild_id"]
                     triggers = row["triggers"]
                     deletemsg = row["deletemsg"]
+                    ignoreroles = row["ignoreroles"]
+                    selfdelete = row["selfdelete"]
                     if guild_id not in self.auto_responses_cache:
                         self.auto_responses_cache[guild_id] = []
-                    self.auto_responses_cache[guild_id].append({"triggers": triggers, "deletemsg": deletemsg})
+                    self.auto_responses_cache[guild_id].append({"triggers": triggers, "deletemsg": deletemsg, "ignoreroles": ignoreroles, "selfdelete": selfdelete})
         except Exception as e:
             print(f"Failed to fetch auto responses: {str(e)}")
 
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
-    async def addar(self, interaction: discord.Interaction, trigger: str, response: str, ping: Optional[bool] = False, deletemsg: Optional[bool] = False):
+    async def addar(self, interaction: discord.Interaction, trigger: str, response: str, ping: Optional[bool] = False, deletemsg: Optional[bool] = False, selfdelete: Optional[int] = None, ignoreroles: Optional[discord.Role] = None):
         """Add auto response"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
+            return
+        if selfdelete is not None and selfdelete > 600:
+            await interaction.response.send_message("Self delete time cannot be greater than 10 minutes.", ephemeral=True)
+            return
+        if ping and selfdelete < 180:
+            await interaction.response.send_message("Self delete time must be at least 3 minutes if pinging.", ephemeral=True)
+            return
+        async with self.bot.pool.acquire() as conn: 
+            total_ars = await conn.fetchval("SELECT COUNT(*) FROM auto_responses WHERE guild_id = $1", interaction.guild.id)
+        if total_ars >= 20:
+            await interaction.response.send_message("You can only have up to 20 auto responses.", ephemeral=True)
             return
         try:
             # Try to parse the response string as a JSON object
@@ -88,7 +101,7 @@ class AutoResponseCog(commands.Cog):
             trigger = re.sub(r'^/(.*)/[^/]*$', r'\1', trigger)
             # Store the triggers and response in the database
             async with self.bot.pool.acquire() as conn:
-                await conn.execute("INSERT INTO auto_responses (guild_id, triggers, response, ping, deletemsg) VALUES ($1, $2, $3, $4, $5)", interaction.guild.id, [trigger], json.dumps(response_data), ping, deletemsg)
+                await conn.execute("INSERT INTO auto_responses (guild_id, triggers, response, ping, deletemsg, selfdelete, ignoreroles) VALUES ($1, $2, $3, $4, $5, $6, $7)", interaction.guild.id, [trigger], json.dumps(response_data), ping, deletemsg, selfdelete if selfdelete else None, [ignoreroles.id] if ignoreroles else None)
                 await self.update_cache(interaction.guild.id)
                 await interaction.response.send_message("Auto response added successfully!", ephemeral=True)
         except Exception as e:
@@ -166,6 +179,28 @@ class AutoResponseCog(commands.Cog):
         except Exception as e:
             await interaction.response.send_message(f"Failed to list auto responses: {str(e)}", ephemeral=True)
 
+    def should_ignore_message(self, message, ignoreroles):
+        if ignoreroles:
+            member = message.author
+            guild = message.guild
+            guild_roles = guild.roles
+            ignored_role_objects = [discord.utils.get(guild_roles, id=role_id) for role_id in ignoreroles]
+            return any(role in member.roles for role in ignored_role_objects)
+        return False
+
+    async def send_response(self, message, response, ping, deletemsg, selfdelete):
+        if ping:
+            content = f"{message.author.mention} {response}"
+        else:
+            content = response
+
+        if deletemsg:
+            await message.delete()
+        response_message = await message.channel.send(content)
+
+        if selfdelete:
+            await response_message.delete(delay=selfdelete)
+
     @commands.Cog.listener()
     async def on_message(self, message):
         if not message.author.bot:
@@ -175,60 +210,44 @@ class AutoResponseCog(commands.Cog):
                 for response_data in auto_responses:
                     for trigger in response_data["triggers"]:
                         if re.search(trigger, message.content):
-                            trigger_data = response_data  # Rename response_data to trigger_data for clarity
+                            trigger_data = response_data
                             triggers = trigger_data["triggers"]
-                            deletemsg =  trigger_data["deletemsg"]
+                            deletemsg = trigger_data["deletemsg"]
+                            ignoreroles = trigger_data["ignoreroles"]
+                            selfdelete = trigger_data["selfdelete"]
+
+                            if self.should_ignore_message(message, ignoreroles):
+                                return
+
                             cooldown = cooldowns.get_bucket(message)
                             retry_after = cooldown.update_rate_limit()
                             if retry_after:
                                 if deletemsg:
                                     await message.delete()
-                                    return
                                 return
-                            # Retrieve additional values from the database
+
                             async with self.bot.pool.acquire() as conn:
                                 auto_response = await conn.fetchrow(
                                     "SELECT response, ping FROM auto_responses WHERE triggers = $1",
                                     triggers
                                 )
-                                
+
                             if auto_response:
                                 response = auto_response["response"]
                                 ping = auto_response["ping"]
-                                deletemsg = trigger_data["deletemsg"]
                                 try:
                                     response_data = json.loads(response)
                                     if isinstance(response_data, dict) and "embeds" in response_data:
                                         for embed in response_data["embeds"]:
-                                            if ping:
-                                                if deletemsg:
-                                                    await message.delete()
-                                                    await message.channel.send(f"{message.author.mention}", embed=discord.Embed.from_dict(embed))
-                                                else:
-                                                    await message.channel.send(f"{message.author.mention}", embed=discord.Embed.from_dict(embed))
-                                            else:
-                                                if deletemsg:
-                                                    await message.delete()
-                                                    await message.channel.send(embed=discord.Embed.from_dict(embed))
-                                                else:
-                                                    await message.channel.send(embed=discord.Embed.from_dict(embed))
+                                            await self.send_response(message, discord.Embed.from_dict(embed), ping, deletemsg, selfdelete)
                                     else:
                                         raise json.JSONDecodeError("", "", 0)
                                 except json.JSONDecodeError:
                                     escaped_response = response.replace("{", "{{").replace("}", "}}").strip('"')
-                                    if ping:
-                                        if deletemsg:
-                                            await message.delete()
-                                            await message.channel.send(f"{message.author.mention} {escaped_response}")
-                                        else:
-                                            await message.channel.send(f"{message.author.mention} {escaped_response}")
-                                    else:
-                                        if deletemsg:
-                                            await message.delete()
-                                            await message.channel.send(escaped_response)
-                                        else:
-                                            await message.channel.send(escaped_response)
-                            break
+                                    await self.send_response(message, escaped_response, ping, deletemsg, selfdelete)
+                                
+                                # Break out of the loop after sending the response
+                                return
 
 
 
