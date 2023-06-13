@@ -26,6 +26,7 @@ class Moderator(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(kick_members=True)
@@ -33,13 +34,18 @@ class Moderator(commands.Cog):
         """Kicks a user from the current server."""
         if not await permissions.check_priv(self.bot, interaction, target, {"kick_members": True}):
             return
+        if reason is None:
+            reason = "No reason provided"
         try:
             dm_channel = await target.create_dm()
-            await dm_channel.send(f"You have been kicked from {interaction.guild.name}. Reason: {reason}")
+            try:
+                await dm_channel.send(f"You have been kicked from {interaction.guild.name}. Reason: {reason}")
+            except discord.Forbidden:
+                print("Unable to send a direct message to the user.")
             await target.kick(reason=default.responsible(interaction.user, reason))
-            await interaction.response.send_message(default.actionmessage("kicked"))
+            await interaction.response.send_message(f"Kicked **{target.name}** from the server. Reason: {reason}")
         except Exception as e:
-            await print(e)
+            print(e)
 
     @app_commands.command()
     @commands.guild_only()
@@ -48,6 +54,8 @@ class Moderator(commands.Cog):
         """Timeouts a user in the current server."""
         if not await permissions.check_priv(self.bot, interaction, target, {"moderate_members": True}):
             return
+        if reason is None:
+            reason = "No reason provided"
         match = re.match(r'(\d+)([mhd])?', duration)
         if not match:
             await interaction.response.send_message("Invalid duration format. Use a number followed by m (minutes), h (hours), or d (days).", ephemeral=True)
@@ -76,6 +84,8 @@ class Moderator(commands.Cog):
             unit_name = unit_names[unit][1] if amount > 1 else unit_names[unit][0]
             dm_channel = await target.create_dm()
             await dm_channel.send(f"You have been timed out in {interaction.guild.name} for {amount} {unit_name}. Reason: {reason}")
+        except discord.Forbidden:
+            print("Unable to send a direct message to the user.")
         except Exception as e:
             print(e)
 
@@ -103,9 +113,8 @@ class Moderator(commands.Cog):
             await interaction.response.send_message("You can't give a role that is higher or equal to your current highest role.")
             return
         try:
-
             await target.add_roles(role, reason=default.responsible(interaction.user, "Added role"))
-            await interaction.response.send_message(default.actionmessage("added to {role}"))
+            await interaction.response.send_message(f"Added **{target.name}** to **{role.name}** role")
         except Exception as e:
             print(e)
 
@@ -121,7 +130,7 @@ class Moderator(commands.Cog):
             return
         try:
             await target.remove_roles(role, reason=default.responsible(interaction.user, "Removed role"))
-            await interaction.response.send_message(default.actionmessage("removed from {role}"))
+            await interaction.response.send_message(f"Removed **{target.name}** from **{role.name}** role")
         except Exception as e:
             print(e)
 
@@ -138,7 +147,7 @@ class Moderator(commands.Cog):
         try:
             for member in interaction.guild.members:
                 await member.add_roles(role, reason=default.responsible(interaction.user, "Added role"))
-            await interaction.response.send_message(default.actionmessage(f"added every user to {role}"))
+            await interaction.response.send_message(f"Added every user to {role.name} role")
         except Exception as e:
             print(e)
 
@@ -155,7 +164,7 @@ class Moderator(commands.Cog):
         try:
             for member in interaction.guild.members:
                 await member.remove_roles(role, reason=default.responsible(interaction.user, "Removed role"))
-            await interaction.response.send_message(default.actionmessage(f"removed every user from {role}"))
+            await interaction.response.send_message(f"Removed every user to {role.name} role")
         except Exception as e:
             print(e)
 
@@ -166,10 +175,12 @@ class Moderator(commands.Cog):
         """Purges a specified amount of messages in the current channel"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_messages": True}):
             return
+        if reason is None:
+            reason = "No reason provided"
         channel = channel or interaction.channel or interaction.guild.system_channel
         try:
             await channel.purge(limit=amount + 1, reason=default.responsible(interaction.user, reason))
-            await interaction.response.send_message(default.actionmessage(f"Will purge {amount} messages"))
+            await interaction.response.send_message(f"Will purge {amount} messages")
         except Exception as e:
             print(e)
 
@@ -180,6 +191,8 @@ class Moderator(commands.Cog):
         """Toggles slowmode in the current channel"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_channels": True}):
             return
+        if reason is None:
+            reason = "No reason provided"
         channel = channel or interaction.channel or interaction.guild.system_channel 
         if slowmode > 21600:
             await interaction.response.send_message("Slowmode can't be longer than 6 hours", ephemeral=True)
@@ -205,6 +218,8 @@ class Moderator(commands.Cog):
         target_id = int(target)
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_channels": True}):
             return
+        if reason is None:
+            reason = "No reason provided"
         try:
             target_user = await self.bot.fetch_user(target_id)
             await interaction.guild.unban(target_user, reason=default.responsible(interaction.user, reason))
@@ -213,6 +228,7 @@ class Moderator(commands.Cog):
             await interaction.response.send_message("User not found", ephemeral=True)
         except Exception as e:
             print(e)
+
 
 async def setup(bot):
     await bot.add_cog(Moderator(bot))
