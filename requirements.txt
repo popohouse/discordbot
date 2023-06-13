@@ -1,10 +1,7 @@
 discord.py
-praw
-prawcore
 aiohttp
 psutil
 python-dotenv
-discord-py-interactions
 asyncpg
 pytz
 pint
