@@ -135,6 +135,44 @@ class Moderator(commands.Cog):
 
     @app_commands.command()
     @commands.guild_only()
+    @permissions.has_permissions(manage_guild=True)
+    async def setreportchannel(self, interaction: discord.Interaction, channel: discord.TextChannel, role: Optional[discord.Role] = None):
+        """Sets the channel where reports will be sent"""
+        if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
+            return
+        try:
+            async with self.bot.pool.acquire() as conn:
+                await conn.execute('INSERT INTO reportchannel (guild_id, channel_id, role_id) VALUES ($1, $2, $3)' 'ON CONFLICT (guild_id) DO UPDATE SET channel_id = $2', interaction.guild_id, channel.id, role.id)
+                await interaction.response.send_message(f"Set report channel to {channel.mention}")
+        except Exception as e:
+            print(e)
+
+    @app_commands.command()
+    @commands.guild_only()
+    async def report(self, interaction: discord.Interaction, target: discord.Member, reason: str):
+        try:
+            async with self.bot.pool.acquire() as conn:
+                report_channel_id = await conn.fetchval('SELECT channel_id FROM reportchannel WHERE guild_id = $1', interaction.guild_id)
+                pingrole = await conn.fetchval('SELECT role_id FROM reportchannel WHERE guild_id = $1', interaction.guild_id)
+                if pingrole is not None:
+                    role = interaction.guild.get_role(pingrole)
+                report_channel = self.bot.get_channel(report_channel_id)
+                if report_channel is None:
+                    await interaction.response.send_message("No report channel set, please bug staff", ephemeral=True)
+                    return
+                embed = discord.Embed(title="Report", color=0x00ff00)
+                embed.add_field(name="Reported User", value=target.mention, inline=False)
+                embed.add_field(name="Reported By", value=interaction.user.mention, inline=False)
+                if role is not None:
+                    content = role.mention
+                embed.add_field(name="Reason", value=reason, inline=False)
+                await report_channel.send(content, embed=embed)
+                await interaction.response.send_message("Report sent", ephemeral=True)
+        except Exception as e:
+            print(e)
+
+    @app_commands.command()
+    @commands.guild_only()
     @permissions.has_permissions(kick_members=True)
     async def kick(self, interaction: discord.Interaction, target: discord.Member, *, reason: Optional[str] = None):
         """Kicks a user from the current server."""

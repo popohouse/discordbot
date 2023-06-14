@@ -117,6 +117,13 @@ async def create_tables(bot):
                 UNIQUE (guild_id, user_id, note, timestamp)
                     )
                 ''')
+            await conn.execute('''
+                CREATE TABLE IF NOT EXISTS reportchannel(
+                guild_id BIGINT PRIMARY KEY,
+                channel_id BIGINT NOT NULL,
+                role_id BIGINT
+                    )
+                ''')
             await conn.execute('''CREATE TABLE schema_version (version INT NOT NULL)''')
             await conn.execute('INSERT INTO schema_version (version) VALUES ($1)', expected_version)
         else:

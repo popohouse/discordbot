@@ -20,7 +20,7 @@ bot = Bot(
     prefix=config.discord_prefix, command_attrs=dict(hidden=True),
     help_command=None,
     allowed_mentions=discord.AllowedMentions(
-        everyone=False, roles=False, users=True
+        everyone=False, roles=True, users=True
     ),
     intents=discord.Intents.all()
 )
