@@ -35,6 +35,11 @@ class ReactionRoles(commands.Cog):
         """Create reaction role"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
+        async with self.bot.pool.acquire() as conn: 
+            total_rr = await conn.fetchval("SELECT COUNT(*) FROM reaction_roles WHERE guild_id = $1", interaction.guild.id)
+        if total_rr >= 20:
+            await interaction.response.send_message('You can only have 20 reaction roles per guild.', ephemeral=True)
+            return
         message_id = int(message_id)
         print(f"Attempting to fetch message with ID: {message_id}")
         try:
