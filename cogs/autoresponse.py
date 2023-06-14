@@ -207,11 +207,9 @@ class AutoResponseCog(commands.Cog):
             content = f"{message.author.mention} {response}"
         else:
             content = response
-
         if deletemsg:
             await message.delete()
         response_message = await message.channel.send(content)
-
         if selfdelete:
             await response_message.delete(delay=selfdelete)
 
@@ -229,23 +227,19 @@ class AutoResponseCog(commands.Cog):
                             deletemsg = trigger_data["deletemsg"]
                             ignoreroles = trigger_data["ignoreroles"]
                             selfdelete = trigger_data["selfdelete"]
-
                             if self.should_ignore_message(message, ignoreroles):
                                 return
-
                             cooldown = cooldowns.get_bucket(message)
                             retry_after = cooldown.update_rate_limit()
                             if retry_after:
                                 if deletemsg:
                                     await message.delete()
                                 return
-
                             async with self.bot.pool.acquire() as conn:
                                 auto_response = await conn.fetchrow(
                                     "SELECT response, ping FROM auto_responses WHERE triggers = $1",
                                     triggers
                                 )
-
                             if auto_response:
                                 response = auto_response["response"]
                                 ping = auto_response["ping"]
