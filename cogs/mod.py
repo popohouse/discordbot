@@ -319,6 +319,26 @@ class Moderator(commands.Cog):
     @app_commands.command()
     @commands.guild_only()
     @permissions.has_permissions(ban_members=True)
+    async def ban(self, interaction: discord.Interaction, target: discord.Member, *, reason: Optional[str] = None):
+        """Kicks a user from the current server."""
+        if not await permissions.check_priv(self.bot, interaction, target, {"ban_members": True}):
+            return
+        if reason is None:
+            reason = "No reason provided"
+        try:
+            dm_channel = await target.create_dm()
+            try:
+                await dm_channel.send(f"You have been banned from {interaction.guild.name}. Reason: {reason}")
+            except discord.Forbidden:
+                print("Unable to send a direct message to the user.")
+            await target.ban(reason=default.responsible(interaction.user, reason))
+            await interaction.response.send_message(f"Banned **{target.name}** from the server. Reason: {reason}")
+        except Exception as e:
+            print(e)
+
+    @app_commands.command()
+    @commands.guild_only()
+    @permissions.has_permissions(ban_members=True)
     async def unban(self, interaction: discord.Interaction, target: str, *, reason: Optional[str] = None):
         """Unbans a user from the current server."""
         target_id = int(target)
