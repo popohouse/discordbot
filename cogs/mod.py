@@ -1,10 +1,11 @@
 import discord
 from discord import app_commands
-from typing import Optional
 from discord.ext import commands
-from utils import permissions, default
-from datetime import timedelta
+from typing import Optional
 import re
+import datetime
+from datetime import timedelta
+from utils import permissions, default
 from utils.config import Config
 
 config = Config.from_env()
@@ -26,6 +27,111 @@ class Moderator(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+
+    @app_commands.command()
+    @commands.guild_only()
+    @permissions.has_permissions(manage_messages=True)
+    async def warn(self, interaction: discord.Interaction, target: discord.Member, *, reason: Optional[str] = None):
+        """Warns a user in the current server."""
+        if not await permissions.check_priv(self.bot, interaction, target, {"manage_messages": True}):
+            return
+        if reason is None:
+            reason = "No reason provided"
+        try:
+            async with self.bot.pool.acquire() as conn:
+                timestamp = datetime.datetime.now()
+                mod_id = interaction.user.id
+                await conn.execute('INSERT INTO warnings (guild_id, user_id, mod_id, reason, timestamp) VALUES ($1, $2, $3, $4, $5)', interaction.guild_id, target.id, mod_id, reason, timestamp)
+                dm_channel = await target.create_dm()
+                await dm_channel.send(f"You have been warned in {interaction.guild.name}. Reason: {reason}")
+        except discord.Forbidden:
+            print("Unable to send a direct message to the user.")
+        await interaction.response.send_message(f"Warned **{target.name}**. Reason: {reason}")
+
+    @app_commands.command()
+    @commands.guild_only()
+    @permissions.has_permissions(manage_messages=True)
+    async def checkwarns(self, interaction: discord.Interaction, target: discord.Member):
+        if not await permissions.check_priv(self.bot, interaction, target, {"manage_messages": True}):
+            return
+        try:
+            async with self.bot.pool.acquire() as conn:
+                warnings = await conn.fetch('SELECT * FROM warnings WHERE guild_id = $1 AND user_id = $2', interaction.guild_id, target.id)
+                total_warnings = len(warnings)  # Total number of warnings
+                if total_warnings == 0:
+                    await interaction.response.send_message(f"{target.name} has no warnings")
+                    return
+                embed = discord.Embed(title=f"Warnings for {target.name}", color=0x00ff00)
+                embed.add_field(name="Total Warnings", value=str(total_warnings), inline=False)  # Add total warnings field
+                for warning in warnings:
+                    mod = self.bot.get_user(warning['mod_id'])
+                    if mod:
+                        mod_username = mod.name
+                    else:
+                        mod_username = str(warning['mod_id'])
+                    timestamp = warning['timestamp']
+                    formatted_timestamp = timestamp.strftime("%m/%d/%Y, %H:%M:%S")
+                    embed.add_field(name=f"Warning ID: {warning['id']}", value=f"Reason: {warning['reason']}\nModerator: {mod_username}\nTime: {formatted_timestamp}", inline=False)
+                await interaction.response.send_message(embed=embed)
+        except Exception as e:
+            print(e)
+
+    @app_commands.command()
+    @commands.guild_only()
+    @permissions.has_permissions(manage_messages=True)
+    async def unwarn(self, interaction: discord.Interaction, target: discord.Member, warning_id: int):
+        if not await permissions.check_priv(self.bot, interaction, target, {"manage_messages": True}):
+            return
+        try:
+            async with self.bot.pool.acquire() as conn:
+                warning = await conn.fetchrow('SELECT * FROM warnings WHERE guild_id = $1 AND user_id = $2 AND id = $3', interaction.guild_id, target.id, warning_id)
+                if warning is None:
+                    await interaction.response.send_message(f"Warning ID {warning_id} does not exist for {target.name}")
+                    return
+                await conn.execute('DELETE FROM warnings WHERE guild_id = $1 AND user_id = $2 AND id = $3', interaction.guild_id, target.id, warning_id)
+                await interaction.response.send_message(f"Removed warning ID {warning_id} for {target.name}")
+        except Exception as e:
+            print(e)
+
+    @app_commands.command()
+    @commands.guild_only()
+    @permissions.has_permissions(manage_messages=True)
+    async def notes(self, interaction: discord.Interaction, target: discord.Member, note: str):
+        if not await permissions.check_priv(self.bot, interaction, target, {"manage_messages": True}):
+            return
+        try:
+            async with self.bot.pool.acquire() as conn:
+                timestamp = datetime.datetime.now()
+                await conn.execute('INSERT INTO notes (guild_id, user_id, mod_id, note, timestamp) VALUES ($1, $2, $3, $4, $5)', interaction.guild_id, target.id, interaction.user.id, note, timestamp)
+        except Exception as e:
+            print(e)
+        await interaction.response.send_message(f"Added note for {target.name}", ephemeral=True)
+
+    @app_commands.command()
+    @commands.guild_only()
+    @permissions.has_permissions(manage_messages=True)
+    async def checknotes(self, interaction: discord.Interaction, target: discord.Member):
+        if not await permissions.check_priv(self.bot, interaction, target, {"manage_messages": True}):
+            return
+        try:
+            async with self.bot.pool.acquire() as conn:
+                notes = await conn.fetch('SELECT * FROM notes WHERE guild_id = $1 AND user_id = $2', interaction.guild_id, target.id)
+                if len(notes) == 0:
+                    await interaction.response.send_message(f"{target.name} has no notes")
+                    return
+                embed = discord.Embed(title=f"Warnings for {target.name}", color=0x00ff00)
+                for note in notes:
+                    mod = self.bot.get_user(note['mod_id'])
+                    if mod:
+                        mod_username = mod.name
+                    else:
+                        mod_username = str(note['mod_id'])
+                    timestamp = note['timestamp']
+                    formatted_timestamp = timestamp.strftime("%m/%d/%Y, %H:%M:%S")
+                    embed.add_field(name=f"Note ID: {note['id']}", value=f"Note: {note['note']}\nModerator: {mod_username}\nTime: {formatted_timestamp}", inline=False)
+                await interaction.response.send_message(embed=embed)
+        except Exception as e:
+            print(e)
 
     @app_commands.command()
     @commands.guild_only()
@@ -212,11 +318,11 @@ class Moderator(commands.Cog):
 
     @app_commands.command()
     @commands.guild_only()
-    @permissions.has_permissions(manage_channels=True)
+    @permissions.has_permissions(ban_members=True)
     async def unban(self, interaction: discord.Interaction, target: str, *, reason: Optional[str] = None):
         """Unbans a user from the current server."""
         target_id = int(target)
-        if not await permissions.check_priv(self.bot, interaction, None, {"manage_channels": True}):
+        if not await permissions.check_priv(self.bot, interaction, None, {"ban_members": True}):
             return
         if reason is None:
             reason = "No reason provided"
