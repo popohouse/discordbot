@@ -94,11 +94,9 @@ class AutoResponseCog(commands.Cog):
             await interaction.response.send_message("You can only have up to 20 auto responses.", ephemeral=True)
             return
         try:
-            # Try to parse the response string as a JSON object
             response_data = json.loads(response)
             # Check if the JSON object has an "embeds" key
             if "embeds" in response_data:
-                # The response is a valid JSON object representing an embed, store it as-is
                 pass
             else:
                 # The response is not a valid JSON object representing an embed, raise an error to fall back to storing it as a regular string
@@ -170,13 +168,11 @@ class AutoResponseCog(commands.Cog):
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
         try:
-            # Retrieve auto responses from the database
             async with self.bot.pool.acquire() as conn:
                 auto_responses = await conn.fetch("SELECT id, triggers, response, ping, deletemsg FROM auto_responses WHERE guild_id = $1", interaction.guild.id)
             if not auto_responses:
                 await interaction.response.send_message("No auto responses found.", ephemeral=True)
                 return
-            # Format the auto responses as a list of strings (pages)
             pages = []
             page_limit = 2000  # Character limit per page
             response_str = "Auto responses:\n"
@@ -263,8 +259,6 @@ class AutoResponseCog(commands.Cog):
                                 except json.JSONDecodeError:
                                     escaped_response = response.replace("{", "{{").replace("}", "}}").strip('"')
                                     await self.send_response(message, escaped_response, ping, deletemsg, selfdelete)
-                                
-                                # Break out of the loop after sending the response
                                 return
 
 
