@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 
 
-class AniList(commands.Cog):
+class Ani(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
         self.session = aiohttp.ClientSession()
@@ -98,6 +98,11 @@ class AniList(commands.Cog):
     async def manga(self, interaction: discord.Interaction, search: str) -> None:
         await self.search(interaction, "manga", search)
 
+    @app_commands.command(name="anilist", description="Search for an AniList user")
+    @commands.guild_only()
+    async def anilist(self, interaction: discord.Interaction, user: str) -> None:
+        await interaction.response.send_message(f"https://anilist.co/user/{user}")
+
 
 async def setup(bot):
-    await bot.add_cog(AniList(bot))
+    await bot.add_cog(Ani(bot))
