@@ -1,6 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
+import datetime
 from datetime import datetime
 from typing import Optional
 from utils.config import Config
@@ -162,13 +163,10 @@ class LoggingCog(commands.Cog):
     @commands.Cog.listener()
     async def on_message_delete(self, message):
         guild_id = message.guild.id
-        print(message.guild.id)
         if guild_id in self.cache and self.cache[guild_id]['log_deleted_messages']:
             channel_id = self.cache[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
-            print(channel)
-            print(channel_id)
-            if channel:
+            if channel and message.channel.id != channel_id:
                 # Check audit log for moderator action
                 async for entry in message.guild.audit_logs(action=discord.AuditLogAction.message_delete):
                     if entry.target.id == message.author.id and entry.extra.channel.id == message.channel.id:
@@ -186,14 +184,14 @@ class LoggingCog(commands.Cog):
                 embed.set_author(name=message.author.display_name, icon_url=message.author.avatar.url)
                 await channel.send(embed=embed)
 
-    # Message edit logging(should be in finished state)
+
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
         guild_id = before.guild.id
         if guild_id in self.cache and self.cache[guild_id]['log_edited_messages']:
             channel_id = self.cache[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
-            if before.content == after.content:
+            if before.content == after.content or before.channel.id == channel_id:
                 return
             embed = discord.Embed(title="Message Edited", description=f"Message sent by {before.author.mention} in {before.channel.mention} was edited.\n\n**Before**\n{before.content}\n\n**After**\n[{after.content}]({after.jump_url})\n\n**Date**\n<t:{int(after.edited_at.timestamp())}>", color=discord.Color.orange())
             embed.set_author(name=before.author.display_name, icon_url=before.author.avatar.url)
@@ -206,63 +204,93 @@ class LoggingCog(commands.Cog):
             channel_id = self.cache[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
             embed = discord.Embed(title="Username Changed", description=f"{before.mention} changed their username.\n\n**Before**\n{before.username or before.name}\n\n**After**\n{after.username or after.name}\n\n**Date**\n<t:{int(datetime.utcnow().timestamp())}>", color=discord.Color.blue())
-            embed.set_author(name=before.display_name, icon_url=before.avatar.url)
+            embed.set_author(name=after.nick or after.display_name, icon_url=before.avatar.url)
             await channel.send(embed=embed)
 
-    # Currently only logs nickname change, could be user for avatar as well.
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
         guild_id = before.guild.id
         if guild_id in self.cache and self.cache[guild_id]['log_nickname_changes']:
-            # Check if the nickname changed
             if before.nick != after.nick:
                 channel_id = self.cache[guild_id]['channel_id']
                 channel = self.bot.get_channel(channel_id)
                 embed = discord.Embed(title="Nickname Changed", description=f"{before.mention} changed their nickname.\n\n**Before**\n{before.nick or before.name}\n\n**After**\n{after.nick or after.name}\n\n**Date**\n<t:{int(datetime.utcnow().timestamp())}>", color=discord.Color.blue())
-                embed.set_author(name=before.display_name, icon_url=before.avatar.url)
+                embed.set_author(name=after.nick or after.display_name, icon_url=before.avatar.url)
                 await channel.send(embed=embed)
 
-    # Logs user join, note the prejoin state of community servers will be run on on_member_remove
+
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        print("member joined")
         guild_id = member.guild.id
         if guild_id in self.cache and self.cache[guild_id]['log_member_join_leave']:
             channel_id = self.cache[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
-            embed = discord.Embed(title="Member Left", description=f"{member.mention} left the server.", color=discord.Color.red())
+            if member.avatar:
+                user_avatar_url = member.avatar.url
+            else:
+                user_avatar_url = member.default_avatar_url
+            embed = discord.Embed(title="Member Joined", description=f"{member.mention} joined the server.", color=discord.Color.green())
+            embed.set_author(name=member.display_name, icon_url=user_avatar_url)
+            embed.add_field(name="Join Date", value=member.created_at.strftime("%Y-%m-%d %H:%M:%S"), inline=True)
+            embed.add_field(name="User ID", value=member.id, inline=True)
+            embed.add_field(name="Username", value=member.name, inline=True)
             await channel.send(embed=embed)
 
-    # Logs user leaves a guild, note the prejoin state of community servers will be run on on_member_remove
     @commands.Cog.listener()
     async def on_member_remove(self, member):
-        print("member removed")
         guild_id = member.guild.id
         if guild_id in self.cache and self.cache[guild_id]['log_member_join_leave']:
             channel_id = self.cache[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
-            embed = discord.Embed(title="Member Left", description=f"{member.mention} left the server.", color=discord.Color.red())
+            time_threshold = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc) - datetime.timedelta(seconds=15)
+            async for entry in member.guild.audit_logs(action=discord.AuditLogAction.ban):
+                if entry.target.id == member.id and entry.created_at > time_threshold:
+                    return 
+            async for entry in member.guild.audit_logs(action=discord.AuditLogAction.kick):
+                if entry.target.id == member.id and entry.created_at > time_threshold:
+                    kicked_by = entry.user
+                    break
+            else:
+                kicked_by = None
+            if kicked_by:
+                description = f"{member.mention} was kicked from the server by {kicked_by.mention}."
+                embed.add_field(name="Userid", value=member.id, inline=True)
+            else:
+                description = f"{member.mention} left the server."
+            embed = discord.Embed(title="Member Left", description=description, color=discord.Color.red())
+            embed.set_author(name=member.display_name, icon_url=member.avatar.url)
+            embed.add_field(name="Username", value=member.name, inline=True)
             await channel.send(embed=embed)
 
     # Log bans
     @commands.Cog.listener()
-    async def on_member_ban(self, member):
-        guild_id = member.guild.id
-        if guild_id in self.cache and self.cache[guild_id]['modlog_id']:
-            modlog_id = self.cache[guild_id]['modlog_id']
+    async def on_member_ban(self, guild, user):
+        guild_id = guild.id
+        if guild_id in self.cache and self.cache[guild_id]['log_member_ban_unban']:
+            modlog_id = self.cache[guild_id].get('modlog_id', self.cache[guild_id].get('channel_id'))
             channel = self.bot.get_channel(modlog_id)
-            embed = discord.Embed(title="Member Banned", description=f"{member.mention} was banned from the server.", color=discord.Color.red())
+            if user.avatar:
+                user_avatar_url = user.avatar.url
+            else:
+                user_avatar_url = user.default_avatar_url
+            user_id = user.id
+            embed = discord.Embed(title="Member Banned", description=f"{user.mention} was banned from the server.", color=discord.Color.red())
+            embed.set_author(name=user.display_name, icon_url=user_avatar_url)
+            embed.add_field(name="User ID", value=user_id, inline=True)
+            embed.add_field(name="Username", value=user.name, inline=True)
             await channel.send(embed=embed)
 
     # logs unbans
     @commands.Cog.listener()
-    async def on_member_unban(self, member):
-        guild_id = member.guild.id
+    async def on_member_unban(self, guild, user):
+        guild_id = guild.id
         if guild_id in self.cache and self.cache[guild_id]['log_member_ban_unban']:
-            modlog_id = self.cache[guild_id]['modlog_id']
+            modlog_id = self.cache[guild_id].get('modlog_id', self.cache[guild_id].get('channel_id'))
             channel = self.bot.get_channel(modlog_id)
-            embed = discord.Embed(title="Member Unbanned", description=f"{member.mention} was unbanned from the server.", color=discord.Color.red())
+            embed = discord.Embed(title="Member Unbanned", description=f"**{user.name}** was unbanned from the server.", color=discord.Color.green())
+            embed.add_field(name="User ID", value=user.id, inline=True)
             await channel.send(embed=embed)
+
 
 async def setup(bot):
     logging_cog = LoggingCog(bot)
