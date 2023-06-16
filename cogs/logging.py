@@ -12,31 +12,46 @@ class LoggingCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.logging_settings = {}
+        self.cache = {}
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        async with self.bot.pool.acquire() as conn:
-            rows = await conn.fetch('SELECT guild_id, channel_id, log_deleted_messages, log_edited_messages, log_nickname_changes, log_member_join_leave, log_member_kick, log_member_ban_unban FROM logging')
-            for row in rows:
-                guild_id = row[0]
-                channel_id = row[1]
-                log_deleted_messages = row[2]
-                log_edited_messages = row[3]
-                log_nickname_changes = row[4]
-                log_member_join_leave = row[5]
-                log_member_kick = row[6]
-                log_member_ban_unban = row[7]
-                mod_channel_id = row[8]
-                self.logging_settings[guild_id] = {
-                    'channel_id': channel_id,
-                    'log_deleted_messages': log_deleted_messages,
-                    'log_edited_messages': log_edited_messages,
-                    'log_nickname_changes': log_nickname_changes,
-                    'log_member_join_leave': log_member_join_leave,
-                    'log_member_kick': log_member_kick,
-                    'log_member_ban_unban': log_member_ban_unban,
-                    'mod_channel_id': mod_channel_id
-                }
+
+    async def setup(self):
+        await self.update_cache()
+
+    async def update_cache(self, guild_id=None):
+        try:
+            if guild_id is not None and guild_id in self.cache:
+                del self.cache[guild_id]
+            async with self.bot.pool.acquire() as conn:
+                if guild_id is None:
+                    logs = await conn.fetch('SELECT * FROM logging')
+                else:
+                    logs = await conn.fetch('SELECT * FROM logging WHERE guild_id = $1', guild_id)
+                for row in logs:
+                    guild_id = row['guild_id']
+                    channel_id = row['channel_id']
+                    log_deleted_messages = row['log_deleted_messages']
+                    log_edited_messages = row['log_edited_messages']
+                    log_nickname_changes = row['log_nickname_changes']
+                    log_member_join_leave = row['log_member_join_leave']
+                    log_member_kick = row['log_member_kick']
+                    log_member_ban_unban = row['log_member_ban_unban']
+                    modlogchannel_id = row['modlogchannel_id']
+                    if guild_id not in self.cache:
+                        # Add the retrieved values to the cache dictionary
+                        self.cache[guild_id] = {
+                            'channel_id': channel_id,
+                            'log_deleted_messages': log_deleted_messages,
+                            'log_edited_messages': log_edited_messages,
+                            'log_nickname_changes': log_nickname_changes,
+                            'log_member_join_leave': log_member_join_leave,
+                            'log_member_kick': log_member_kick,
+                            'log_member_ban_unban': log_member_ban_unban,
+                            'modlogchannel_id': modlogchannel_id
+                        }
+        except Exception as e:
+            print(f"Failed to update cache: {str(e)}")
+
 
     # Log command
     @app_commands.command()
@@ -57,66 +72,43 @@ class LoggingCog(commands.Cog):
             if disable is True:
                 if log_type.value == 'all':
                     await conn.execute('UPDATE logging SET log_deleted_messages = false, log_edited_messages = false, log_nickname_changes = false, log_member_join_leave = false, log_member_kick = false, log_member_ban_unban = false WHERE guild_id = $1', interaction.guild.id)
-                    self.logging_settings[interaction.guild.id]['log_deleted_messages'] = False
-                    self.logging_settings[interaction.guild.id]['log_edited_messages'] = False
-                    self.logging_settings[interaction.guild.id]['log_nickname_changes'] = False
-                    self.logging_settings[interaction.guild.id]['log_member_join_leave'] = False
-                    self.logging_settings[interaction.guild.id]['log_member_kick'] = False
-                    self.logging_settings[interaction.guild.id]['log_member_ban_unban'] = False
                 elif log_type.value == 'log_deleted_messages':
                     await conn.execute('UPDATE logging SET log_deleted_messages = false WHERE guild_id = $1', interaction.guild.id)
-                    self.logging_settings[interaction.guild.id]['log_deleted_messages'] = False
                 elif log_type.value == 'log_edited_messages':
                     await conn.execute('UPDATE logging SET log_edited_messages = false WHERE guild_id = $1', interaction.guild.id)
-                    self.logging_settings[interaction.guild.id]['log_edited_messages'] = False
                 elif log_type.value == 'log_nickname_changes':
                     conn.execute('UPDATE logging SET log_nickname_changes = false WHERE guild_id = $1', interaction.guild.id)
-                    self.logging_settings[interaction.guild.id]['log_nickname_changes'] = False
                 elif log_type.value == 'log_member_join_leave':
                     await conn.execute('UPDATE logging SET log_member_join_leave = false WHERE guild_id = $1', interaction.guild.id)
-                    self.logging_settings[interaction.guild.id]['log_member_join_leave'] = False
                 elif log_type.value == 'log_member_kick':
                     await conn.execute('UPDATE logging SET log_member_kick = false WHERE guild_id = $1', interaction.guild.id)
-                    self.logging_settings[interaction.guild.id]['log_member_kick'] = False
                 elif log_type.value == 'log_member_ban_unban':
                     await conn.execute('UPDATE logging SET log_member_ban_unban = false WHERE guild_id = $1', interaction.guild.id)
-                    self.logging_settings[interaction.guild.id]['log_member_ban_unban'] = False
                 else:
                     await interaction.response.send_message(f'Invalid log type: {log_type.value}', ephemeral=True)
                     return
-
+                await self.update_cache(interaction.guild.id)
                 await interaction.response.send_message(f'Disabled logging for {log_type.value}', ephemeral=True)
             # Enable logging type
-            if disable is False:
+            if disable is None:
                 if log_type.value == 'all':
                     await conn.execute('UPDATE logging SET log_deleted_messages = true, log_edited_messages = true, log_nickname_changes = true, log_member_join_leave = true, log_member_kick = true, log_member_ban_unban = true WHERE guild_id = $1', interaction.guild.id)
-                    self.logging_settings[interaction.guild.id]['log_deleted_messages'] = True
-                    self.logging_settings[interaction.guild.id]['log_edited_messages'] = True
-                    self.logging_settings[interaction.guild.id]['log_nickname_changes'] = True
-                    self.logging_settings[interaction.guild.id]['log_member_join_leave'] = True
-                    self.logging_settings[interaction.guild.id]['log_member_kick'] = True
-                    self.logging_settings[interaction.guild.id]['log_member_ban_unban'] = True
                 elif log_type.value == 'log_deleted_messages':
                     await conn.execute('UPDATE logging SET log_deleted_messages = true WHERE guild_id = $1', interaction.guild.id)
-                    self.logging_settings[interaction.guild.id]['log_deleted_messages'] = True
                 elif log_type.value == 'log_edited_messages':
                     await conn.execute('UPDATE logging SET log_edited_messages = true WHERE guild_id = $1', interaction.guild.id)
-                    self.logging_settings[interaction.guild.id]['log_edited_messages'] = True
                 elif log_type.value == 'log_nickname_changes':
                     await conn.execute('UPDATE logging SET log_nickname_changes = true WHERE guild_id = $1', interaction.guild.id)
-                    self.logging_settings[interaction.guild.id]['log_nickname_changes'] = True
                 elif log_type.value == 'log_member_join_leave':
                     await conn.execute('UPDATE logging SET log_member_join_leave = true WHERE guild_id = $1', interaction.guild.id)
-                    self.logging_settings[interaction.guild.id]['log_member_join_leave'] = True
                 elif log_type.value == 'log_member_kick':
                     await conn.execute('UPDATE logging SET log_member_kick = true WHERE guild_id = $1', interaction.guild.id)
-                    self.logging_settings[interaction.guild.id]['log_member_kick'] = True
                 elif log_type.value == 'log_member_ban_unban':
                     await conn.execute('UPDATE logging SET log_member_ban_unban = true WHERE guild_id = $1', interaction.guild.id)
-                    self.logging_settings[interaction.guild.id]['log_member_ban_unban'] = True
                 else:
                     await interaction.response.send_message(f'Invalid log type: {log_type.value}', ephemeral=True)
                     return
+                await self.update_cache(interaction.guild.id)
                 await interaction.response.send_message(f'Enabled logging for {log_type.value}', ephemeral=True)
 
     @app_commands.command()
@@ -125,75 +117,81 @@ class LoggingCog(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             # Set main log channel
             if logchannel is not None:
-                row = await conn.fetch('SELECT * FROM logging WHERE guild_id = $1', interaction.guild.id)
+                row = await conn.fetchrow('SELECT * FROM logging WHERE guild_id = $1', interaction.guild.id)
                 if row:
-                    await conn.execute('UPDATE logging SET channel_id = $2 WHERE guild_id = $1', logchannel.id, interaction.guild.id)
+                    await conn.execute('UPDATE logging SET channel_id = $2 WHERE guild_id = $1', interaction.guild.id, logchannel.id)
                 else:
                     await conn.execute('INSERT INTO logging (guild_id, channel_id) VALUES ($1, $2)', interaction.guild.id, logchannel.id)
-                if interaction.guild.id in self.logging_settings:
-                    self.logging_settings[interaction.guild.id]['channel_id'] = logchannel.id
+                if interaction.guild.id in self.cache:
+                    self.cache[interaction.guild.id]['channel_id'] = logchannel.id
                 else:
-                    self.logging_settings[interaction.guild.id] = {
+                    self.cache[interaction.guild.id] = {
                         'channel_id': logchannel.id,
-                        'log_deleted_messages': 0,
-                        'log_edited_messages': 0,
-                        'log_nickname_changes': 0,
-                        'log_member_join_leave': 0,
-                        'log_member_kick': 0,
-                        'log_member_ban_unban': 0
+                        'log_deleted_messages': False,
+                        'log_edited_messages': False,
+                        'log_nickname_changes': False,
+                        'log_member_join_leave': False,
+                        'log_member_kick': False,
+                        'log_member_ban_unban': False
                     }
                 await interaction.response.send_message(f'Set logging channel to {logchannel.mention}', ephemeral=True)
+            
             # Set mod log channel
             if modchannel is not None:
-                row = await conn.fetch('SELECT * FROM logging WHERE guild_id = $1', interaction.guild.id)
+                row = await conn.fetchrow('SELECT * FROM logging WHERE guild_id = $1', interaction.guild.id)
                 if row:
-                    await conn.execute('UPDATE logging SET modlog_id = $2 WHERE guild_id = $1', modchannel.id, interaction.guild.id)
+                    await conn.execute('UPDATE logging SET modlogchannel_id = $2 WHERE guild_id = $1', interaction.guild.id, modchannel.id)
                 else:
-                    await conn.execute('INSERT INTO logging (guild_id, modlog_id) VALUES ($1, $2)', interaction.guild.id, modchannel.id)
-                if interaction.guild.id in self.logging_settings:
-                    self.logging_settings[interaction.guild.id]['modlog_id'] = modchannel.id
+                    await conn.execute('INSERT INTO logging (guild_id, modlogchannel_id) VALUES ($1, $2)', interaction.guild.id, modchannel.id)
+                if interaction.guild.id in self.cache:
+                    self.cache[interaction.guild.id]['modlogchannel_id'] = modchannel.id
                 else:
-                    self.logging_settings[interaction.guild.id] = {
-                        'modlog_id': modchannel.id,
-                        'log_deleted_messages': 0,
-                        'log_edited_messages': 0,
-                        'log_nickname_changes': 0,
-                        'log_member_join_leave': 0,
-                        'log_member_kick': 0,
-                        'log_member_ban_unban': 0
+                    self.cache[interaction.guild.id] = {
+                        'channel_id': None,
+                        'log_deleted_messages': False,
+                        'log_edited_messages': False,
+                        'log_nickname_changes': False,
+                        'log_member_join_leave': False,
+                        'log_member_kick': False,
+                        'log_member_ban_unban': False,
+                        'modlogchannel_id': modchannel.id
                     }
-                await interaction.response.send_message(f'Set logging channel to {modchannel.mention}', ephemeral=True)
+                await interaction.response.send_message(f'Set mod log channel to {modchannel.mention}', ephemeral=True)
 
-    # Event listeners for all logging types below
-    # Message delete listener(should be in finished state)
+
     @commands.Cog.listener()
     async def on_message_delete(self, message):
         guild_id = message.guild.id
-        if guild_id in self.logging_settings and self.logging_settings[guild_id]['log_deleted_messages']:
-            channel_id = self.logging_settings[guild_id]['channel_id']
+        print(message.guild.id)
+        if guild_id in self.cache and self.cache[guild_id]['log_deleted_messages']:
+            channel_id = self.cache[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
-            # Check audit log for moderator action
-            async for entry in message.guild.audit_logs(action=discord.AuditLogAction.message_delete):
-                if entry.target.id == message.author.id and entry.extra.channel.id == message.channel.id:
-                    moderator = entry.user
-                    break
-            else:
-                moderator = None
-            # Update embed description based on whether a moderator deleted the message
-            if moderator:
-                description = f"Message sent by {message.author.mention} in {message.channel.mention} was deleted by {moderator.mention}."
-            else:
-                description = f"Message sent by {message.author.mention} in {message.channel.mention} was deleted."
-            embed = discord.Embed(title="Message Deleted", description=description + f"\n\n**Content**\n{message.content}\n\n**Date**\n<t:{int(message.created_at.timestamp())}>", color=discord.Color.red())
-            embed.set_author(name=message.author.display_name, icon_url=message.author.avatar.url)
-            await channel.send(embed=embed)
+            print(channel)
+            print(channel_id)
+            if channel:
+                # Check audit log for moderator action
+                async for entry in message.guild.audit_logs(action=discord.AuditLogAction.message_delete):
+                    if entry.target.id == message.author.id and entry.extra.channel.id == message.channel.id:
+                        moderator = entry.user
+                        break
+                else:
+                    moderator = None
+                # Update embed description based on whether a moderator deleted the message
+                if moderator:
+                    description = f"Message sent by {message.author.mention} in {message.channel.mention} was deleted by {moderator.mention}."
+                else:
+                    description = f"Message sent by {message.author.mention} in {message.channel.mention} was deleted."
+                formatted_date = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                embed = discord.Embed(title="Message Deleted", description=description + f"\n\n**Content**\n{message.content}\n\n**Date**\n{formatted_date}", color=discord.Color.red())
+                embed.set_author(name=message.author.display_name, icon_url=message.author.avatar.url)
+                await channel.send(embed=embed)
 
     # Message edit logging(should be in finished state)
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
         guild_id = before.guild.id
-        if guild_id in self.logging_settings and self.logging_settings[guild_id]['log_edited_messages']:
-            channel_id = self.logging_settings[guild_id]['channel_id']
+        if guild_id in self.cache and self.cache[guild_id]['log_edited_messages']:
+            channel_id = self.cache[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
             if before.content == after.content:
                 return
@@ -204,8 +202,8 @@ class LoggingCog(commands.Cog):
     @commands.Cog.listener()
     async def on_user_update(self, before, after):
         guild_id = before.guild.id
-        if guild_id in self.logging_settings and self.logging.settings[guild_id]['log_nickname_changes'] and before.username is not after.username:
-            channel_id = self.logging_settings[guild_id]['channel_id']
+        if guild_id in self.cache and self.logging.settings[guild_id]['log_nickname_changes'] and before.username is not after.username:
+            channel_id = self.cache[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
             embed = discord.Embed(title="Username Changed", description=f"{before.mention} changed their username.\n\n**Before**\n{before.username or before.name}\n\n**After**\n{after.username or after.name}\n\n**Date**\n<t:{int(datetime.utcnow().timestamp())}>", color=discord.Color.blue())
             embed.set_author(name=before.display_name, icon_url=before.avatar.url)
@@ -215,10 +213,10 @@ class LoggingCog(commands.Cog):
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
         guild_id = before.guild.id
-        if guild_id in self.logging_settings and self.logging_settings[guild_id]['log_nickname_changes']:
+        if guild_id in self.cache and self.cache[guild_id]['log_nickname_changes']:
             # Check if the nickname changed
             if before.nick != after.nick:
-                channel_id = self.logging_settings[guild_id]['channel_id']
+                channel_id = self.cache[guild_id]['channel_id']
                 channel = self.bot.get_channel(channel_id)
                 embed = discord.Embed(title="Nickname Changed", description=f"{before.mention} changed their nickname.\n\n**Before**\n{before.nick or before.name}\n\n**After**\n{after.nick or after.name}\n\n**Date**\n<t:{int(datetime.utcnow().timestamp())}>", color=discord.Color.blue())
                 embed.set_author(name=before.display_name, icon_url=before.avatar.url)
@@ -229,8 +227,8 @@ class LoggingCog(commands.Cog):
     async def on_member_join(self, member):
         print("member joined")
         guild_id = member.guild.id
-        if guild_id in self.logging_settings and self.logging_settings[guild_id]['log_member_join_leave']:
-            channel_id = self.logging_settings[guild_id]['channel_id']
+        if guild_id in self.cache and self.cache[guild_id]['log_member_join_leave']:
+            channel_id = self.cache[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
             embed = discord.Embed(title="Member Left", description=f"{member.mention} left the server.", color=discord.Color.red())
             await channel.send(embed=embed)
@@ -240,8 +238,8 @@ class LoggingCog(commands.Cog):
     async def on_member_remove(self, member):
         print("member removed")
         guild_id = member.guild.id
-        if guild_id in self.logging_settings and self.logging_settings[guild_id]['log_member_join_leave']:
-            channel_id = self.logging_settings[guild_id]['channel_id']
+        if guild_id in self.cache and self.cache[guild_id]['log_member_join_leave']:
+            channel_id = self.cache[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
             embed = discord.Embed(title="Member Left", description=f"{member.mention} left the server.", color=discord.Color.red())
             await channel.send(embed=embed)
@@ -250,8 +248,8 @@ class LoggingCog(commands.Cog):
     @commands.Cog.listener()
     async def on_member_ban(self, member):
         guild_id = member.guild.id
-        if guild_id in self.logging_settings and self.logging_settings[guild_id]['modlog_id']:
-            modlog_id = self.logging_settings[guild_id]['modlog_id']
+        if guild_id in self.cache and self.cache[guild_id]['modlog_id']:
+            modlog_id = self.cache[guild_id]['modlog_id']
             channel = self.bot.get_channel(modlog_id)
             embed = discord.Embed(title="Member Banned", description=f"{member.mention} was banned from the server.", color=discord.Color.red())
             await channel.send(embed=embed)
@@ -260,12 +258,13 @@ class LoggingCog(commands.Cog):
     @commands.Cog.listener()
     async def on_member_unban(self, member):
         guild_id = member.guild.id
-        if guild_id in self.logging_settings and self.logging_settings[guild_id]['log_member_ban_unban']:
-            modlog_id = self.logging_settings[guild_id]['modlog_id']
+        if guild_id in self.cache and self.cache[guild_id]['log_member_ban_unban']:
+            modlog_id = self.cache[guild_id]['modlog_id']
             channel = self.bot.get_channel(modlog_id)
             embed = discord.Embed(title="Member Unbanned", description=f"{member.mention} was unbanned from the server.", color=discord.Color.red())
             await channel.send(embed=embed)
 
-
 async def setup(bot):
-    await bot.add_cog(LoggingCog(bot))
+    logging_cog = LoggingCog(bot)
+    await logging_cog.setup()
+    await bot.add_cog(logging_cog)
