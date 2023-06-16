@@ -25,7 +25,7 @@ async def create_tables(bot):
                     log_member_join_leave BOOLEAN,
                     log_member_kick BOOLEAN,
                     log_member_ban_unban BOOLEAN,
-                    modlog_id BIGINT
+                    modlogchannel_id BIGINT
                 )
             ''')
             await conn.execute('''
