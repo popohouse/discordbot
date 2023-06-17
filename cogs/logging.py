@@ -5,6 +5,9 @@ import datetime
 from datetime import datetime
 from typing import Optional
 from utils.config import Config
+from discord.automod import AutoModRuleActionType
+import asyncio
+from utils.default import format_time
 
 config = Config.from_env()
 
@@ -14,7 +17,11 @@ class LoggingCog(commands.Cog):
         self.bot = bot
         self.logging_settings = {}
         self.cache = {}
-
+        self.pending_executions = {}
+        self.action_type_names = {
+            AutoModRuleActionType.block_message: "Blocked Message",
+            AutoModRuleActionType.timeout: "Timeout"
+        }
 
     async def setup(self):
         await self.update_cache()
@@ -38,6 +45,7 @@ class LoggingCog(commands.Cog):
                     log_member_kick = row['log_member_kick']
                     log_member_ban_unban = row['log_member_ban_unban']
                     modlogchannel_id = row['modlogchannel_id']
+                    log_automod_actions = row['log_automod_actions']
                     if guild_id not in self.cache:
                         # Add the retrieved values to the cache dictionary
                         self.cache[guild_id] = {
@@ -48,7 +56,8 @@ class LoggingCog(commands.Cog):
                             'log_member_join_leave': log_member_join_leave,
                             'log_member_kick': log_member_kick,
                             'log_member_ban_unban': log_member_ban_unban,
-                            'modlogchannel_id': modlogchannel_id
+                            'modlogchannel_id': modlogchannel_id,
+                            'log_automod_actions': log_automod_actions
                         }
         except Exception as e:
             print(f"Failed to update cache: {str(e)}")
@@ -65,6 +74,7 @@ class LoggingCog(commands.Cog):
         app_commands.Choice(name="membership", value="log_member_join_leave"),
         app_commands.Choice(name="member_kick", value="log_member_kick"),
         app_commands.Choice(name="ban_unban", value="log_member_ban_unban"),
+        app_commands.Choice(name="automod", value="log_automod_actions")
     ])
     async def log(self, interaction: discord.Interaction, log_type: Optional[app_commands.Choice[str]], disable: Optional[bool] = None):
         """Enable or disable logging type"""
@@ -72,7 +82,7 @@ class LoggingCog(commands.Cog):
             # Disable logging types
             if disable is True:
                 if log_type.value == 'all':
-                    await conn.execute('UPDATE logging SET log_deleted_messages = false, log_edited_messages = false, log_nickname_changes = false, log_member_join_leave = false, log_member_kick = false, log_member_ban_unban = false WHERE guild_id = $1', interaction.guild.id)
+                    await conn.execute('UPDATE logging SET log_deleted_messages = false, log_edited_messages = false, log_nickname_changes = false, log_member_join_leave = false, log_member_kick = false, log_member_ban_unban = false, log_automod_actions = false WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_deleted_messages':
                     await conn.execute('UPDATE logging SET log_deleted_messages = false WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_edited_messages':
@@ -85,6 +95,8 @@ class LoggingCog(commands.Cog):
                     await conn.execute('UPDATE logging SET log_member_kick = false WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_member_ban_unban':
                     await conn.execute('UPDATE logging SET log_member_ban_unban = false WHERE guild_id = $1', interaction.guild.id)
+                elif log_type.value == 'log_automod_actions':
+                    await conn.execute('UPDATE logging SET log_automod_actions = false WHERE guild_id = $1', interaction.guild.id)
                 else:
                     await interaction.response.send_message(f'Invalid log type: {log_type.value}', ephemeral=True)
                     return
@@ -93,7 +105,7 @@ class LoggingCog(commands.Cog):
             # Enable logging type
             if disable is None:
                 if log_type.value == 'all':
-                    await conn.execute('UPDATE logging SET log_deleted_messages = true, log_edited_messages = true, log_nickname_changes = true, log_member_join_leave = true, log_member_kick = true, log_member_ban_unban = true WHERE guild_id = $1', interaction.guild.id)
+                    await conn.execute('UPDATE logging SET log_deleted_messages = true, log_edited_messages = true, log_nickname_changes = true, log_member_join_leave = true, log_member_kick = true, log_member_ban_unban = true, log_automod_actions = true WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_deleted_messages':
                     await conn.execute('UPDATE logging SET log_deleted_messages = true WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_edited_messages':
@@ -106,6 +118,8 @@ class LoggingCog(commands.Cog):
                     await conn.execute('UPDATE logging SET log_member_kick = true WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_member_ban_unban':
                     await conn.execute('UPDATE logging SET log_member_ban_unban = true WHERE guild_id = $1', interaction.guild.id)
+                elif log_type.value == 'log_automod_actions':
+                    await conn.execute('UPDATE logging SET log_automod_actions = true WHERE guild_id = $1', interaction.guild.id)
                 else:
                     await interaction.response.send_message(f'Invalid log type: {log_type.value}', ephemeral=True)
                     return
@@ -133,7 +147,8 @@ class LoggingCog(commands.Cog):
                         'log_nickname_changes': False,
                         'log_member_join_leave': False,
                         'log_member_kick': False,
-                        'log_member_ban_unban': False
+                        'log_member_ban_unban': False,
+                        'log_automod_actions': False,
                     }
                 await interaction.response.send_message(f'Set logging channel to {logchannel.mention}', ephemeral=True)
             
@@ -155,6 +170,7 @@ class LoggingCog(commands.Cog):
                         'log_member_join_leave': False,
                         'log_member_kick': False,
                         'log_member_ban_unban': False,
+                        'log_automod_actions': False,
                         'modlogchannel_id': modchannel.id
                     }
                 await interaction.response.send_message(f'Set mod log channel to {modchannel.mention}', ephemeral=True)
@@ -289,6 +305,49 @@ class LoggingCog(commands.Cog):
             channel = self.bot.get_channel(modlog_id)
             embed = discord.Embed(title="Member Unbanned", description=f"**{user.name}** was unbanned from the server.", color=discord.Color.green())
             embed.add_field(name="User ID", value=user.id, inline=True)
+            await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_automod_action(self, execution):
+        guild_id = execution.guild_id
+        if guild_id in self.cache and self.cache[guild_id]['log_automod_actions']:
+            message_id = execution.message_id
+            if message_id not in self.pending_executions:
+                self.pending_executions[message_id] = []
+            self.pending_executions[message_id].append(execution)
+            await asyncio.sleep(0.3)
+            if message_id not in self.pending_executions:
+                return
+            executions = self.pending_executions.pop(message_id)
+            if any(e.action.type == AutoModRuleActionType.send_alert_message for e in executions):
+                return
+            guild_id = execution.guild_id
+            modlog_id = self.cache[guild_id].get('modlog_id', self.cache[guild_id].get('channel_id'))
+            channel = self.bot.get_channel(modlog_id)
+            action_details = []
+            duration = None
+            for e in executions:
+                action = e.action.type
+                action_name = self.action_type_names.get(action, str(action))
+                action_details.append(action_name)
+                if action == AutoModRuleActionType.timeout:
+                    duration = e.action.duration
+            embed = discord.Embed(
+                title="Automod Action",
+                description=f"Actions: {', '.join(action_details)}\n"
+                            f"User: {execution.member.mention}\n"
+                            f"Reason: {execution.matched_content}",
+                color=discord.Color.red()
+            )
+            if execution.member.avatar:
+                user_avatar_url = execution.member.avatar.url
+            else:
+                user_avatar_url = execution.member.default_avatar_url
+            embed.set_author(name=execution.member.display_name, icon_url=user_avatar_url)
+            if duration:
+                formatted_duration = format_time(duration)
+                embed.add_field(name="Duration", value=formatted_duration, inline=False)
+            embed.add_field(name="User ID", value=execution.member.id, inline=True)
             await channel.send(embed=embed)
 
 

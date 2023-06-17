@@ -2,7 +2,7 @@ import time
 import discord
 import traceback
 from io import BytesIO
-
+from datetime import timedelta
 
 def traceback_maker(err, advance: bool = True) -> str:
     """A way to debug your code anywhere"""
@@ -72,3 +72,19 @@ async def pretty_results(
             filename=timetext(filename.title())
         )
     )
+
+def format_time(duration: timedelta) -> str:
+    total_seconds = int(duration.total_seconds())
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    
+    parts = []
+    if hours > 0:
+        parts.append(f"{hours}h")
+    if minutes > 0:
+        parts.append(f"{minutes}m")
+    if seconds > 0:
+        parts.append(f"{seconds}s")
+    
+    formatted_duration = ' '.join(parts)
+    return formatted_duration
