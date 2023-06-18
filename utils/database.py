@@ -26,6 +26,15 @@ async def create_tables(bot):
                     log_member_kick BOOLEAN,
                     log_member_ban_unban BOOLEAN,
                     log_automod_actions BOOLEAN,
+                    log_role_user_update BOOLEAN,
+                    log_user_vc_update BOOLEAN,
+                    log_user_vc_action BOOLEAN,
+                    log_onboarding_accept BOOLEAN,
+                    log_role_update BOOLEAN,
+                    log_channel_update BOOLEAN,
+                    log_expression_update BOOLEAN,
+                    log_invite_update BOOLEAN,
+                    log_server_update BOOLEAN,
                     modlogchannel_id BIGINT
                 )
             ''')
