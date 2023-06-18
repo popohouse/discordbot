@@ -1,4 +1,5 @@
 from utils.config import Config
+import os
 
 config = Config.from_env()
 
@@ -6,7 +7,7 @@ config = Config.from_env()
 async def create_tables(bot):
     async with bot.pool.acquire() as conn:
         # Define current version of schema here
-        expected_version = 1
+        expected_version = 2
         schema_version_exists = await conn.fetchval('''
             SELECT EXISTS (
                 SELECT 1
@@ -140,10 +141,15 @@ async def create_tables(bot):
             if stored_version == expected_version:
                 return
             if stored_version < expected_version:
-                # Please actually add here, and remove the return statement simply here as place holder currently
-                # Also have it work through migrations in case of multiple schema updates
+                # Perform migrations
+                migrations_dir = 'migrations'
+                for version in range(stored_version + 1, expected_version + 1):
+                    migration_script_path = os.path.join(migrations_dir, f'migrate_{version:03}.sql')  # Assuming your migration scripts are named as "migrate_001.sql", "migrate_002.sql", etc.
+                    with open(migration_script_path, 'r') as file:
+                        migration_script = file.read()
+                    await conn.execute(migration_script)
+                    await conn.execute('UPDATE schema_version SET version = $1', version)
                 return
-            # Hey future me please add better error handling in case of users having issues with schema updates.
             raise ValueError('Invalid schema version detected')
 
 
