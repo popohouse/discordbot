@@ -565,7 +565,6 @@ class LoggingCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_role_create(self, role):
-        print("role created")
         guild_id = role.guild.id
         if guild_id in self.cache and self.cache[guild_id]['log_role_update']:
             channel_id = self.cache[guild_id]['channel_id']
@@ -576,7 +575,6 @@ class LoggingCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_role_delete(self, role):
-        print("role delete")
         guild_id = role.guild.id
         if guild_id in self.cache and self.cache[guild_id]['log_role_update']:
             channel_id = self.cache[guild_id]['channel_id']
@@ -587,7 +585,6 @@ class LoggingCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_role_update(self, before, after):
-        print("role update")
         guild_id = before.guild.id
         if guild_id in self.cache and self.cache[guild_id]['log_role_update']:
             channel_id = self.cache[guild_id]['channel_id']
