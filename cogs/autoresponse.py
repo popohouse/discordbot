@@ -119,6 +119,7 @@ class AutoResponseCog(commands.Cog):
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
     async def addaralias(self, interaction: discord.Interaction, id: int, alias: str):
+        """Add alias to auto response"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
         try:
@@ -139,6 +140,7 @@ class AutoResponseCog(commands.Cog):
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
     async def delar(self, interaction: discord.Interaction, id: int, alias: Optional[str]):
+        """Remove auto response"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
         try:
@@ -165,6 +167,7 @@ class AutoResponseCog(commands.Cog):
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
     async def listar(self, interaction: discord.Interaction):
+        """List auto responses"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
         try:
