@@ -23,6 +23,7 @@ class SassyCog(commands.Cog):
         app_commands.Choice(name="Mommygpt", value="BotY1IW6KZQ2I"),
     ])
     async def gpt(self, interaction: discord.Interaction, prompt: str, model: Optional[app_commands.Choice[str]]):
+        """Interact with LLM's"""
         try:
             model_name = model.name if model else 'ChatGPT'
             models = {
