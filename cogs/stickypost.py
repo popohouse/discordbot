@@ -14,7 +14,6 @@ class StickyPost(commands.Cog):
         await self.update_cache()
 
     async def update_cache(self, guild_id=None):
-        print("Updating sticky post cache")
         try:
             if guild_id is not None and guild_id in self.stickypost_cache:
                 del self.stickypost_cache[guild_id]
@@ -42,6 +41,7 @@ class StickyPost(commands.Cog):
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
     async def stickypost(self, interaction: discord.Interaction, message: str, channel: discord.TextChannel):
+        """Add a sticky post"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
         try:
@@ -66,6 +66,7 @@ class StickyPost(commands.Cog):
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
     async def delsp(self, interaction: discord.Interaction, id: int):
+        """Delete a sticky post"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
         async with self.bot.pool.acquire() as conn:
@@ -81,6 +82,7 @@ class StickyPost(commands.Cog):
     @commands.guild_only()
     @permissions.has_permissions(manage_guild=True)
     async def listsp(self, interaction: discord.Interaction):
+        """List all sticky posts"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}):
             return
         async with self.bot.pool.acquire() as conn:
