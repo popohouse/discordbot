@@ -51,7 +51,6 @@ class LoggingCog(commands.Cog):
                     log_role_user_update = row['log_role_user_update']
                     log_user_vc_update = row['log_user_vc_update']
                     log_user_vc_action = row['log_user_vc_action']
-                    log_onboarding_accept = row['log_onboarding_accept']
                     log_role_update = row['log_role_update']
                     log_channel_update = row['log_channel_update']
                     log_expression_update = row['log_expression_update']
@@ -72,7 +71,6 @@ class LoggingCog(commands.Cog):
                             'log_role_user_update': log_role_user_update,
                             'log_user_vc_update': log_user_vc_update,
                             'log_user_vc_action': log_user_vc_action,
-                            'log_onboarding_accept': log_onboarding_accept,
                             'log_role_update': log_role_update,
                             'log_channel_update': log_channel_update,
                             'log_expression_update': log_expression_update,
@@ -98,7 +96,6 @@ class LoggingCog(commands.Cog):
         app_commands.Choice(name="user_role_update", value="log_role_user_update"),
         app_commands.Choice(name="user_vc_update", value="log_user_vc_update"),
         app_commands.Choice(name="user_vc_action", value="log_user_vc_action"),
-        app_commands.Choice(name="onboarding_accept", value="log_onboarding_accept"),
         app_commands.Choice(name="role_update", value="log_role_update"),
         app_commands.Choice(name="channel_update", value="log_channel_update"),
         app_commands.Choice(name="expression_update", value="log_expression_update"),
@@ -111,7 +108,7 @@ class LoggingCog(commands.Cog):
             # Disable logging types
             if disable is True:
                 if log_type.value == 'all':
-                    await conn.execute('UPDATE logging SET log_deleted_messages = false, log_edited_messages = false, log_nickname_changes = false, log_member_join_leave = false, log_member_kick = false, log_member_ban_unban = false, log_automod_actions = false, log_role_user_update = false, log_user_vc_update = false, log_user_vc_action = false, log_onboarding_accept = false, log_role_update = false, log_channel_update = false, log_expression_update = false, log_invite_update = false, log_server_update = false WHERE guild_id = $1', interaction.guild.id)
+                    await conn.execute('UPDATE logging SET log_deleted_messages = false, log_edited_messages = false, log_nickname_changes = false, log_member_join_leave = false, log_member_kick = false, log_member_ban_unban = false, log_automod_actions = false, log_role_user_update = false, log_user_vc_update = false, log_user_vc_action = false, log_role_update = false, log_channel_update = false, log_expression_update = false, log_invite_update = false, log_server_update = false WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_deleted_messages':
                     await conn.execute('UPDATE logging SET log_deleted_messages = false WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_edited_messages':
@@ -132,8 +129,6 @@ class LoggingCog(commands.Cog):
                     await conn.execute('UPDATE logging SET log_user_vc_update = false WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_user_vc_action':
                     await conn.execute('UPDATE logging SET log_user_vc_action = false WHERE guild_id = $1', interaction.guild.id)
-                elif log_type.value == 'log_onboarding_accept':
-                    await conn.execute('UPDATE logging SET log_onboarding_accept = false WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_role_update':
                     await conn.execute('UPDATE logging SET log_role_update = false WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_channel_update':
@@ -152,7 +147,7 @@ class LoggingCog(commands.Cog):
             # Enable logging type
             if disable is None:
                 if log_type.value == 'all':
-                    await conn.execute('UPDATE logging SET log_deleted_messages = true, log_edited_messages = true, log_nickname_changes = true, log_member_join_leave = true, log_member_kick = true, log_member_ban_unban = true, log_automod_actions = true, log_role_user_update = true, log_user_vc_update = true, log_user_vc_action = true, log_onboarding_accept = true, log_role_update = true, log_channel_update = true, log_expression_update = true, log_invite_update = true, log_server_update = true WHERE guild_id = $1', interaction.guild.id)
+                    await conn.execute('UPDATE logging SET log_deleted_messages = true, log_edited_messages = true, log_nickname_changes = true, log_member_join_leave = true, log_member_kick = true, log_member_ban_unban = true, log_automod_actions = true, log_role_user_update = true, log_user_vc_update = true, log_user_vc_action = true, log_role_update = true, log_channel_update = true, log_expression_update = true, log_invite_update = true, log_server_update = true WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_deleted_messages':
                     await conn.execute('UPDATE logging SET log_deleted_messages = true WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_edited_messages':
@@ -173,8 +168,6 @@ class LoggingCog(commands.Cog):
                     await conn.execute('UPDATE logging SET log_user_vc_update = true WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_user_vc_action':
                     await conn.execute('UPDATE logging SET log_user_vc_action = true WHERE guild_id = $1', interaction.guild.id)
-                elif log_type.value == 'log_onboarding_accept':
-                    await conn.execute('UPDATE logging SET log_onboarding_accept = true WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_role_update':
                     await conn.execute('UPDATE logging SET log_role_update = true WHERE guild_id = $1', interaction.guild.id)
                 elif log_type.value == 'log_channel_update':
@@ -217,7 +210,6 @@ class LoggingCog(commands.Cog):
                         'log_role_user_update': False,
                         'log_user_vc_update': False,
                         'log_user_vc_action': False,
-                        'log_onboarding_accept': False,
                         'log_role_update': False,
                         'log_channel_update': False,
                         'log_expression_update': False,
@@ -248,7 +240,6 @@ class LoggingCog(commands.Cog):
                         'log_role_user_update': False,
                         'log_user_vc_update': False,
                         'log_user_vc_action': False,
-                        'log_onboarding_accept': False,
                         'log_role_update': False,
                         'log_channel_update': False,
                         'log_expression_update': False,
@@ -308,7 +299,6 @@ class LoggingCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
-        print("onboarding done")
         guild_id = before.guild.id
         if guild_id in self.cache and self.cache[guild_id]['log_nickname_changes']:
             if before.nick != after.nick:
@@ -363,10 +353,6 @@ class LoggingCog(commands.Cog):
             embed.description = description
             await channel.send(embed=embed)
 
-
-
-
-    # Log bans
     @commands.Cog.listener()
     async def on_member_ban(self, guild, user):
         guild_id = guild.id
@@ -384,7 +370,6 @@ class LoggingCog(commands.Cog):
             embed.add_field(name="Username", value=user.name, inline=True)
             await channel.send(embed=embed)
 
-    # logs unbans
     @commands.Cog.listener()
     async def on_member_unban(self, guild, user):
         guild_id = guild.id
@@ -577,6 +562,99 @@ class LoggingCog(commands.Cog):
                     embed.set_author(name=member.display_name, icon_url=member.avatar.url)
                     embed.add_field(name="User ID", value=member.id, inline=True)
                     await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_guild_role_create(self, role):
+        print("role created")
+        guild_id = role.guild.id
+        if guild_id in self.cache and self.cache[guild_id]['log_role_update']:
+            channel_id = self.cache[guild_id]['channel_id']
+            channel = self.bot.get_channel(channel_id)
+            embed = discord.Embed(title="Role Created", description=f"Role {role.mention} was created.", color=discord.Color.green())
+            embed.add_field(name="Role ID", value=role.id, inline=True)
+            await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_guild_role_delete(self, role):
+        print("role delete")
+        guild_id = role.guild.id
+        if guild_id in self.cache and self.cache[guild_id]['log_role_update']:
+            channel_id = self.cache[guild_id]['channel_id']
+            channel = self.bot.get_channel(channel_id)
+            embed = discord.Embed(title="Role Deleted", description=f"Role {role.name} was deleted.", color=discord.Color.red())
+            embed.add_field(name="Role ID", value=role.id, inline=True)
+            await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_guild_role_update(self, before, after):
+        print("role update")
+        guild_id = before.guild.id
+        if guild_id in self.cache and self.cache[guild_id]['log_role_update']:
+            channel_id = self.cache[guild_id]['channel_id']
+            channel = self.bot.get_channel(channel_id)
+            if before.name is not after.name:
+                embed = discord.Embed(title="Role Updated", description=f"Role {after.mention} was renamed.", color=discord.Color.blue())
+                embed.add_field(name="Before", value=before.name, inline=True)
+                embed.add_field(name="After", value=after.name, inline=True)
+                embed.add_field(name="Role ID", value=after.id, inline=True)
+                await channel.send(embed=embed)
+            elif before.color is not after.color:
+                embed = discord.Embed(title="Role Updated", description=f"Role {after.mention} color was changed.", color=discord.Color.blue())
+                embed.add_field(name="Before", value=before.color, inline=True)
+                embed.add_field(name="After", value=after.color, inline=True)
+                embed.add_field(name="Role ID", value=after.id, inline=True)
+                await channel.send(embed=embed)
+            elif before.hoist is not after.hoist:
+                embed = discord.Embed(title="Role Updated", description=f"Role {after.mention} hoist was changed.", color=discord.Color.blue())
+                embed.add_field(name="Before", value=before.hoist, inline=True)
+                embed.add_field(name="After", value=after.hoist, inline=True)
+                embed.add_field(name="Role ID", value=after.id, inline=True)
+                await channel.send(embed=embed)
+            elif before.mentionable is not after.mentionable:
+                embed = discord.Embed(title="Role Updated", description=f"Role {after.mention} mentionable was changed.", color=discord.Color.blue())
+                embed.add_field(name="Before", value=before.mentionable, inline=True)
+                embed.add_field(name="After", value=after.mentionable, inline=True)
+                embed.add_field(name="Role ID", value=after.id, inline=True)
+                await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_guild_channel_create(self, channel):
+        guild_id = channel.guild.id
+        channel_mention = channel
+        if guild_id in self.cache and self.cache[guild_id]['log_channel_update']:
+            channel_id = self.cache[guild_id]['channel_id']
+            channel = self.bot.get_channel(channel_id)
+            embed = discord.Embed(title="Channel Created", description=f"Channel {channel_mention.mention} was created.", color=discord.Color.green())
+            embed.add_field(name="Channel ID", value=channel.id, inline=True)
+            await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_guild_channel_delete(self, channel):
+        guild_id = channel.guild.id
+        channel_name = channel.name
+        if guild_id in self.cache and self.cache[guild_id]['log_channel_update']:
+            channel_id = self.cache[guild_id]['channel_id']
+            channel = self.bot.get_channel(channel_id)
+            embed = discord.Embed(title="Channel Deleted", description=f"Channel {channel_name} was deleted.", color=discord.Color.red())
+            embed.add_field(name="Channel ID", value=channel.id, inline=True)
+            await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_guild_channel_update(self, before, after):
+        guild_id = before.guild.id
+        channel_id = self.cache[guild_id]['channel_id']
+        channel = self.bot.get_channel(channel_id)
+        if guild_id in self.cache and self.cache[guild_id]['log_channel_update']:
+            if isinstance(before, discord.TextChannel) and isinstance(after, discord.TextChannel):
+                if before.name != after.name:
+                    embed = discord.Embed(title="Channel Updated", description=f"Channel {before.name} was renamed to {after.mention}", color=discord.Color.blue())
+                    embed.add_field(name="Channel ID", value=after.id, inline=True)
+                    await channel.send(embed=embed)
+                if after.category is not before.category:
+                    embed = discord.Embed(title="Channel Updated", description=f"Channel {after.mention} category was changed from {before.category} to {after.category}", color=discord.Color.blue())
+                    embed.add_field(name="Channel ID", value=after.id, inline=True)
+                    await channel.send(embed=embed)
+
 
 async def setup(bot):
     logging_cog = LoggingCog(bot)
