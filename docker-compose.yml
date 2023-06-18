@@ -8,6 +8,7 @@ services:
       - ./.env:/discord_bot/.env
       - ./cogs:/discord_bot/cogs
       - ./utils:/discord_bot/utils
+      - ./migrations:/discord_bot/migrations
     depends_on: 
       db:
         condition: service_healthy
