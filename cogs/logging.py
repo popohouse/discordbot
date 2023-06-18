@@ -655,6 +655,110 @@ class LoggingCog(commands.Cog):
                     embed.add_field(name="Channel ID", value=after.id, inline=True)
                     await channel.send(embed=embed)
 
+    @commands.Cog.listener()
+    async def on_invite_create(self, invite):
+        guild_id = invite.guild.id
+        if guild_id in self.cache and self.cache[guild_id]['log_invite_update']:
+            channel_id = self.cache[guild_id]['channel_id']
+            channel = self.bot.get_channel(channel_id)
+            embed = discord.Embed(title="Invite Created", description=f"Invite {invite.code} was created.", color=discord.Color.green())
+            embed.add_field(name="Channel", value=invite.channel, inline=True)
+            await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_invite_delete(self, invite):
+        guild_id = invite.guild.id
+        if guild_id in self.cache and self.cache[guild_id]['log_invite_update']:
+            channel_id = self.cache[guild_id]['channel_id']
+            channel = self.bot.get_channel(channel_id)
+            embed = discord.Embed(title="Invite Deleted", description=f"Invite {invite.code} was deleted.", color=discord.Color.red())
+            await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_guild_update(self, before, after):
+        guild_id = before.id
+        if guild_id in self.cache and self.cache[guild_id]['log_server_update']:
+            channel_id = self.cache[guild_id]['channel_id']
+            channel = self.bot.get_channel(channel_id)
+            if before.afk_channel != after.afk_channel:
+                embed = discord.Embed(title="Server Updated", description=f"Server AFK channel was changed from {before.afk_channel.name} to {after.afk_channel.mention}", color=discord.Color.blue())
+                await channel.send(embed=embed)
+            if before.afk_timeout != after.afk_timeout:
+                embed = discord.Embed(title="Server Updated", description=f"Server AFK timeout was changed from {before.afk_timeout} to {after.afk_timeout}", color=discord.Color.blue())
+                await channel.send(embed=embed)
+            if before.banner != after.banner:
+                embed = discord.Embed(title="Server Updated", description=f"Server banner was changed from {before.banner.url} to {after.banner.url}", color=discord.Color.blue())
+                await channel.send(embed=embed)
+            if before.description != after.description:
+                embed = discord.Embed(title="Server Updated", description=f"Server description was changed from {before.description} to {after.description}", color=discord.Color.blue())
+                await channel.send(embed=embed)
+            if before.explicit_content_filter != after.explicit_content_filter:
+                embed = discord.Embed(title="Server Updated", description=f"Server explicit content filter level was changed", color=discord.Color.blue())
+                await channel.send(embed=embed)
+            if before.icon != after.icon:
+                embed = discord.Embed(title="Server Updated", description=f"Server icon was changed from {before.icon} to {after.icon}", color=discord.Color.blue())
+                await channel.send(embed=embed)
+            if before.mfa_level != after.mfa_level:
+                embed = discord.Embed(title="Server Updated", description=f"Server mfa level was changed", color=discord.Color.blue())
+                await channel.send(embed=embed)
+            if before.name != after.name:
+                embed = discord.Embed(title="Server Updated", description=f"Server name was changed from {before.name} to {after.name}", color=discord.Color.blue())
+                await channel.send(embed=embed)
+            if before.owner != after.owner:
+                embed = discord.Embed(title="Server Updated", description=f"Server owner was changed from {before.owner.name} {after.owner.mention}", color=discord.Color.blue())
+                await channel.send(embed=embed)
+            if before.rules_channel != after.rules_channel:
+                embed = discord.Embed(title="Server Updated", description=f"Server rules channel was changed from {before.rules_channel.name} to {after.rules_channel.mention}", color=discord.Color.blue())
+                await channel.send(embed=embed)
+            if before.system_channel != after.system_channel:
+                embed = discord.Embed(title="Server Updated", description=f"Changed channel system messages are sent too from {before.system_channel.name} to {after.system_channel.mention}", color=discord.Color.blue())
+                await channel.send(embed=embed)
+
+
+
+            if after.system_channel_flags.join_notifications is True and before.system_channel_flags.join_notifications is False:
+                embed = discord.Embed(title="Server Updated", description=f"Join message enabled", color=discord.Color.green())
+                await channel.send(embed=embed)
+
+            if before.system_channel_flags.join_notifications is True and after.system_channel_flags.join_notifications is False:
+                embed = discord.Embed(title="Server Updated", description=f"Join message disabled", color=discord.Color.red())
+
+            if after.system_channel_flags.join_notification_replies is True and before.system_channel_flags.join_notification_replies is False:
+                embed = discord.Embed(title="Server Updated", description=f"Sticker join message replies enabled", color=discord.Color.green())
+                await channel.send(embed=embed)
+            
+            if before.system_channel_flags.join_notification_replies is True and after.system_channel_flags.join_notification_replies is False:
+                embed = discord.Embed(title="Server Updated", description=f"Sticker join message replies disabled", color=discord.Color.red())
+                await channel.send(embed=embed)
+
+            if after.system_channel_flags.premium_subscriptions is True and before.system_channel_flags.premium_subscriptions is False:
+                embed = discord.Embed(title="Server Updated", description=f"Nitro boosting notification enabled", color=discord.Color.green())
+                await channel.send(embed=embed)
+            
+            if before.system_channel_flags.premium_subscriptions is True and after.system_channel_flags.premium_subscriptions is False:
+                embed = discord.Embed(title="Server Updated", description=f"Nitro boosting notification disabled", color=discord.Color.red())
+                await channel.send(embed=embed)
+
+            if before.vanity_url_code != after.vanity_url_code:
+                embed = discord.Embed(title="Server Updated", description=f"Server vanity url code was changed from {before.vanity_url_code} to {after.vanity_url_code}", color=discord.Color.blue())
+                await channel.send(embed=embed)
+
+            if before.verification_level != after.verification_level:
+                embed = discord.Embed(title="Server Updated", description=f"Server verification level was changed", color=discord.Color.blue())
+                await channel.send(embed=embed)
+
+            if before.widget_channel != after.widget_channel or before.widget_enabled != after.widget_enabled:
+                embed = discord.Embed(title="Server Updated", description=f"Server widget was changed", color=discord.Color.blue())
+                await channel.send(embed=embed)
+
+            if before.emojis != after.emojis:
+                embed = discord.Embed(title="Server Updated", description=f"Server emojis was changed", color=discord.Color.blue())
+                await channel.send(embed=embed)
+
+            if before.stickers != after.stickers:
+                embed = discord.Embed(title="Server Updated", description=f"Server stickers was changed", color=discord.Color.blue())
+                await channel.send(embed=embed)
+
 
 async def setup(bot):
     logging_cog = LoggingCog(bot)

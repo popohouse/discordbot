@@ -29,7 +29,6 @@ async def create_tables(bot):
                     log_role_user_update BOOLEAN,
                     log_user_vc_update BOOLEAN,
                     log_user_vc_action BOOLEAN,
-                    log_onboarding_accept BOOLEAN,
                     log_role_update BOOLEAN,
                     log_channel_update BOOLEAN,
                     log_expression_update BOOLEAN,
