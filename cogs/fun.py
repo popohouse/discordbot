@@ -8,11 +8,25 @@ import mimetypes
 import io
 from io import BytesIO
 from utils import permissions, http
+from utils.config import Config
+from typing import Optional
+
+config = Config.from_env()
 
 
 class Fun_Commands(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    @app_commands.command()
+    async def shorten(self, interaction:discord.Interaction, link: str, password: Optional[str]):
+        """Shorten a link via selfhosted kutt instance"""
+        headers = {"Authorizations": config.kutt_token}
+        async with aiohttp.ClientSession(headers=headers) as session, session.post(config.kutt_host + "/api/v2/links", json={"target": link}) as response:
+            data = await response.json()
+            short_string = data["address"]
+            short_url = config.kutt_host + "/" + short_string
+            await interaction.response.send_message(f"Here is your shortened link: {short_url}")
 
     @app_commands.command()
     async def rate(self, interaction: discord.Interaction, *, thing: str):

@@ -20,6 +20,9 @@ class Config:
 
     poe_token: str
 
+    kutt_token: str
+    kutt_host: str
+
     @classmethod
     def from_dict(self, **kwargs) -> "Config":
         """Create a Config object from a dictionary."""
