@@ -102,7 +102,7 @@ class LoggingCog(commands.Cog):
         app_commands.Choice(name="invite_update", value="log_invite_update"),
         app_commands.Choice(name="server_update", value="log_server_update")
     ])
-    async def log(self, interaction: discord.Interaction, log_type: Optional[app_commands.Choice[str]], disable: Optional[bool] = None):
+    async def log(self, interaction: discord.Interaction, log_type: app_commands.Choice[str], disable: Optional[bool] = None):
         """Enable or disable logging type"""
         async with self.bot.pool.acquire() as conn:
             # Disable logging types
@@ -749,14 +749,6 @@ class LoggingCog(commands.Cog):
 
             if before.widget_channel != after.widget_channel or before.widget_enabled != after.widget_enabled:
                 embed = discord.Embed(title="Server Updated", description=f"Server widget was changed", color=discord.Color.blue())
-                await channel.send(embed=embed)
-
-            if before.emojis != after.emojis:
-                embed = discord.Embed(title="Server Updated", description=f"Server emojis was changed", color=discord.Color.blue())
-                await channel.send(embed=embed)
-
-            if before.stickers != after.stickers:
-                embed = discord.Embed(title="Server Updated", description=f"Server stickers was changed", color=discord.Color.blue())
                 await channel.send(embed=embed)
 
 
