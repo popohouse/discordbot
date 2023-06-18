@@ -52,6 +52,7 @@ class Moderator(commands.Cog):
     @commands.guild_only()
     @permissions.has_permissions(manage_messages=True)
     async def checkwarns(self, interaction: discord.Interaction, target: discord.Member):
+        """Checks user warns"""
         if not await permissions.check_priv(self.bot, interaction, target, {"manage_messages": True}):
             return
         try:
@@ -80,6 +81,7 @@ class Moderator(commands.Cog):
     @commands.guild_only()
     @permissions.has_permissions(manage_messages=True)
     async def unwarn(self, interaction: discord.Interaction, target: discord.Member, warning_id: int):
+        """Removes a warning from a user"""
         if not await permissions.check_priv(self.bot, interaction, target, {"manage_messages": True}):
             return
         try:
@@ -111,6 +113,7 @@ class Moderator(commands.Cog):
     @commands.guild_only()
     @permissions.has_permissions(manage_messages=True)
     async def checknotes(self, interaction: discord.Interaction, target: discord.Member):
+        """Checks user notes"""
         if not await permissions.check_priv(self.bot, interaction, target, {"manage_messages": True}):
             return
         try:
@@ -150,6 +153,7 @@ class Moderator(commands.Cog):
     @app_commands.command()
     @commands.guild_only()
     async def report(self, interaction: discord.Interaction, target: discord.Member, reason: str):
+        """Reports a user to the moderation team of the server"""
         try:
             async with self.bot.pool.acquire() as conn:
                 report_channel_id = await conn.fetchval('SELECT channel_id FROM reportchannel WHERE guild_id = $1', interaction.guild_id)
