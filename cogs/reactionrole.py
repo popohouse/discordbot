@@ -41,20 +41,16 @@ class ReactionRoles(commands.Cog):
             await interaction.response.send_message('You can only have 20 reaction roles per guild.', ephemeral=True)
             return
         message_id = int(message_id)
-        print(f"Attempting to fetch message with ID: {message_id}")
         try:
             message = await interaction.channel.fetch_message(message_id)
         except discord.NotFound:
-            print(f"Message with ID {message_id} not found in cache. Fetching from API...")
             try:
                 message = await interaction.channel.fetch_message(message_id)
             except discord.NotFound:
-                print(f"Message with ID {message_id} not found.")
                 await interaction.response.send_message('The specified message was not found.', ephemeral=True)
                 return
 
         await message.add_reaction(emoji)
-        print(f"Reaction added to message with ID: {message_id}")
         async with self.bot.pool.acquire() as conn:
             try:
                 await conn.execute('''
