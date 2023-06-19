@@ -635,6 +635,8 @@ class LoggingCog(commands.Cog):
             embed.add_field(name="Channel ID", value=channel.id, inline=True)
             await channel.send(embed=embed)
 
+
+
     @commands.Cog.listener()
     async def on_guild_channel_update(self, before, after):
         guild_id = before.guild.id
@@ -649,6 +651,56 @@ class LoggingCog(commands.Cog):
                 if after.category is not before.category:
                     embed = discord.Embed(title="Channel Updated", description=f"Channel {after.mention} category was changed from {before.category} to {after.category}", color=discord.Color.blue())
                     embed.add_field(name="Channel ID", value=after.id, inline=True)
+                    await channel.send(embed=embed)
+                permission_names = {
+                    'add_reactions': 'Add Reactions',
+                    'administrator': 'Administrator',
+                    'attach_files': 'Attach Files',
+                    'ban_members': 'Ban Members',
+                    'change_nickname': 'Change Nickname',
+                    'connect': 'Connect',
+                    'create_instant_invite': 'Create Instant Invite',
+                    'deafen_members': 'Deafen Members',
+                    'embed_links': 'Embed Links',
+                    'external_emojis': 'Use External Emojis',
+                    'manage_channels': 'Manage Channels',
+                    'send_messages': 'Send Messages',
+                    'send_tts_messages': 'Send TTS Messages',
+                    'manage_messages': 'Manage Messages',
+                    'read_message_history': 'Read Message History',
+                    'mention_everyone': 'Mention Everyone, here and all roles',
+                    'manage_roles': 'Manage channel permissions',
+                    'manage_webhooks': 'Manage Webhooks',
+                    'use_application_commands': 'Use Application Commands',
+                    'manage_threads': 'Manage Threads',
+                    'create_public_threads': 'Create Public Threads',
+                    'create_private_threads': 'Create Private Threads',
+                    'external_stickers': 'Use External Stickers',
+                    'send_messages_in_threads': 'Send Messages in Threads',
+                    'send_voice_messages': 'Send Voice Messages',
+                    'read_messages': 'Read Messages',
+                    # Add more permission names here
+                }
+                if before.overwrites != after.overwrites:
+                    overwrites_changed = []
+                    for target, after_overwrite in after.overwrites.items():
+                        before_overwrite = before.overwrites.get(target)
+                        if before_overwrite != after_overwrite:
+                            allow, deny = after_overwrite.pair()
+                            before_allow, before_deny = before_overwrite.pair() if before_overwrite else (discord.Permissions.none(), discord.Permissions.none())
+                            allow_diff = allow.value & ~before_allow.value
+                            deny_diff = deny.value & ~before_deny.value
+                            allow_str = ', '.join(permission_names.get(perm, perm) for perm, value in discord.Permissions(allow_diff) if value)
+                            deny_str = ', '.join(permission_names.get(perm, perm) for perm, value in discord.Permissions(deny_diff) if value)
+                            overwrites_changed.append(f"**{target}**")
+                            if not allow_str and not deny_str:
+                                return
+                            if allow_str:
+                                overwrites_changed.append(f"Allow: {allow_str}")
+                            if deny_str:
+                                overwrites_changed.append(f"Deny: {deny_str}")
+                    embed = discord.Embed(title="Channel Updated", description=f"Channel {after.mention} overwrites changed", color=discord.Color.blue())
+                    embed.add_field(name="Overwrites", value='\n'.join(overwrites_changed), inline=False)
                     await channel.send(embed=embed)
 
     @commands.Cog.listener()
@@ -772,11 +824,9 @@ class LoggingCog(commands.Cog):
         if guild_id in self.cache and self.cache[guild_id]['log_server_update']:
             channel_id = self.cache[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
-
             added_stickers = []
             removed_stickers = []
             edited_stickers = []
-
             for after_sticker in after:
                 if after_sticker not in before:
                     added_stickers.append(after_sticker)
@@ -787,11 +837,9 @@ class LoggingCog(commands.Cog):
                         or after_sticker.url != before_sticker.url
                     ):
                         edited_stickers.append((before_sticker, after_sticker))
-
             for before_sticker in before:
                 if before_sticker not in after:
                     removed_stickers.append(before_sticker)
-
             embed = discord.Embed(title="Sticker Changes", color=discord.Colour.gold())
             if added_stickers:
                 added_field_value = ""
@@ -810,6 +858,7 @@ class LoggingCog(commands.Cog):
                     edited_field_value += f"Name: {sticker_name}\nURL: {after_sticker.url}\n\n"
                 embed.add_field(name="Edited", value=edited_field_value, inline=False)
             await channel.send(embed=embed)
+
 
 async def setup(bot):
     logging_cog = LoggingCog(bot)
