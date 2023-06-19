@@ -327,7 +327,10 @@ class Moderator(commands.Cog):
             reason = "No reason provided"
         channel = channel or interaction.channel or interaction.guild.system_channel
         try:
-            await channel.purge(limit=amount + 1, reason=default.responsible(interaction.user, reason))
+            messages_to_delete = []
+            async for message in channel.history(limit=amount + 1):
+                messages_to_delete.append(message)
+            await channel.delete_messages(messages_to_delete)
             await interaction.response.send_message(f"Will purge {amount} messages")
         except Exception as e:
             print(e)
