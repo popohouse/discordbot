@@ -101,6 +101,11 @@ async def main():
         asyncio.create_task(shutdown(sig, frame))
 
     async def shutdown(sig, frame):
+        # Save data for all cogs
+        for cog_name, cog_instance in bot.cogs.items():
+            save_data_method = getattr(cog_instance, 'save_data', None)
+            if callable(save_data_method):
+                await save_data_method()
         # Unload all cogs
         for file in os.listdir("cogs"):
             if file.endswith(".py"):
