@@ -659,7 +659,6 @@ class LoggingCog(commands.Cog):
                 embed.add_field(name="Role ID", value=after.id, inline=True)
                 await channel.send(embed=embed)
             elif before.permissions != after.permissions:
-                print("permissions changed")
                 allow_diff = after.permissions.value & ~before.permissions.value
                 deny_diff = before.permissions.value & ~after.permissions.value
                 allow_str = ', '.join(permission_names.get(perm, perm) for perm, value in discord.Permissions(allow_diff) if value)
@@ -697,8 +696,6 @@ class LoggingCog(commands.Cog):
             embed = discord.Embed(title="Channel Deleted", description=f"Channel {channel_name} was deleted.", color=discord.Color.red())
             embed.add_field(name="Channel ID", value=channel.id, inline=True)
             await channel.send(embed=embed)
-
-
 
     @commands.Cog.listener()
     async def on_guild_channel_update(self, before, after):
