@@ -80,7 +80,6 @@ class LoggingCog(commands.Cog):
         except Exception as e:
             print(f"Failed to update cache: {str(e)}")
 
-
     # Log command
     @app_commands.command()
     @commands.guild_only()
@@ -710,44 +709,107 @@ class LoggingCog(commands.Cog):
             if before.system_channel != after.system_channel:
                 embed = discord.Embed(title="Server Updated", description=f"Changed channel system messages are sent too from {before.system_channel.name} to {after.system_channel.mention}", color=discord.Color.blue())
                 await channel.send(embed=embed)
-
-
-
             if after.system_channel_flags.join_notifications is True and before.system_channel_flags.join_notifications is False:
                 embed = discord.Embed(title="Server Updated", description=f"Join message enabled", color=discord.Color.green())
                 await channel.send(embed=embed)
-
             if before.system_channel_flags.join_notifications is True and after.system_channel_flags.join_notifications is False:
                 embed = discord.Embed(title="Server Updated", description=f"Join message disabled", color=discord.Color.red())
-
             if after.system_channel_flags.join_notification_replies is True and before.system_channel_flags.join_notification_replies is False:
                 embed = discord.Embed(title="Server Updated", description=f"Sticker join message replies enabled", color=discord.Color.green())
                 await channel.send(embed=embed)
-            
             if before.system_channel_flags.join_notification_replies is True and after.system_channel_flags.join_notification_replies is False:
                 embed = discord.Embed(title="Server Updated", description=f"Sticker join message replies disabled", color=discord.Color.red())
                 await channel.send(embed=embed)
-
             if after.system_channel_flags.premium_subscriptions is True and before.system_channel_flags.premium_subscriptions is False:
                 embed = discord.Embed(title="Server Updated", description=f"Nitro boosting notification enabled", color=discord.Color.green())
                 await channel.send(embed=embed)
-            
             if before.system_channel_flags.premium_subscriptions is True and after.system_channel_flags.premium_subscriptions is False:
                 embed = discord.Embed(title="Server Updated", description=f"Nitro boosting notification disabled", color=discord.Color.red())
                 await channel.send(embed=embed)
-
             if before.vanity_url_code != after.vanity_url_code:
                 embed = discord.Embed(title="Server Updated", description=f"Server vanity url code was changed from {before.vanity_url_code} to {after.vanity_url_code}", color=discord.Color.blue())
                 await channel.send(embed=embed)
-
             if before.verification_level != after.verification_level:
                 embed = discord.Embed(title="Server Updated", description=f"Server verification level was changed", color=discord.Color.blue())
                 await channel.send(embed=embed)
-
             if before.widget_channel != after.widget_channel or before.widget_enabled != after.widget_enabled:
                 embed = discord.Embed(title="Server Updated", description=f"Server widget was changed", color=discord.Color.blue())
                 await channel.send(embed=embed)
 
+    @commands.Cog.listener()
+    async def on_guild_emojis_update(self, guild, before, after):
+        guild_id = guild.id
+        if guild_id in self.cache and self.cache[guild_id]['log_server_update']:
+            channel_id = self.cache[guild_id]['channel_id']
+            channel = self.bot.get_channel(channel_id)
+            added_emojis = []
+            removed_emojis = []
+            edited_emojis = []
+            for after_emoji in after:
+                if after_emoji not in before:
+                    added_emojis.append(after_emoji)
+                else:
+                    before_emoji = before[before.index(after_emoji)]
+                    if after_emoji.name != before_emoji.name or after_emoji.url != before_emoji.url:
+                        edited_emojis.append(after_emoji)
+            for before_emoji in before:
+                if before_emoji not in after:
+                    removed_emojis.append(before_emoji)
+            embed = discord.Embed(title="Emoji Changes", color=discord.Colour.gold())
+            if added_emojis:
+                embed.add_field(name="Added", value="\n".join([str(emoji) for emoji in added_emojis]), inline=False)
+            if removed_emojis:
+                embed.add_field(name="Emoji removed", value="", inline=False)
+                for emoji in removed_emojis:
+                    embed.add_field(name=emoji.name, value=emoji.url, inline=True)
+            if edited_emojis:
+                embed.add_field(name="Edited", value="\n".join([str(emoji) for emoji in edited_emojis]), inline=False)
+            await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_guild_stickers_update(self, guild, before, after):
+        guild_id = guild.id
+        if guild_id in self.cache and self.cache[guild_id]['log_server_update']:
+            channel_id = self.cache[guild_id]['channel_id']
+            channel = self.bot.get_channel(channel_id)
+
+            added_stickers = []
+            removed_stickers = []
+            edited_stickers = []
+
+            for after_sticker in after:
+                if after_sticker not in before:
+                    added_stickers.append(after_sticker)
+                else:
+                    before_sticker = before[before.index(after_sticker)]
+                    if (
+                        after_sticker.name != before_sticker.name
+                        or after_sticker.url != before_sticker.url
+                    ):
+                        edited_stickers.append((before_sticker, after_sticker))
+
+            for before_sticker in before:
+                if before_sticker not in after:
+                    removed_stickers.append(before_sticker)
+
+            embed = discord.Embed(title="Sticker Changes", color=discord.Colour.gold())
+            if added_stickers:
+                added_field_value = ""
+                for sticker in added_stickers:
+                    added_field_value += f"Name: {sticker.name}\nURL: {sticker.url}\n\n"
+                embed.add_field(name="Added", value=added_field_value, inline=False)
+            if removed_stickers:
+                removed_field_value = ""
+                for sticker in removed_stickers:
+                    removed_field_value += f"Name: {sticker.name}\nURL: {sticker.url}\n\n"
+                embed.add_field(name="Removed", value=removed_field_value, inline=False)
+            if edited_stickers:
+                edited_field_value = ""
+                for before_sticker, after_sticker in edited_stickers:
+                    sticker_name = f"{before_sticker.name} -> {after_sticker.name}"
+                    edited_field_value += f"Name: {sticker_name}\nURL: {after_sticker.url}\n\n"
+                embed.add_field(name="Edited", value=edited_field_value, inline=False)
+            await channel.send(embed=embed)
 
 async def setup(bot):
     logging_cog = LoggingCog(bot)
