@@ -586,31 +586,94 @@ class LoggingCog(commands.Cog):
     async def on_guild_role_update(self, before, after):
         guild_id = before.guild.id
         if guild_id in self.cache and self.cache[guild_id]['log_role_update']:
+            permission_names = {
+                    'add_reactions': 'Add Reactions',
+                    'administrator': 'Administrator',
+                    'attach_files': 'Attach Files',
+                    'ban_members': 'Ban Members',
+                    'change_nickname': 'Change Nickname',
+                    'connect': 'Connect',
+                    'create_instant_invite': 'Create Instant Invite',
+                    'deafen_members': 'Deafen Members',
+                    'embed_links': 'Embed Links',
+                    'external_emojis': 'Use External Emojis',
+                    'manage_channels': 'Manage Channels',
+                    'send_messages': 'Send Messages',
+                    'send_tts_messages': 'Send TTS Messages',
+                    'manage_messages': 'Manage Messages',
+                    'read_message_history': 'Read Message History',
+                    'mention_everyone': 'Mention Everyone, here and all roles',
+                    'manage_roles': 'Manage roles',
+                    'manage_webhooks': 'Manage Webhooks',
+                    'use_application_commands': 'Use Application Commands',
+                    'manage_threads': 'Manage Threads',
+                    'create_public_threads': 'Create Public Threads',
+                    'create_private_threads': 'Create Private Threads',
+                    'external_stickers': 'Use External Stickers',
+                    'send_messages_in_threads': 'Send Messages in Threads',
+                    'send_voice_messages': 'Send Voice Messages',
+                    'read_messages': 'Read Messages',
+                    'kick_members': 'Kick Members',
+                    'manage_guild': 'Manage Server',
+                    'view_audit_log': 'View Audit Log',
+                    'priority_speaker': 'Priority Speaker',
+                    'view_guild_insights': 'View Server Insights',
+                    'mute_members': 'VC Mute Members',
+                    'move_members': 'VC Move Members',
+                    'use_voice_activation': 'Use Voice Activity',
+                    'manage_nicknames': 'Manage Nicknames',
+                    'manage_expressions': 'Manage emoji/sticker/soundboard',
+                    'request_to_speak': 'Request to Speak',
+                    'manage_events': 'Manage Events',
+                    'use_embedded_activities': 'Use Embedded Activities',
+                    'moderate_members': 'Moderate Members',
+                    'use_soundboard': 'Use Soundboard',
+                    'use_external_sounds': 'Use External Sounds',
+                    'stream': 'Screenshare',
+                    'speak': 'Speak',
+                }
             channel_id = self.cache[guild_id]['channel_id']
             channel = self.bot.get_channel(channel_id)
-            if before.name is not after.name:
+            if before.name != after.name:
                 embed = discord.Embed(title="Role Updated", description=f"Role {after.mention} was renamed.", color=discord.Color.blue())
                 embed.add_field(name="Before", value=before.name, inline=True)
                 embed.add_field(name="After", value=after.name, inline=True)
                 embed.add_field(name="Role ID", value=after.id, inline=True)
                 await channel.send(embed=embed)
-            elif before.color is not after.color:
+            elif before.color != after.color:
                 embed = discord.Embed(title="Role Updated", description=f"Role {after.mention} color was changed.", color=discord.Color.blue())
                 embed.add_field(name="Before", value=before.color, inline=True)
                 embed.add_field(name="After", value=after.color, inline=True)
                 embed.add_field(name="Role ID", value=after.id, inline=True)
                 await channel.send(embed=embed)
-            elif before.hoist is not after.hoist:
+            elif before.hoist != after.hoist:
                 embed = discord.Embed(title="Role Updated", description=f"Role {after.mention} hoist was changed.", color=discord.Color.blue())
                 embed.add_field(name="Before", value=before.hoist, inline=True)
                 embed.add_field(name="After", value=after.hoist, inline=True)
                 embed.add_field(name="Role ID", value=after.id, inline=True)
                 await channel.send(embed=embed)
-            elif before.mentionable is not after.mentionable:
+            elif before.mentionable != after.mentionable:
                 embed = discord.Embed(title="Role Updated", description=f"Role {after.mention} mentionable was changed.", color=discord.Color.blue())
                 embed.add_field(name="Before", value=before.mentionable, inline=True)
                 embed.add_field(name="After", value=after.mentionable, inline=True)
                 embed.add_field(name="Role ID", value=after.id, inline=True)
+                await channel.send(embed=embed)
+            elif before.permissions != after.permissions:
+                print("permissions changed")
+                allow_diff = after.permissions.value & ~before.permissions.value
+                deny_diff = before.permissions.value & ~after.permissions.value
+                allow_str = ', '.join(permission_names.get(perm, perm) for perm, value in discord.Permissions(allow_diff) if value)
+                deny_str = ', '.join(permission_names.get(perm, perm) for perm, value in discord.Permissions(deny_diff) if value)
+                if not allow_str and not deny_str:
+                    return
+                permissions_changed = []
+                permissions_changed.append(f"**{after.name}**")
+                if allow_str:
+                    permissions_changed.append(f"Allow: {allow_str}")
+                if deny_str:
+                    permissions_changed.append(f"Deny: {deny_str}")
+                embed = discord.Embed(title="Role Updated", description=f"Role {after.mention} permissions changed", color=discord.Color.blue())
+                embed.add_field(name="Permissions", value='\n'.join(permissions_changed), inline=False)
                 await channel.send(embed=embed)
 
     @commands.Cog.listener()
