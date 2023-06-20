@@ -6,6 +6,38 @@ from utils import permissions
 
 cooldowns = commands.CooldownMapping.from_cooldown(1, 15, commands.BucketType.user)
 
+class Buttons(discord.ui.View):
+    def __init__(self, pages):
+        super().__init__()
+        self.pages = pages
+        self.current_page = 0
+        self.page_counter = None
+        # Remove buttons and page counter if there is only one page
+        if len(self.pages) <= 1:
+            self.clear_items()
+            self.page_counter = None  # Set page_counter to None
+
+    def update_page_counter(self):
+        if self.page_counter:
+            if len(self.pages) > 1:
+                self.page_counter.content = f"Page {self.current_page + 1}/{len(self.pages)}"
+            else:
+                self.page_counter.content = ""  # Empty string to hide the page counter
+
+    @discord.ui.button(label="Back", style=discord.ButtonStyle.green)
+    async def backpage(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.current_page > 0:
+            self.current_page -= 1
+            await interaction.response.edit_message(content=f"{self.pages[self.current_page]}Page {self.current_page + 1}/{len(self.pages)}")
+            self.update_page_counter()
+
+    @discord.ui.button(label="Forward", style=discord.ButtonStyle.green)
+    async def forwardpage(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.current_page < len(self.pages) - 1:
+            self.current_page += 1
+            await interaction.response.edit_message(content=f"{self.pages[self.current_page]}Page {self.current_page + 1}/{len(self.pages)}")
+            self.update_page_counter()
+
 
 class Leveling(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -68,7 +100,6 @@ class Leveling(commands.Cog):
         await self.update_leveling_cache(guild_id, interaction.user.id, 0)
         await interaction.response.send_message("Leveling is now enabled in this server.", ephemeral=True)
 
-
     @app_commands.command()
     async def rank(self, interaction: discord.Interaction):
         """Shows your current level."""
@@ -82,6 +113,32 @@ class Leveling(commands.Cog):
             xp = self.leveling_cache[(guild_id, user_id)]
             level = int(xp ** (1/4))
             await interaction.response.send_message(f"You are level {level} with {xp} xp.", ephemeral=True)
+
+    @app_commands.command()
+    async def leaderboard(self, interaction: discord.Interaction):
+        """Shows the leaderboard."""
+        guild_id = interaction.guild.id
+        if not any(key[0] == guild_id for key in self.leveling_cache):
+            return await interaction.response.send_message("Leveling is not enabled in this server.", ephemeral=True)
+        if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}): 
+            return
+        sorted_cache = sorted(self.leveling_cache.items(), key=lambda x: x[1], reverse=True)
+        leaderboard = []
+        for (guild_id, user_id), xp in sorted_cache:
+            level = int(xp ** (1/4))
+            number = sorted_cache.index(((guild_id, user_id), xp)) + 1
+            leaderboard.append(f"{number}. <@{user_id}> - **Level**: {level} - {xp} **XP**")
+        users_per_page = 10
+        pages = []
+        for i in range(0, len(leaderboard), users_per_page):
+            pages.append(leaderboard[i:i + users_per_page])
+        current_page = 0
+        guild_name = interaction.guild.name
+        embed = discord.Embed(title=f"Leaderboard for {guild_name}(Page {current_page + 1}/{len(pages)})", description="\n".join(pages[current_page]))
+        if len(pages) < 2:
+            embed = discord.Embed(title=f"Leaderboard for {guild_name}", description="\n".join(pages[current_page]))
+        view = Buttons(pages)
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
