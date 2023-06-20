@@ -120,8 +120,6 @@ class Leveling(commands.Cog):
         guild_id = interaction.guild.id
         if not any(key[0] == guild_id for key in self.leveling_cache):
             return await interaction.response.send_message("Leveling is not enabled in this server.", ephemeral=True)
-        if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}): 
-            return
         sorted_cache = sorted(self.leveling_cache.items(), key=lambda x: x[1], reverse=True)
         leaderboard = []
         for (guild_id, user_id), xp in sorted_cache:
