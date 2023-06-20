@@ -7,7 +7,7 @@ config = Config.from_env()
 async def create_tables(bot):
     async with bot.pool.acquire() as conn:
         # Define current version of schema here
-        expected_version = 2
+        expected_version = 3
         schema_version_exists = await conn.fetchval('''
             SELECT EXISTS (
                 SELECT 1
@@ -140,6 +140,14 @@ async def create_tables(bot):
                 user_id BIGINT,
                 xp BIGINT,
                 PRIMARY KEY (guild_id, user_id)
+                    )
+                ''')
+            await conn.execute('''
+                CREATE TABLE IF NOT EXISTS leveling_roles (
+                guild_id BIGINT,
+                role_id BIGINT,
+                levelreq BIGINT,
+                PRIMARY KEY (guild_id, role_id, levelreq)
                     )
                 ''')
             await conn.execute('''CREATE TABLE schema_version (version INT NOT NULL)''')
