@@ -97,11 +97,7 @@ class Leveling(commands.Cog):
 
 
     async def update_leveling_cache(self, guild_id, user_id, xp):
-        if user_id is None:
-            if (guild_id, None) in self.leveling_cache:
-                del self.leveling_cache[(guild_id, None)]
-        else:
-            self.leveling_cache[(guild_id, user_id)] = xp
+        self.leveling_cache[(guild_id, user_id)] = xp
 
     async def update_database(self):
         async with self.bot.pool.acquire() as conn:
@@ -111,16 +107,34 @@ class Leveling(commands.Cog):
                     await conn.execute(query, guild_id, user_id, xp)
 
     @app_commands.command()
-    async def level(self, interaction: discord.Interaction):
+    async def level(self, interaction: discord.Interaction, stop: Optional[bool]):
         """Enables or disables level tracking"""
         if not await permissions.check_priv(self.bot, interaction, None, {"manage_guild": True}): 
             return
         guild_id = interaction.guild.id
         bot_user_id = self.bot.user.id
         async with self.bot.pool.acquire() as conn:
-            await conn.execute("INSERT INTO leveling (guild_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", guild_id, interaction.user.id)
-        await self.update_leveling_cache(guild_id, interaction.user.id, 0)
-        await interaction.response.send_message("Leveling is now enabled in this server.", ephemeral=True)
+            if stop:
+                if any(key[0] == guild_id for key in self.leveling_cache):
+                    usercache_to_delete = [key for key in self.leveling_cache if key[0] == guild_id]
+                    rolecache_to_delete = [key for key in self.role_cache if key[0] == guild_id]
+                    await conn.execute("DELETE FROM LEVELING WHERE guild_id = $1", guild_id)
+                    for key in usercache_to_delete:
+                        del self.leveling_cache[key]
+                    if any(key[0] == guild_id for key in self.leveling_cache):
+                        for key in rolecache_to_delete:
+                            del self.role_cache[key]
+                        await conn.execute("DELETE FROM leveling_roles WHERE guild_id = $1", guild_id)
+                    await interaction.response.send_message("Leveling is now disabled in this server.", ephemeral=True)
+                else:
+                    await interaction.response.send_message("Guild already not tracking levels")
+            if stop is None or False:
+                if not any(key[0] == guild_id for key in self.leveling_cache):
+                    await conn.execute("INSERT INTO leveling (guild_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", guild_id, interaction.user.id)
+                    await self.update_leveling_cache(guild_id, interaction.user.id, 0)
+                    await interaction.response.send_message("Leveling is now enabled in this server.", ephemeral=True)
+                else: 
+                    await interaction.response.send_message("Leveling is already enabled in this guild", ephemeral=True)
 
     @app_commands.command()
     async def rank(self, interaction: discord.Interaction, hidden: Optional[bool] = False, user: Optional[discord.Member] = None):
@@ -212,7 +226,6 @@ class Leveling(commands.Cog):
             xp += 1
             await self.update_leveling_cache(guild_id, user_id, xp)
             print(f"User {user_id} in guild {guild_id} now has {xp} xp.")
-            print(f"role_cache: {self.role_cache}")
             if any(key[0] == guild_id for key in self.role_cache):
                 for (guild_id, role_id), levelreq in self.role_cache.items():
                     print("Checking role cache")
