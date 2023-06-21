@@ -28,14 +28,18 @@ class Buttons(discord.ui.View):
     async def backpage(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.current_page > 0:
             self.current_page -= 1
-            await interaction.response.edit_message(content=f"{self.pages[self.current_page]}Page {self.current_page + 1}/{len(self.pages)}")
+            embed = discord.Embed(title=f"Leaderboard (Page {self.current_page + 1}/{len(self.pages)})", description="\n".join(self.pages[self.current_page]))
+            await interaction.response.edit_message(embed=embed)
             self.update_page_counter()
 
     @discord.ui.button(label="Forward", style=discord.ButtonStyle.green)
     async def forwardpage(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.current_page < len(self.pages) - 1:
             self.current_page += 1
-            await interaction.response.edit_message(content=f"{self.pages[self.current_page]}Page {self.current_page + 1}/{len(self.pages)}")
+            # Create a new embed for the current page
+            embed = discord.Embed(title=f"Leaderboard (Page {self.current_page + 1}/{len(self.pages)})", description="\n".join(self.pages[self.current_page]))
+            # Update the message with the new embed
+            await interaction.response.edit_message(embed=embed)
             self.update_page_counter()
 
 
