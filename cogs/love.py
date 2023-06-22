@@ -68,7 +68,7 @@ class Love(commands.Cog):
         if target is None:
             await interaction.response.send_message('BONK!', file=image_file)
         else:
-            await interaction.response.send_message('BONK! {target.mention}!', file=image_file)
+            await interaction.response.send_message(f'BONK! {target.mention}!', file=image_file)
 
     @app_commands.command()
     async def slap(self, interaction: discord.Interaction, *, target: discord.Member=None):
